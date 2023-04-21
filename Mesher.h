@@ -22,6 +22,11 @@ using ArrayType =  TNL::Containers::NDArray< RealType,
                                              SizesHolder<int, 0, 0 >,
                                              std::index_sequence< 0, 1 > ,
                                              DeviceType>;
+using ArrayTypeInt =  TNL::Containers::NDArray< int,
+                                             SizesHolder<int, 0, 0 >,
+                                             std::index_sequence< 0, 1 > ,
+                                             DeviceType>;
+
 
 public:
     Mesher()=delete;
@@ -45,9 +50,9 @@ public:
         {
             for(int i=-1; i < Nx +1 ; i++)
             {
-                mesh(j+1,i+1) = 1.0;
-                velocities_x(j+1,i+1) = 0.0;
-                velocities_y(j+1,i+1) = 0.0;
+                mesh(j+1,i+1) = 1.f;
+                velocities_x(j+1,i+1) = 0.f;
+                velocities_y(j+1,i+1) = 0.f;
             }
         }
 
@@ -75,7 +80,7 @@ public:
         std::cout <<" undergone successfully."<<"\n";
     }
 
-    void meshing_moving(Obj_template &obj, double v_x, double v_y, int type)
+    void meshing_moving(Obj_template &obj, RealType v_x, RealType v_y, int type)
     {
         for(int j=-1; j < Ny + 1; j++)
         {
@@ -147,7 +152,7 @@ public:
     
 
 
-    ArrayType mesh;
+    ArrayTypeInt mesh;
     ArrayType velocities_x;
     ArrayType velocities_y;
     

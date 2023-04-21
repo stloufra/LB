@@ -11,29 +11,29 @@
 using DeviceType = TNL::Devices::Host;
 using DeviceTypeHost = TNL::Devices::Host;
 
-using RealType = double;
+using RealType = float;
 
 
 
 int main()
 {
-    const double L = 0.1;               //[m]
+    const RealType L = 0.1f;               //[m]
     const int Nx = 300;                 //[1]
     const int Ny = 100;                 //[1]
 
-    const double rho=1000;              //[kg/m3]
-    const double ny=10e-5;              //[m2/s]
+    const RealType rho=1000.f;              //[kg/m3]
+    const RealType ny=10e-5f;              //[m2/s]
 
-    const double ux=0.100;              //[m/s]
-    const double ux_guess=0.1;          //[m/s]
-    const double uy=0.000;              //[m/s]
-    const double u_max_lattice =0.1;  //[0]
+    const RealType ux=0.100f;              //[m/s]
+    const RealType ux_guess=0.07f;          //[m/s]
+    const RealType uy=0.f;              //[m/s]
+    const RealType u_max_lattice =0.07f;  //[0]
 
-    const double Fx = 10;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
-    const double Fy = 0.0;              //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
+    const RealType Fx = 10.f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
+    const RealType Fy = 0.0f;              //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
 
-    const double time =1;               //[s]  
-    const double plot_every=0.01;       //[s]
+    const RealType time =1.f;              //[s]  
+    const RealType plot_every=0.1f;       //[s]
 
     int plot_every_it;
     int iterations;
@@ -44,11 +44,11 @@ int main()
 
     //objects !! pristup od 0 !! horní index o 1 mensi je to 
 
-    Obj_rectangle lower_wall( -1.0, Nx , -1.0, -1.0);
-    Obj_rectangle upper_wall( -1.0, Nx, Ny , Ny );
+    Obj_rectangle lower_wall( -1.f, Nx , -1.f, -1.f);
+    Obj_rectangle upper_wall( -1.f, Nx, Ny , Ny );
     Obj_rectangle inlet(-1, -1, 0, Ny-1 );
     Obj_rectangle outlet(Nx , Nx, 0, Ny-1);
-    Obj_cylinder cylinder(Ny/5, Nx/4,Ny/2+0.05*Ny);
+    Obj_cylinder cylinder(Ny/5, Nx/4,Ny/2+0.05f*Ny);
 
     // MESH - structured bolean values of BC
     // 0 = solid | 1 = fluid | 2 = primitive inlet vertical | 3 = outlet (rho=1, right) | 4 = moving wall up | 5 = moving wall down | 6 = outlet (rh=1, left)
@@ -78,44 +78,81 @@ int main()
     
     //solver run
     
-    Timer timer;
+    Timer timer_loop;
+    Timer timer_collision;
+    Timer timer_streaming;
+    Timer timer_bounceback;
+    Timer timer_postpro;
+    Timer timer_err;
+    Timer timer_output;
+
     Logger logger(50, std::cout);
 
-    timer.start();
+    timer_loop.start();
 
+   
     int k = 0;
     while(k<iterations) //err>=10e-4)
     {
         k++;
+        
+        timer_collision.start();
         solver.collision();
+        timer_collision.stop();
+
+        timer_streaming.start();
         solver.streaming();
+        timer_streaming.stop();
+
+        timer_bounceback.start();
         solver.bounce_back();
+        timer_bounceback.stop();
+
+        timer_postpro.start();
         solver.postpro();
+        timer_postpro.stop();
 
         if(k%500==0 && k!=0)
-        {
-            //solver.Err();
-            //printf("\n err=%e ux_center=%e uy_center=%e rho_center=%e k=%d\n",solver.err,solver.ux(Ny/2,Nx/2),solver.uy(Ny/2,Nx/2),solver.rho(Ny/2,Nx/2), k);
-            solver.output_VTK_lattice();
-             if (std::isnan(solver.err)) 
+        {   
+            timer_err.start();
+            solver.Err();
+            printf("\n err=%e ux_center=%e uy_center=%e rho_center=%e k=%d\n",solver.err,solver.ux.getView()(Ny/2,Nx/2),solver.uy.getView()(Ny/2,Nx/2),solver.rho.getView()(Ny/2,Nx/2), k);
+            if (std::isnan(solver.err)) 
              {
                 std::cout << "\n Error is NaN, breaking out.\n";
                 break;
              }
+            timer_err.stop();
         }
 
         
 
         if(k%plot_every_it==0)
-        {
+        {   
+            timer_output.start();
             solver.output_VTK(k,plot_every_it);
+            timer_output.stop();
         }
    
     }
 
-    timer.stop();
+    timer_loop.stop();
     
-    timer.writeLog( logger, 0 );
+    logger.writeHeader("Timing of sections");
+    //logger.writeSystemInformation(true);
+    timer_loop.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_collision.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_streaming.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_bounceback.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_postpro.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_err.writeLog( logger, 0 );
+    logger.writeSeparator();
+    timer_output.writeLog( logger, 0 );
 
     return 0;
 }
