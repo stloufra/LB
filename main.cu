@@ -17,23 +17,23 @@ using RealType = float;
 
 int main()
 {
-    const RealType L = 0.1f;               //[m]
-    const int Nx = 300;                 //[1]
-    const int Ny = 100;                 //[1]
+    const RealType L = 0.1f;                //[m]
+    const int Nx = 300;                     //[1]
+    const int Ny = 100;                     //[1]
 
     const RealType rho=1000.f;              //[kg/m3]
-    const RealType ny=10e-5f;              //[m2/s]
+    const RealType ny=10e-5f;               //[m2/s]
 
-    const RealType ux=0.100f;              //[m/s]
+    const RealType ux=0.100f;               //[m/s]
     const RealType ux_guess=0.07f;          //[m/s]
-    const RealType uy=0.f;              //[m/s]
-    const RealType u_max_lattice =0.07f;  //[0]
+    const RealType uy=0.f;                  //[m/s]
+    const RealType u_max_lattice =0.07f;    //[0]
 
     const RealType Fx = 10.f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
-    const RealType Fy = 0.0f;              //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
+    const RealType Fy = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
 
-    const RealType time =1.f;              //[s]  
-    const RealType plot_every=0.1f;       //[s]
+    const RealType time =5.f;               //[s]  
+    const RealType plot_every=0.1f;         //[s]
 
     int plot_every_it;
     int iterations;
