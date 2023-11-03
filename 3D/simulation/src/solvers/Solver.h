@@ -58,12 +58,14 @@ public:
         Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
-        Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
-        Data->df_post.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
+        Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, MODELDATA::numberOfDiscreteVelocities);
+        Data->df_post.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, MODELDATA::numberOfDiscreteVelocities);
 
         nonDimensionalizeBoundary(verbose);
+
         MODEL::initializeSim( Data, Constants, initial_velocity);
 
+        std::cout << "Initialization of simulation done." << std::endl;
     }
 
     void nonDimensionalizeBoundary(bool verbose) {
@@ -71,27 +73,32 @@ public:
         auto inlet_view = Data->meshBoundaryInlet.getView();
         auto outlet_view = Data->meshBoundaryOutlet.getView();
 
+        auto Cu_inverse = Constants->Cu_inverse;
+        auto Cm= Constants->Cm;
+        auto Cl = Constants->Cl;
+
+
 
         auto nonDimInlet = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<1, int> &i  ) mutable
         {
-            inlet_view(i.x()).velocity(0) = inlet_view(i.x()).velocity.x() * Constants->Cu_inverse;
-            inlet_view(i.x()).velocity(1) = inlet_view(i.x()).velocity.y() * Constants->Cu_inverse;
-            inlet_view(i.x()).velocity(2)=  inlet_view(i.x()).velocity.z() * Constants->Cu_inverse;
+            inlet_view(i.x()).velocity(0) = inlet_view(i.x()).velocity.x() * Cu_inverse;
+            inlet_view(i.x()).velocity(1) = inlet_view(i.x()).velocity.y() * Cu_inverse;
+            inlet_view(i.x()).velocity(2)=  inlet_view(i.x()).velocity.z() * Cu_inverse;
 
         };
 
         parallelFor<DeviceType>(0, Constants->inlet_num, nonDimInlet);
 
-        std::ofstream file("results/debug.txt");
-
-        for (int i = 0; i < Constants->inlet_num; i++) {
-            file << "x: " << inlet_view(i).velocity(0) << " ,y: " << inlet_view(i).velocity(1) << " ,z: "
-                 << inlet_view(i).velocity(2) << " , i: " << i << std::endl;
+        if(false) { //TODO
+            std::ofstream file("results/debug.txt");
+            for (int i = 0; i < Constants->inlet_num; i++) {
+                file << "x: " << inlet_view(i).velocity(0) << " ,y: " << inlet_view(i).velocity(1) << " ,z: "
+                     << inlet_view(i).velocity(2) << " , i: " << i << std::endl;
+            }
+            file.close();
         }
-        file.close();
-
 
         if (verbose) {
             std::cout << "Inlet non-dimensionalized.\n";
@@ -102,7 +109,7 @@ public:
         const TNL::Containers::StaticArray<1, int> &i  ) mutable
         {
             outlet_view(i.x()).density =
-                    outlet_view(i.x()).density / Constants->Cm * Constants->Cl * Constants->Cl * Constants->Cl;
+                    outlet_view(i.x()).density / Cm * Cl * Cl * Cl;
         };
 
         parallelFor<DeviceType>(0, Constants->outlet_num, nonDimOutlet);
@@ -122,7 +129,7 @@ public:
         int k = 0;
         while(k<Constants -> iterations) //err>=10e-4)
         {
-            k++;
+
 
             timer_collision.start();
             MODEL::collision(Data, Constants);
@@ -162,6 +169,7 @@ public:
                 timer_output.stop();
             }
 
+            k++;
 
         }
 
@@ -184,7 +192,7 @@ public:
         RealType U_fyz;
         RealType U_mag;
 
-        std::ofstream file("results/debug.txt");
+        /*TODO std::ofstream file("results/debug.txt");
         for (int i = 0; i < Constants->inlet_num; i++) {
             boundaryConditionInlet BC = Data->meshBoundaryInlet[i];
             U_mag = TNL::l2Norm(
@@ -192,15 +200,16 @@ public:
 
                       U_fyz = std::max(U_mag, U_fyz);
 
-            file <<"x: " <<BC.velocity.x()<<" ,y: " << BC.velocity.y()<< " ,z: "   <<BC.velocity.z() << " ,norm: " << U_mag <<  std::endl;
+            file <<"x: " <<BC.velocity.x()<<" ,y: " << BC.velocity.y()<< " ,z: "   <<BC.velocity.z() << " ,normUfyz: " << U_fyz <<  std::endl;
         }
 
         U_fyz = std::max(U_fyz,Constants -> u_guess_fyz);
         file.close();
-
-        if (verbose) {
-            std::cout << "\n- Maximal velocity is " << U_fyz << ".\n";
-        }
+         */
+        U_fyz = Constants -> u_guess_fyz;
+       // if (verbose) {
+        //    std::cout << "\n- Maximal velocity is " << U_fyz << ".\n";
+        //}
 
         Constants->Cu = U_fyz / Constants->U_lb;
         Constants->Cu_inverse = 1 / Constants->Cu;

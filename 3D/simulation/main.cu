@@ -13,6 +13,7 @@
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
 #include "src/solvers/models/D3Q27.h"
+#include "backward.hpp"
 
 using namespace TNL;
 using DeviceType = typename LBMTraits::DeviceType;
@@ -20,6 +21,7 @@ using VectorType = typename LBMTraits::VectorType;
 using DeviceTypeHost = typename LBMTraits::DeviceTypeHost;
 using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
 using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
+
 
 int main() {
 
@@ -45,7 +47,7 @@ int main() {
                                   Data);
 
     Solver<Model, ModelData> Solver(Constants,
-                  Data);
+                                    Data);
     //------------------------DATA IN--------------------------//
 
     //set meshing data
@@ -73,19 +75,18 @@ int main() {
                                       5);
 
 
-
-    VectorType VelocityInlet1( 0, 0, 0.1);
+    VectorType VelocityInlet1(0, 0, 0.1);
     VectorType VelocityInlet2(0, -0.2, 0);
     VectorType NormalInlet1(0, 0, -1);
     VectorType NormalInlet2(0, 1, 0);
     VectorType NormalOutlet(0, -1, 0);
 
-    VectorType VelocityInit( 0, 0, 0);
+    VectorType VelocityInit(0, 0, 0);
 
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.5f;                   //[m/s]
+    Constants->u_guess_fyz = 0.5f;                   //[m/s] //TODO should be automatically calculated
     Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -97,8 +98,8 @@ int main() {
 
     // set simulation parameters
 
-    Constants -> time =0.01f;               //[s]
-    Constants -> plot_every=0.001f;         //[s]
+    Constants->time = 0.01f;               //[s]
+    Constants->plot_every = 0.001f;         //[s]
 
     //----------------------LOADING MESH------------------------------//
 
@@ -107,54 +108,54 @@ int main() {
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
-        Mesher.meshingBoundaryWall(0);
-        Mesher.meshingBoundaryConditionInlet(cuboidInlet1, NormalInlet1, VelocityInlet1, 1);
-        Mesher.meshingBoundaryConditionInlet(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
-        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 0.788, 1); //if density - 1 then density is from noditself
-        Mesher.compileBoundaryArrayInlets(1);
-        Mesher.compileBoundaryArrayOutlets(1);
-        Mesher.arrayTransfer(1);
+    Mesher.meshingBoundaryWall(0);
+    Mesher.meshingBoundaryConditionInlet(cuboidInlet1, NormalInlet1, VelocityInlet1, 1);
+    Mesher.meshingBoundaryConditionInlet(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
+    Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 0.788,
+                                          1); //if density - 1 then density is from noditself
+    Mesher.compileBoundaryArrayInlets(1);
+    Mesher.compileBoundaryArrayOutlets(1);
+    Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();
 
 
     //----------------------MESHING OUTPUT--------------------------//
 
 
-        outputerVTK::MeshVTK(Data, Constants, "meshIN");
-
+    outputerVTK::MeshVTK(Data, Constants, "meshIN");
 
     //----------------------SOLVING PROBLEM------------------------//
 
-        Solver.convertToLattice(1);
-        Solver.initializeSimulation(VelocityInit, 1);
-        //outputerVTK::variablesLatticeVTK(Data, Constants, -1, 1);
-        Solver.runSimulation();
-        outputerVTK::distributionFunctionVTK(Data, Constants, 3, 1);
+    Solver.convertToLattice(1);
+    Solver.initializeSimulation(VelocityInit, 1);
+    //outputerVTK::variablesLatticeVTK(Data, Constants, -1, 1);
+    Solver.runSimulation();
+    outputerVTK::distributionFunctionVTK(Data, Constants, 3, 1);
 
     //----------------------TIMERS OUTPUT--------------------------//
 
 
     logger.writeHeader("Timing of sections 1) Whole loop");
     //logger.writeSystemInformation(true);
-    Solver.timer_loop.writeLog( logger, 0 );
+    Solver.timer_loop.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Collision");
-    Solver.timer_collision.writeLog( logger, 0 );
+    Solver.timer_collision.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Streaming");
-    Solver.timer_streaming.writeLog( logger, 0 );
+    Solver.timer_streaming.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Bounce back");
-    Solver.timer_bounceback.writeLog( logger, 0 );
+    Solver.timer_bounceback.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Moments Update");
-    Solver.timer_momentsUpdate.writeLog( logger, 0 );
+    Solver.timer_momentsUpdate.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Error Calculation");
-    Solver.timer_err.writeLog( logger, 0 );
+    Solver.timer_err.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Writting Output");
-    Solver.timer_output.writeLog( logger, 0 );
+    Solver.timer_output.writeLog(logger, 0);
 
 
     return 0;

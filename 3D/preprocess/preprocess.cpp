@@ -38,7 +38,7 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 3;                              // needs to be 1 or greater integer
+    Constants->resolution_factor = 2;                              // needs to be 1 or greater integer
     Constants->additional_factor = 2;                              // at least 1 for additional wall around
     Constants->point_outside = {0, 0, 20};
     Constants->file_name = "Dummy.off";
