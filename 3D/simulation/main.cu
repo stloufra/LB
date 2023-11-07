@@ -12,7 +12,7 @@
 #include "src/traits/LBMTraits.h"
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
-#include "src/solvers/models/D3Q27.h"
+#include "src/solvers/models/D3Q27/D3Q27.h"
 #include "backward.hpp"
 
 using namespace TNL;
@@ -35,7 +35,8 @@ int main() {
 
     //TODO: using Initialization = initializationEqulibrium;
     using ModelData = D3Q27Data;
-    using Model = D3Q27<ModelData>; //TODO <Initialization >;
+    using Collision = D3Q27CollisionUnrolled;
+    using Model = D3Q27<ModelData, Collision>; //TODO <Initialization >;
     //initialize timers
     Timer timerMeshingBoundary;
     Logger logger(50, std::cout);
