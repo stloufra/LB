@@ -3,7 +3,7 @@ TNL_INCLUDE_DIRS := -I /home/stloufra/.local/include
 CGAL_INCLUDE_DIRS := -I /usr/include/CGAL/include
 
 WITH_OPENMP := yes
-WITH_DEBUG := yes
+WITH_DEBUG := no
 WITH_CGAL := no
 
 # If TNL is installed on your system, the CUDA architecture can be detected
@@ -27,7 +27,7 @@ endif
 
 # CUDA compiler flags
 CUDA_CXXFLAGS := -std=c++17 --expt-relaxed-constexpr --expt-extended-lambda $(TNL_INCLUDE_DIRS)
-CUDA_CXXFLAGS += -DHAVE_CUDA -DNDEBUG
+#CUDA_CXXFLAGS += -DHAVE_CUDA -DNDEBUG
 CUDA_CXXFLAGS += -DHAVE_CUDA
 CUDA_CXXFLAGS += -lineinfo -use_fast_math -O3 -diag-suppress 20012
 ifeq ($(CUDA_ARCH),auto)

@@ -19,7 +19,7 @@ class outputerVTK
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
     using ArrayTypeVariablesScalarHost = LBMTraits::ArrayTypeVariablesScalarHost;
     using ArrayTypeVariablesVectorHost = LBMTraits::ArrayTypeVariablesVectorHost;
-    using ArrayTypeDFunction = LBMTraits::ArrayTypeDFunction;
+    using ArrayTypeDFunctionHost = LBMTraits::ArrayTypeDFunctionHost;
 public:
 
     static void MeshVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, std::string filename) {
@@ -61,11 +61,13 @@ public:
             if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
 
             ArrayTypeVariablesScalarHost rho_out;
+            ArrayTypeVariablesScalarHost p_out;
             ArrayTypeVariablesVectorHost u_out;
 
 
             rho_out = Data->rho;
             u_out = Data->u;
+            p_out = Data->p;
 
 
             std::ofstream out_file("results/variablesLattice"+std::to_string(step)+".vtk");
@@ -93,6 +95,17 @@ public:
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
                         out_file << rho_out(i, j, k) << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << p_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -144,6 +157,17 @@ public:
                 }
             }
 
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->p(i, j, k) << "\n";
+                    }
+                }
+            }
+
             out_file << "VECTORS " << "U " << "double\n";
 
             for (int k = 0; k < Constants->dimZ_int; k++) {
@@ -166,7 +190,7 @@ public:
             if (verbose) { std::cout << "\nCuda -> Host output distribution function\n" << std::endl; }
 
 
-            ArrayTypeDFunction df_out;
+            ArrayTypeDFunctionHost df_out;
 
 
             df_out = Data->df;
@@ -247,12 +271,11 @@ public:
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
             if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
 
-            ArrayTypeVariablesScalarHost rho_out;
-            ArrayTypeVariablesVectorHost u_out;
 
 
-            rho_out = Data->rho;
-            u_out = Data->u;
+            Data->rho_out = Data->rho;
+            Data->u_out = Data->u;
+            Data->p_out = Data->p;
 
             std::string step =std::to_string(s/plot_every);
 
@@ -280,7 +303,18 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) * Constants->Crho << "\n";
+                        out_file << Data->rho_out(i, j, k) * Constants->Crho << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "p " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->p_out(i, j, k) * Constants->Cpressure << "\n";
                     }
                 }
             }
@@ -291,9 +325,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << u_out(i, j, k).x() * Constants->Cu << " "
-                                 << u_out(i, j, k).y() * Constants->Cu << " "
-                                 << u_out(i, j, k).z() * Constants->Cu << "\n";
+                        out_file << Data->u_out(i, j, k).x() * Constants->Cu << " "
+                                 << Data->u_out(i, j, k).y() * Constants->Cu << " "
+                                 << Data->u_out(i, j, k).z() * Constants->Cu << "\n";
                     }
                 }
             }
@@ -330,6 +364,17 @@ public:
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
                         out_file << Data->rho(i, j, k) * Constants->Crho << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->p(i, j, k) * Constants->Cpressure << "\n";
                     }
                 }
             }

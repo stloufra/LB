@@ -2,16 +2,18 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef SIMULATION_D3Q27DATA_H
-#define SIMULATION_D3Q27DATA_H
+#ifndef D3Q27DATA_H
+#define D3Q27DATA_H
 
 #include "../../traits/LBMTraits.h"
 
 struct D3Q27Data
 {
+    D3Q27Data() = default;
+
     using RealType = LBMTraits::RealType;
 
-    const static int numberOfDiscreteVelocities = 27;
+    static constexpr const int  numberOfDiscreteVelocities = 27;
     enum {
         //velocities are denoted by 4 cardinal directions:
         // "n" - north, "s" - south, "e" - east and "w" - west
@@ -76,7 +78,7 @@ struct D3Q27Data
 
     };
 
-    static constexpr int c[27][3] = {
+    const int c[27][3] = {
             {0,  0,  0},
 
             {1,  0,  0},
@@ -108,14 +110,14 @@ struct D3Q27Data
             {-1, -1, -1},
             {1,  1,  1}};
 
-    static constexpr  RealType weight[27] = {8.f / 27, // 0
-                2.f / 27, 2.f / 27, 2.f / 27, 2.f / 27, 2.f / 27, 2.f / 27, // 1-6
-                1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54,
-                1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54, 1.f / 54, // 7- 18
-                1.f / 216, 1.f / 216, 1.f / 216, 1.f / 216, 1.f / 216,
-                1.f / 216, 1.f / 216, 1.f / 216}; // 19-26
+    const RealType weight[27] = {8.f / 27.f, // 0
+                2.f / 27.f, 2.f / 27.f, 2.f / 27.f, 2.f / 27.f, 2.f / 27.f, 2.f / 27.f, // 1-6
+                1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f,
+                1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f, 1.f / 54.f, // 7- 18
+                1.f / 216.f, 1.f / 216.f, 1.f / 216.f, 1.f / 216.f, 1.f / 216.f,
+                1.f / 216.f, 1.f / 216.f, 1.f / 216.f}; // 19-26
 
-    static constexpr int c_rev[27] = {0, 2, 1, 4, 3, 6,
+    const int c_rev[27] = {0, 2, 1, 4, 3, 6,
                                       5, 8, 7, 10, 9, 12, 11,
                                       14, 13, 16, 15, 18, 17,
                                       20, 21, 22, 21, 24, 23,

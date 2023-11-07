@@ -53,7 +53,9 @@ public:
 
 
     using RealType = float;
+
     using DeviceType = TNL::Devices::Cuda;
+
     using DeviceTypeHost = TNL::Devices::Host;
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
 
@@ -126,6 +128,11 @@ public:
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0, 0>,
                                                                 std::index_sequence<0, 1, 2, 3>,
                                                                 DeviceType>;
+
+    using ArrayTypeDFunctionHost = TNL::Containers::NDArray<    RealType,
+                                                                TNL::Containers::SizesHolder<int, 0, 0, 0, 0>,
+                                                                std::index_sequence<0, 1, 2, 3>,
+                                                                DeviceTypeHost>;
 
 
 };

@@ -45,6 +45,7 @@ public:
 
     void initializeSimulation(Vector& initial_velocity, bool verbose) {
         Constants->plot_every_it = std::ceil(Constants->plot_every / Constants->Ct);
+        Constants->err_every_it = std::ceil(Constants->err_every / Constants->Ct);
         Constants->iterations = std::ceil(Constants->time / Constants->Ct);
 
         if (verbose) {
@@ -55,7 +56,11 @@ public:
         Constants->Nvel = MODELDATA::numberOfDiscreteVelocities;
 
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->rho_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->p_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, MODELDATA::numberOfDiscreteVelocities);
@@ -124,6 +129,8 @@ public:
         timer_loop.start();
 
 
+        std::cout << "Got here.\n";
+
 
 
         int k = 0;
@@ -148,7 +155,7 @@ public:
             timer_momentsUpdate.stop();
 
 
-            if(k%Constants -> plot_every_it==0 && k!=0)
+            if(k%Constants -> err_every_it==0 && k!=0)
             {
                 timer_err.start();
                 MODEL::errorEvaluation(Data, Constants);
@@ -164,6 +171,10 @@ public:
 
             if(k%Constants -> plot_every_it==0)
             {
+                timer_momentsUpdate.start();
+                MODEL::pressureUpdate(Data, Constants);
+                timer_momentsUpdate.stop();
+
                 timer_output.start();
                 outputerVTK::variablesLatticeVTK(Data, Constants, k/Constants -> plot_every_it, 1);
                 timer_output.stop();
@@ -177,7 +188,7 @@ public:
     };
 
     void convertToLattice(bool verbose) {
-        // prenasobim lattice jednotky a dostanu fyikalni
+        // prenasobim lattice jednotky a dostanu fyzikalni
         // vydelim fyz a dostanu lattice
         if (Constants->U_lb > 0.1) {
             std::cout << "\n Lattice speed should not be higher than 0.1 due to stability close to speed of sound.\n";
@@ -216,7 +227,7 @@ public:
         Constants->Ct = Constants->Cl / Constants->Cu;
         Constants->Crho = Constants->rho_fyz;
         Constants->Cm = Constants->Crho * Constants->Cl * Constants->Cl * Constants->Cl;
-
+        Constants->Cpressure = Constants->Cm/Constants->Cl/Constants->Ct/Constants->Ct;
         Constants->Re = U_fyz * Constants->L_fyz / Constants->ny_fyz;
 
         std::cout << "\n- Re is " << Constants->Re << "\n";

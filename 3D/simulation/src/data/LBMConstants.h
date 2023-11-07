@@ -51,13 +51,16 @@ struct LBMConstants {
     RealType Cm;
     RealType Cu_inverse;
     RealType Crho;
+    RealType Cpressure;
     RealType Cu;
 
     //simulation
     RealType err;
     RealType time;                  //[s]  
     RealType plot_every;            //[s]
+    RealType err_every;            //[s]
     int plot_every_it;
+    int err_every_it;
     int iterations;
 
     //TODO: to model

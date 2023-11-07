@@ -20,10 +20,13 @@ public:
     using ArrayTypeBoundaryWallHost = typename LBMTraits::ArrayTypeBoundaryWallHost;
 
     using ArrayTypeVariablesScalar = typename LBMTraits::ArrayTypeVariablesScalar;
+    using ArrayTypeVariablesScalarHost = typename LBMTraits::ArrayTypeVariablesScalarHost;
 
     using ArrayTypeVariablesVector = typename LBMTraits::ArrayTypeVariablesVector;
+    using ArrayTypeVariablesVectorHost = typename LBMTraits::ArrayTypeVariablesVectorHost;
 
     using ArrayTypeDFunction = typename LBMTraits::ArrayTypeDFunction;
+    using ArrayTypeDFunctionHost = typename LBMTraits::ArrayTypeDFunctionHost;
 
     //mesh - host
     ArrayTypeMeshHost meshFluidHost;
@@ -39,8 +42,14 @@ public:
 
     // variables
     ArrayTypeVariablesScalar rho;
+    ArrayTypeVariablesScalar p;
     ArrayTypeVariablesVector u;
     ArrayTypeVariablesVector u_error;
+
+    ArrayTypeVariablesScalarHost rho_out;
+    ArrayTypeVariablesScalarHost p_out;
+    ArrayTypeVariablesVectorHost u_out;
+
 
 
     // distribution function

@@ -35,18 +35,17 @@ public:
         auto mesh_view = Data->meshFluid.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
+        auto p_view = Data->p.getView();
 
         auto Cl = Constants->Cl;
         auto Ct = Constants->Ct;
         auto Cm = Constants->Cm;
         auto Cu_inverse = Constants->Cu_inverse;
         auto Cu = Constants->Cu;
-        auto Nvel = MODELDATA::numberOfDiscreteVelocities;
+        const auto Nvel = MODELDATA::numberOfDiscreteVelocities;
         auto rho_0 = Constants->rho_fyz;
 
-        auto c = MODELDATA::c;
-        auto weight = MODELDATA::weight;
-
+        D3Q27Data Mdata;
 
         VectorType u_0 = u_0_in; // TODO after solving fetch
 
@@ -60,12 +59,15 @@ public:
         {
             RealType uc, u2;
 
-            uc = u_view(i, j, k).x()*c[velo][0] ;// c[velo][0] * u_view(i, j, k).x()+ c[velo][1] * u_view(i, j, k).y()+ c[velo][2] * u_view(i, j, k).z();
+            uc = Mdata.c[velo][0] * u_view(i, j, k).x()
+                 + Mdata.c[velo][1] * u_view(i, j, k).y()
+                 + Mdata.c[velo][2] * u_view(i, j, k).z();
 
-            u2 = u_view(i, j, k).x();//u_view(i, j, k).x() * u_view(i, j, k).x()+ u_view(i, j, k).y() * u_view(i, j, k).y()+ u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = u_view(i, j, k).x() * u_view(i, j, k).x() + u_view(i, j, k).y() * u_view(i, j, k).y() +
+                 u_view(i, j, k).z() * u_view(i, j, k).z();
 
 
-            return  uc*u2;//weight[velo] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return Mdata.weight[velo] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
 
@@ -92,6 +94,7 @@ public:
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i ) mutable
         {
+            #pragma unroll
             for (int vel = 0; vel < Nvel; vel++) {
                 if (mesh_view(i.x(), i.y(), i.z()) != 0) {
                     df_view(i.x(), i.y(), i.z(), vel) = f_equilibrium(i.x(), i.y(), i.z(), vel);
@@ -112,9 +115,6 @@ public:
 
 
         parallelFor<DeviceType>(begin1, end1, init_df);
-        //printf( "init_df \n");
-
-        std::cout << "Got here" << std::endl;
 
 
     };
@@ -126,12 +126,11 @@ public:
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
-        auto c = MODELDATA::c;
-        auto weight = MODELDATA::weight;
 
         auto omega = Constants->omega;
-        auto Nvel = MODELDATA::numberOfDiscreteVelocities;
+        const auto Nvel = MODELDATA::numberOfDiscreteVelocities;
 
+        D3Q27Data Mdata;
 
         auto f_equilibrium = [=]
         __cuda_callable__(
@@ -142,16 +141,16 @@ public:
         {
             RealType uc, u2;
 
-            uc = c[vel][0] * u_view(i, j, k).x()
-                 + c[vel][1] * u_view(i, j, k).y()
-                 + c[vel][2] * u_view(i, j, k).z();
+            uc = Mdata.c[vel][0] * u_view(i, j, k).x()
+                 + Mdata.c[vel][1] * u_view(i, j, k).y()
+                 + Mdata.c[vel][2] * u_view(i, j, k).z();
 
             u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
                  + u_view(i, j, k).y() * u_view(i, j, k).y()
                  + u_view(i, j, k).z() * u_view(i, j, k).z();
 
 
-            return weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return Mdata.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
         auto coll = [=]
@@ -160,12 +159,12 @@ public:
         {
 
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
-
+                #pragma unroll
                 for (int vel = 0; vel < Nvel; vel++) {
 
-                    auto feq = f_equilibrium(i.x(), i.y(), i.z(), vel);
                     df_post_view(i.x(), i.y(), i.z(), vel) =
-                            df_view(i.x(), i.y(), i.z(), vel) - (df_view(i.x(), i.y(), i.z(), vel) - feq) * omega;
+                            df_view(i.x(), i.y(), i.z(), vel) -
+                            (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega;
                 }
             } else {
                 for (int vel = 0; vel < Nvel; vel++) {
@@ -180,33 +179,34 @@ public:
         parallelFor<DeviceType>(begin, end, coll);
 
 
-
     }
+
 
     static void streaming(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto mesh_view = Data->meshFluid.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
-        auto c = MODELDATA::c;
-        auto Nvel = Constants->Nvel;
+
+        const auto Nvel = MODELDATA::numberOfDiscreteVelocities;
         auto dimX_int = Constants->dimX_int;
         auto dimY_int = Constants->dimY_int;
         auto dimZ_int = Constants->dimZ_int;
 
+        D3Q27Data Mdata;
 
         auto stream = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i  ) mutable
         {
             if (mesh_view(i.x(), i.y(), i.z()) != 0) { //TODO
-
+                #pragma unroll
                 for (int vel = 0; vel < Nvel; vel++) {
                     int id;
                     int jd;
                     int kd;
-                    id = i.x() + c[vel][0];
-                    jd = i.y() + c[vel][1];
-                    kd = i.z() + c[vel][2];
+                    id = i.x() + Mdata.c[vel][0];
+                    jd = i.y() + Mdata.c[vel][1];
+                    kd = i.z() + Mdata.c[vel][2];
 
 
                     if (id >= 0 && jd >= 0 && kd >= 0 && id < dimX_int && jd < dimY_int &&
@@ -238,10 +238,9 @@ public:
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
-        auto c = MODELDATA::c;
-        auto c_rev = MODELDATA::c_rev;
-        auto weight = MODELDATA::weight;
-        auto Nvel = Constants->Nvel;
+        const auto Nvel = MODELDATA::numberOfDiscreteVelocities;
+
+        D3Q27Data Mdata;
 
 
         auto bb_wall = [=]
@@ -252,17 +251,17 @@ public:
 
             Vertex vert = wall_view[i.x()].vertex;
 
-
+            #pragma unroll
             for (int vel = 0; vel < Nvel; vel++) {
 
                 int dx, dy, dz;
 
-                dx = vert.x - c[vel][0];
-                dy = vert.y - c[vel][1];
-                dz = vert.z - c[vel][2];
+                dx = vert.x - Mdata.c[vel][0];
+                dy = vert.y - Mdata.c[vel][1];
+                dz = vert.z - Mdata.c[vel][2];
 
                 if (mesh_view(dx, dy, dz) == 0) {
-                    df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, c_rev[vel]);
+                    df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, Mdata.c_rev[vel]);
                 }
 
             }
@@ -280,15 +279,17 @@ public:
             Vector norm = inlet_view[i.x()].normal;
             Vector velc = inlet_view[i.x()].velocity;
 
+            #pragma unroll
             for (int vel = 0; vel < Nvel; vel++) {
 
-                if (norm.x() * c[vel][0] + norm.y() * c[vel][1] + norm.z() * c[vel][2] > 0) {
-                    df_view(vert.x, vert.y, vert.z, c_rev[vel]) = df_post_view(vert.x, vert.y, vert.z, vel)
-                                                                  -
-                                                                  6 * weight[vel] * rho_view(vert.x, vert.y, vert.z) * (
-                                                                          c[vel][0] * velc.x() + c[vel][1] * velc.y() +
-                                                                          c[vel][2] * velc.z()
-                                                                  );
+                if (norm.x() * Mdata.c[vel][0] + norm.y() * Mdata.c[vel][1] + norm.z() * Mdata.c[vel][2] > 0) {
+                    df_view(vert.x, vert.y, vert.z, Mdata.c_rev[vel]) = df_post_view(vert.x, vert.y, vert.z, vel)
+                                                                        - 6 * Mdata.weight[vel] *
+                                                                          rho_view(vert.x, vert.y, vert.z) * (
+                                                                                  Mdata.c[vel][0] * velc.x() +
+                                                                                  Mdata.c[vel][1] * velc.y() +
+                                                                                  Mdata.c[vel][2] * velc.z()
+                                                                          );
 
                 }
 
@@ -308,16 +309,16 @@ public:
         {
             RealType uc, u2;
 
-            uc = c[vel][0] * u_view(i, j, k).x()
-                 + c[vel][1] * u_view(i, j, k).y()
-                 + c[vel][2] * u_view(i, j, k).z();
+            uc = Mdata.c[vel][0] * u_view(i, j, k).x()
+                 + Mdata.c[vel][1] * u_view(i, j, k).y()
+                 + Mdata.c[vel][2] * u_view(i, j, k).z();
 
             u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
                  + u_view(i, j, k).y() * u_view(i, j, k).y()
                  + u_view(i, j, k).z() * u_view(i, j, k).z();
 
 
-            return weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return Mdata.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
         auto bb_outlet = [=]
@@ -327,11 +328,11 @@ public:
             Vertex vert = outlet_view[i.x()].vertex;
             Vector norm = outlet_view[i.x()].normal;
             RealType density = outlet_view[i.x()].density;
-
+            #pragma unroll
             for (int vel = 0; vel < Nvel; vel++) {
 
-                if (norm.x() * c[vel][0] + norm.y() * c[vel][1] + norm.z() * c[vel][2] > 0) {
-                    df_view(vert.x, vert.y, vert.z, c_rev[vel]) = f_equilibrium(vert.x, vert.y, vert.z, vel);
+                if (norm.x() * Mdata.c[vel][0] + norm.y() * Mdata.c[vel][1] + norm.z() * Mdata.c[vel][2] > 0) {
+                    df_view(vert.x, vert.y, vert.z, Mdata.c_rev[vel]) = f_equilibrium(vert.x, vert.y, vert.z, vel);
 
                 }
 
@@ -343,6 +344,7 @@ public:
         parallelFor<DeviceType>(0, Constants->outlet_num, bb_outlet);
 
     }
+
 
     static void momentUpdate(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
@@ -452,6 +454,31 @@ public:
 
     }
 
+
+    static void pressureUpdate(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
+
+
+        auto p_view = Data->p.getView();
+        auto rho_view = Data->rho.getView();
+        auto mesh_view = Data->meshFluid.getView();
+        auto cs2 = Constants-> cs2;
+
+
+        auto pressure = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<3, int> &i)
+        mutable
+        {
+
+            p_view(i.x(), i.y(), i.z()) = rho_view(i.x(), i.y(), i.z())*cs2;
+
+        };
+
+        TNL::Containers::StaticArray<3, int> begin{0, 0, 0};
+        TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        parallelFor<DeviceType>(begin, end, pressure);
+    }
+
     static void errorEvaluation(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
         auto uStatArr_view = Data->u.getStorageArray().getConstView();
@@ -527,7 +554,7 @@ public:
     }
 
     auto velocityInletAverage(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
-/*todo
+    /*todo
         auto inlet_view = Data -> meshBoundaryInlet.getView();
 
         auto fetch_u = [=]
@@ -550,7 +577,7 @@ public:
                                                     TNL::Plus,
                                                     0.f );
         return u_avrg;
-*/
+        */
     };
 
     auto densityOutletAverage() {
@@ -567,8 +594,8 @@ public:
 
 
                return a+b;
-           };*/
-
+           };
+        */
     };
 
 };
