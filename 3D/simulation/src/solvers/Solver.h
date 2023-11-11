@@ -122,6 +122,7 @@ public:
         if (verbose) {
             std::cout << "Outlet non-dimensionalized.\n";
         }
+
     }
 
     void runSimulation() {

@@ -246,12 +246,13 @@ public:
 
         parallelFor<DeviceType>(0, Constants->inlet_num, bb_inlet);
 
-        auto f_equilibrium = [=]
+        auto f_equilibrium_outlet = [=]
         __cuda_callable__(
         const int &i,
         const int &j,
         const int &k,
-        const int &vel ) mutable
+        const int &vel,
+        const RealType &density) mutable
         {
             RealType uc, u2;
 
@@ -264,7 +265,7 @@ public:
                  + u_view(i, j, k).z() * u_view(i, j, k).z();
 
 
-            return MDATA.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return MDATA.weight[vel] * density * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
         auto bb_outlet = [=]
@@ -278,7 +279,7 @@ public:
             for (int vel = 0; vel < Nvel; vel++) {
 
                 if (norm.x() * MDATA.c[vel][0] + norm.y() * MDATA.c[vel][1] + norm.z() * MDATA.c[vel][2] > 0) {
-                    df_view(vert.x, vert.y, vert.z, MDATA.c_rev[vel]) = f_equilibrium(vert.x, vert.y, vert.z, vel);
+                    df_view(vert.x, vert.y, vert.z, MDATA.c_rev[vel]) = f_equilibrium_outlet(vert.x, vert.y, vert.z,vel, density );
 
                 }
 

@@ -35,7 +35,7 @@ int main() {
 
     //TODO: using Initialization = initializationEqulibrium;
     using ModelData = D3Q27Data;
-    using Collision = D3Q27CollisionUnrolled;
+    using Collision = D3Q27CollisionRolled;
     using Model = D3Q27<ModelData, Collision>; //TODO <Initialization >;
     //initialize timers
     Timer timerMeshingBoundary;
@@ -99,8 +99,8 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 0.05f;               //[s]
-    Constants->plot_every = 0.05f;         //[s]
+    Constants->time = 2.f;               //[s]
+    Constants->plot_every = 0.01f;         //[s]
     Constants->err_every = 0.002f;         //[s]
 
     //----------------------LOADING MESH------------------------------//
@@ -113,7 +113,7 @@ int main() {
     Mesher.meshingBoundaryWall(0);
     Mesher.meshingBoundaryConditionInlet(cuboidInlet1, NormalInlet1, VelocityInlet1, 1);
     Mesher.meshingBoundaryConditionInlet(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
-    Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 0.788f,
+    Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 1000.f,
                                           1); //if density - 1 then density is from noditself
     Mesher.compileBoundaryArrayInlets(1);
     Mesher.compileBoundaryArrayOutlets(1);
@@ -130,15 +130,13 @@ int main() {
 
     Solver.convertToLattice(1);
     Solver.initializeSimulation(VelocityInit, 1);
-    //outputerVTK::variablesLatticeVTK(Data, Constants, -1, 1);
     Solver.runSimulation();
-    outputerVTK::distributionFunctionVTK(Data, Constants, 3, 1);
 
     //----------------------TIMERS OUTPUT--------------------------//
 
 
     logger.writeHeader("Timing of sections 1) Whole loop");
-    //logger.writeSystemInformation(true);
+    logger.writeSystemInformation(true);
     Solver.timer_loop.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Collision");
