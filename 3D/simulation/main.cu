@@ -33,23 +33,30 @@ int main() {
     LBMConstantsPointer Constants;
     LBMDataPointer Data;
 
-    //TODO: using Initialization = initializationEqulibrium;
+    // model types selection
     using ModelData = D3Q27Data;
     using Collision = D3Q27CollisionRolled;
-    using Model = D3Q27<ModelData, Collision>; //TODO <Initialization >;
+    using Initialisation = D3Q27InitVariablesEq;
+
+    using Model = D3Q27<ModelData, Collision, Initialisation>;
+
     //initialize timers
     Timer timerMeshingBoundary;
     Logger logger(50, std::cout);
 
     //initialize methodical classes
-
-
     geometryMesherBoundary Mesher(Constants,
                                   Data);
 
     Solver<Model, ModelData> Solver(Constants,
                                     Data);
     //------------------------DATA IN--------------------------//
+
+    //set simulation initialization
+    VectorType Init(1.f, 0.f, 0.f);
+    Constants -> VelocityInit = Init;
+    Constants -> InitFileName = "variablesLattice199-backup-2-2-factor";
+
 
     //set meshing data
     Constants->resolution_factor = 3.f;                              // needs to be 1 or greater integer
@@ -82,7 +89,6 @@ int main() {
     VectorType NormalInlet2(0.f, 1.f, 0.f);
     VectorType NormalOutlet(0.f, -1.f, 0.f);
 
-    VectorType VelocityInit(0.f, 0.f, 0.f);
 
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
@@ -129,14 +135,14 @@ int main() {
     //----------------------SOLVING PROBLEM------------------------//
 
     Solver.convertToLattice(1);
-    Solver.initializeSimulation(VelocityInit, 1);
+    Solver.initializeSimulation( 1);
     Solver.runSimulation();
 
     //----------------------TIMERS OUTPUT--------------------------//
 
 
     logger.writeHeader("Timing of sections 1) Whole loop");
-    logger.writeSystemInformation(true);
+    //logger.writeSystemInformation(true);
     Solver.timer_loop.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Collision");

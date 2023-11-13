@@ -3,6 +3,7 @@
 
 struct LBMConstants {
     using RealType = typename LBMTraits::RealType;
+    using VectorType = typename LBMTraits::VectorType;
     using string = typename std::string;
 
     //mesh
@@ -53,6 +54,11 @@ struct LBMConstants {
     RealType Crho;
     RealType Cpressure;
     RealType Cu;
+
+    //initialization
+
+    VectorType VelocityInit = (0.f, 0.f, 0.f); //default
+    string InitFileName;
 
     //simulation
     RealType err;

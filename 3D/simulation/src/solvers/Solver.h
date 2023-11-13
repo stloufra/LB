@@ -43,7 +43,7 @@ public:
         Data = Data_;
     }
 
-    void initializeSimulation(Vector& initial_velocity, bool verbose) {
+    void initializeSimulation( bool verbose) {
         Constants->plot_every_it = std::ceil(Constants->plot_every / Constants->Ct);
         Constants->err_every_it = std::ceil(Constants->err_every / Constants->Ct);
         Constants->iterations = std::ceil(Constants->time / Constants->Ct);
@@ -68,7 +68,7 @@ public:
 
         nonDimensionalizeBoundary(verbose);
 
-        MODEL::initializeSim( Data, Constants, initial_velocity);
+        MODEL::initialization( Data, Constants);
 
         std::cout << "Initialization of simulation done." << std::endl;
     }
@@ -128,11 +128,6 @@ public:
     void runSimulation() {
 
         timer_loop.start();
-
-
-        std::cout << "Got here.\n";
-
-
 
         int k = 0;
         while(k<Constants -> iterations) //err>=10e-4)

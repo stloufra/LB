@@ -65,11 +65,12 @@ struct D3Q27CollisionRolled
                             df_view(i.x(), i.y(), i.z(), vel) -
                             (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega;
                 }
-            } else {
+            }
+            /*else {
                 for (int vel = 0; vel < Nvel; vel++) {
                     df_post_view(i.x(), i.y(), i.z(), vel) = 0;
                 }
-            }
+            }*/
         };
 
 
