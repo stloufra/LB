@@ -9,7 +9,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "../models/D3Q27/D3Q27.h"
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>

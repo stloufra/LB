@@ -3,7 +3,7 @@ TNL_INCLUDE_DIRS := -I /home/stloufra/.local/include
 CGAL_INCLUDE_DIRS := -I /usr/include/CGAL/include
 
 WITH_OPENMP := yes
-WITH_DEBUG := yes
+WITH_DEBUG := no
 WITH_CGAL := no
 
 # If TNL is installed on your system, the CUDA architecture can be detected

@@ -54,7 +54,7 @@ public:
 
     using RealType = float;
 
-    using DeviceType = TNL::Devices::Host;
+    using DeviceType = TNL::Devices::Cuda;
 
     using DeviceTypeHost = TNL::Devices::Host;
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;

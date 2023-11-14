@@ -23,7 +23,9 @@
 #include "./boundaryConditions/BounceBackWallHalf.h"
 #include "./boundaryConditions/InletVelocity.h"
 #include "./boundaryConditions/OutletDensityEquilibrium.h"
-#include "./moments/MomentDensityVelocity.h"
+#include "./moments/MomentDensityVelocityN27.h"
+#include "./moments/MomentDensityVelocityN19.h"
+#include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
 #include "./errorEvaluations/ErrorQuadratic.h"
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
@@ -69,6 +71,10 @@ public:
 
         Constants->Nvel = MODELTYPE::numberOfDiscreteVelocities;
 
+        if (verbose) {
+            std::cout << "Number of discrete vel = "<< Constants->Nvel<<".\n";
+        }
+
         initializeSimulationData( verbose );
 
         setArraySizes();
@@ -96,8 +102,9 @@ public:
 
         timer_loop.start();
 
+
         int k = 0;
-        while(k<Constants -> iterations) //err>=10e-4)
+        while(k<Constants -> iterations)
         {
 
 
