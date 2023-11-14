@@ -14,7 +14,6 @@
 #include "geometryObjectCuboid.h"
 #include "../traits/LBMTraits.h"
 #include "../data/LBMData.h"
-
 #include "../data/LBMConstants.h"
 
 #include <TNL/Algorithms/parallelFor.h>
