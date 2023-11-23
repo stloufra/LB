@@ -34,10 +34,9 @@ struct BounceBackWallHalf
 
             Vertex vert = wall_view[i.x()].vertex;
 
+            int dx, dy, dz;
 
             for (int vel = 0; vel < Nvel; vel++) {
-
-                int dx, dy, dz;
 
                 dx = vert.x - MD.c[vel][0];
                 dy = vert.y - MD.c[vel][1];
