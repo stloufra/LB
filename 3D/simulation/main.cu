@@ -6,10 +6,14 @@
 #include <TNL/Timer.h>
 #include <TNL/Logger.h>
 
-#include "src/geometry/geometryMesherBoundary.h"
-#include "src/geometry/geometryObjectCuboid.h"
-#include "src/solvers/Solver.h"
 #include "src/traits/LBMTraits.h"
+
+#include "src/geometry/geometryMesherBoundary.h"
+
+#include "src/geometry/geometryObjectCuboid.h"
+
+#include "src/solvers/SolverTurbulentLES.h"
+#include "src/solvers/SolverLaminar.h"
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
 
@@ -36,10 +40,10 @@ int main() {
     LBMDataPointer Data;
 
     // model types selection
-    using Model = D3Q15;
+    using Model = D3Q27;
 
-    using Initialisation = InitializationEquilibriumVariables<Model>;
-    using Collision = CollisionSRT<Model>;
+    using Initialisation = InitializationEquilibriumConstVector<Model>;
+    using Collision = CollisionSRTLaminar<Model>;
     using Streaming = StreamingAB<Model>;
     using BounceBackWall = BounceBackWallHalf<Model>;
     using Inlet = InletVelocity<Model>;
@@ -47,6 +51,8 @@ int main() {
     using Moments  = MomentDensityVelocityN15<Model>;  // SAME AS MODEL NUMBER
     using Error = ErrorQuadratic<Model>;
     using NonDim = NonDimensiolnaliseFactorsVelocity<Model>;
+
+    using Turbulence = OmegaLES<Model>;
 
 
     //initialize timers
@@ -57,32 +63,27 @@ int main() {
     geometryMesherBoundary Mesher(Constants,
                                   Data);
 
-    Solver< Model,
-            Initialisation,
-            Collision,
-            Streaming,
-            BounceBackWall,
-            Inlet,
-            Outlet,
-            Moments,
-            Error,
-            NonDim> Solver( Constants,
-                            Data);
+    SolverTurbulentLES<Model,
+                    Initialisation,
+                    Collision,
+                    Streaming,
+                    BounceBackWall,
+                    Inlet,
+                    Outlet,
+                    Moments,
+                    Turbulence,
+                    Error,
+                    NonDim> Solver( Constants,
+                                    Data);
 
 
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(1.f, 0.f, 0.f);
+    VectorType Init(0.f, -0.1f, 0.f);
     Constants->VelocityInit = Init;
     Constants->InitFileName = "variablesLattice199-backup-2-2-factor";
 
-
-    //set meshing data
-    Constants->resolution_factor = 3.f;                              // needs to be 1 or greater integer
-    Constants->additional_factor = 2.f;                              // at least 1 for additional wall around
-    Constants->point_outside = {0.f, 0.f, 20.f};
-    Constants->file_name = "Dummy.off";
 
     //set geometry objects
 
@@ -104,7 +105,7 @@ int main() {
 
 
     VectorType VelocityInlet1(0.f, 0.f, 0.1f);
-    VectorType VelocityInlet2(0.f, -0.2f, 0.f);
+    VectorType VelocityInlet2(0.f, -50.f, 0.f);
     VectorType NormalInlet1(0.f, 0.f, -1.f);
     VectorType NormalInlet2(0.f, 1.f, 0.f);
     VectorType NormalOutlet(0.f, -1.f, 0.f);
@@ -113,8 +114,8 @@ int main() {
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.5f;                   //[m/s] //TODO should be automatically calculated
-    Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
+    Constants->u_guess_fyz = 60.f;                   //[m/s]
+    Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density //TODO implement forcing
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->conversion_factor_fyz = 1.0f / 1000.f;    // convert to m
@@ -126,12 +127,12 @@ int main() {
     // set simulation parameters
 
     Constants->time = 2.f;               //[s]
-    Constants->plot_every = 0.01f;         //[s]
-    Constants->err_every = 0.002f;         //[s]
+    Constants->plot_every_it = 10;         //[it]
+    Constants->err_every_it = 5;         //[it]
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "mesh", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "meshSmall", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
@@ -146,11 +147,6 @@ int main() {
     Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();
 
-
-    //----------------------MESHING OUTPUT--------------------------//
-
-
-    outputerVTK::MeshVTK(Data, Constants, "meshIN");
 
     //----------------------SOLVING PROBLEM------------------------//
 

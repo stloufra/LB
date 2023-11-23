@@ -43,6 +43,8 @@ public:
     // variables
     ArrayTypeVariablesScalar rho;
     ArrayTypeVariablesScalar p;
+    ArrayTypeVariablesScalar omega;
+
     ArrayTypeVariablesVector u;
     ArrayTypeVariablesVector u_error;
 
