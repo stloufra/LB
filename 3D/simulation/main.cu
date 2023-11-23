@@ -36,17 +36,17 @@ int main() {
     LBMDataPointer Data;
 
     // model types selection
-    using Model = D3Q15;
+    using Model = D3Q27;
 
-    using Initialisation = InitializationEquilibriumVariables<Model>;
-    using Collision = CollisionSRT<Model>;
-    using Streaming = StreamingAB<Model>;
-    using BounceBackWall = BounceBackWallHalf<Model>;
-    using Inlet = InletVelocity<Model>;
-    using Outlet = OutletDensityEquilibrium<Model>;
-    using Moments  = MomentDensityVelocityN15<Model>;  // SAME AS MODEL NUMBER
-    using Error = ErrorQuadratic<Model>;
-    using NonDim = NonDimensiolnaliseFactorsVelocity<Model>;
+    using Initialisation        = InitializationEquilibriumVariables<Model>;
+    using Collision             = CollisionSRT<Model>;
+    using Streaming             = StreamingAB<Model>;
+    using BounceBackWall        = BounceBackWallHalfVector<Model>;
+    using Inlet                 = InletVelocity<Model>;
+    using Outlet                = OutletDensityEquilibrium<Model>;
+    using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
+    using Error                 = ErrorQuadratic<Model>;
+    using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
 
 
     //initialize timers
@@ -125,9 +125,9 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 2.f;               //[s]
-    Constants->plot_every = 0.01f;         //[s]
-    Constants->err_every = 0.002f;         //[s]
+    Constants->time = 10.f;                     //[s]
+    Constants->plot_every = 0.05f;              //[s]
+    Constants->err_every = 0.002f;              //[s]
 
     //----------------------LOADING MESH------------------------------//
 

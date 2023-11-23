@@ -18,15 +18,14 @@ struct CollisionSRT
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
     static void collision(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
-        auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
-        auto mesh_view = Data->meshFluid.getView();
-        auto df_view = Data->df.getView();
+        auto rho_ConstView = Data->rho.getConstView();
+        auto u_ConstView = Data->u.getConstView();
+        auto mesh_ConstView = Data->meshFluid.getConstView();
+        auto df_ConstView = Data->df.getConstView();
+
         auto df_post_view = Data->df_post.getView();
 
-
         auto omega = Constants->omega;
-
 
         MODELDATA MD;
 
@@ -34,23 +33,24 @@ struct CollisionSRT
 
         auto f_equilibrium = [=]
         __cuda_callable__(
-        const int &i,
-        const int &j,
-        const int &k,
+        const RealType &ux,
+        const RealType &uy,
+        const RealType &uz,
+        const RealType &rho,
         const int &vel ) mutable
         {
             RealType uc, u2;
 
-            uc = MD.c[vel][0] * u_view(i, j, k).x()
-                 + MD.c[vel][1] * u_view(i, j, k).y()
-                 + MD.c[vel][2] * u_view(i, j, k).z();
+            uc = MD.c[vel][0] * ux
+                 + MD.c[vel][1] * uy
+                 + MD.c[vel][2] * uz;
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
-                 + u_view(i, j, k).y() * u_view(i, j, k).y()
-                 + u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux * ux
+                 + uy * uy
+                 + uz * uz;
 
 
-            return MD.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return MD.weight[vel] * rho * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
         auto coll = [=]
@@ -58,20 +58,20 @@ struct CollisionSRT
         const TNL::Containers::StaticArray<3, int> &i )mutable
         {
 
-            if (mesh_view(i.x(), i.y(), i.z()) != 0) {
+            const RealType ux = u_ConstView(i.x(), i.y(), i.z()).x();
+            const RealType uy = u_ConstView(i.x(), i.y(), i.z()).y();
+            const RealType uz = u_ConstView(i.x(), i.y(), i.z()).z();
+            const RealType rho = rho_ConstView(i.x(), i.y(), i.z());
+
+            if (mesh_ConstView(i.x(), i.y(), i.z()) != 0) {
 
                 for (int vel = 0; vel < Nvel; vel++) {
 
                     df_post_view(i.x(), i.y(), i.z(), vel) =
-                            df_view(i.x(), i.y(), i.z(), vel) -
-                            (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega;
+                            df_ConstView(i.x(), i.y(), i.z(), vel) -
+                            (df_ConstView(i.x(), i.y(), i.z(), vel) - f_equilibrium(ux, uy, uz, rho, vel)) * omega;
                 }
             }
-            /*else {
-                for (int vel = 0; vel < Nvel; vel++) {
-                    df_post_view(i.x(), i.y(), i.z(), vel) = 0;
-                }
-            }*/
         };
 
 

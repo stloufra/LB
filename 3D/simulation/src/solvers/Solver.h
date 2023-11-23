@@ -20,7 +20,8 @@
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
 #include "./streamings//StreamingAB.h"
-#include "./boundaryConditions/BounceBackWallHalf.h"
+#include "./boundaryConditions/BounceBackWallHalfVector.h"
+#include "./boundaryConditions/BounceBackWallHalfMesh.h"
 #include "./boundaryConditions/InletVelocity.h"
 #include "./boundaryConditions/OutletDensityEquilibrium.h"
 #include "./moments/MomentDensityVelocityN27.h"
@@ -140,7 +141,7 @@ public:
                 timer_err.stop();
             }
 
-            if(k%Constants -> plot_every_it==0)
+            if(k%Constants -> plot_every_it==0 && k!=0)
             {
 
                 timer_output.start();

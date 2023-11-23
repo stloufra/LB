@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef BOUNCEBACKWALLHALF_H
-#define BOUNCEBACKWALLHALF_H
+#ifndef BOUNCEBACKWALLHALFVECTOR_H
+#define BOUNCEBACKWALLHALFVECTOR_H
 
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct BounceBackWallHalf
+struct BounceBackWallHalfVector
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -18,11 +18,13 @@ struct BounceBackWallHalf
 
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
-        auto wall_view = Data->meshBoundaryWall;
-        auto df_view = Data->df.getView();
-        auto df_post_view = Data->df_post.getView();
+        auto wall_ConstView = Data->meshBoundaryWall.getConstView();
+        auto df_post_ConstView = Data->df_post.getConstView();
+        auto mesh_ConstView = Data->meshFluid.getConstView();
+
+        auto df_View = Data->df.getView();
+
         const auto Nvel = Constants ->Nvel;
-        auto mesh_view = Data->meshFluid.getView();
 
         MODELDATA MD;
 
@@ -32,7 +34,7 @@ struct BounceBackWallHalf
         {
 
 
-            Vertex vert = wall_view[i.x()].vertex;
+            Vertex vert = wall_ConstView[i.x()].vertex;
 
             int dx, dy, dz;
 
@@ -42,8 +44,8 @@ struct BounceBackWallHalf
                 dy = vert.y - MD.c[vel][1];
                 dz = vert.z - MD.c[vel][2];
 
-                if (mesh_view(dx, dy, dz) == 0) {
-                    df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, MD.c_rev[vel]);
+                if (mesh_ConstView(dx, dy, dz) == 0) {
+                    df_View(vert.x, vert.y, vert.z, vel) = df_post_ConstView(vert.x, vert.y, vert.z, MD.c_rev[vel]);
                 }
 
             }

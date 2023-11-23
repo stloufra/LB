@@ -18,11 +18,12 @@ struct InletVelocity {
     static void inlet(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
 
-        auto inlet_view = Data->meshBoundaryInlet;
 
-        auto rho_view = Data->rho.getView();
-        auto df_view = Data->df.getView();
-        auto df_post_view = Data->df_post.getView();
+        auto inlet_ConstView = Data->meshBoundaryInlet.getConstView();
+        auto rho_ConstView = Data->rho.getConstView();
+        auto df_post_ConstView = Data->df_post.getConstView();
+
+        auto df_View = Data->df.getView();
 
         const auto Nvel = Constants->Nvel;
 
@@ -32,17 +33,17 @@ struct InletVelocity {
         __cuda_callable__(
         const TNL::Containers::StaticArray<1, int> &i  ) mutable
         {
-            Vertex vert = inlet_view[i.x()].vertex;
-            Vector norm = inlet_view[i.x()].normal;
-            Vector velc = inlet_view[i.x()].velocity;
+            Vertex vert = inlet_ConstView[i.x()].vertex;
+            Vector norm = inlet_ConstView[i.x()].normal;
+            Vector velc = inlet_ConstView[i.x()].velocity;
 
 
             for (int vel = 0; vel < Nvel; vel++) {
 
                 if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0) {
-                    df_view(vert.x, vert.y, vert.z, MD.c_rev[vel]) = df_post_view(vert.x, vert.y, vert.z, vel)
+                    df_View(vert.x, vert.y, vert.z, MD.c_rev[vel]) = df_post_ConstView(vert.x, vert.y, vert.z, vel)
                                                                      - 6 * MD.weight[vel] *
-                                                                       rho_view(vert.x, vert.y, vert.z) * (
+                                                                       rho_ConstView(vert.x, vert.y, vert.z) * (
                                                                                MD.c[vel][0] * velc.x() +
                                                                                MD.c[vel][1] * velc.y() +
                                                                                MD.c[vel][2] * velc.z()
