@@ -59,15 +59,18 @@ public:
     using DeviceTypeHost = TNL::Devices::Host;
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
 
+    using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
+    using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
+
     // ---------------- MESH -----------------------
     using ArrayTypeMeshHost = TNL::Containers::NDArray<         int,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceTypeHost>;
 
     using ArrayTypeMesh = TNL::Containers::NDArray<             int,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceType>;
 
     // ---------------- INLET/OUTLET -------------------
@@ -105,33 +108,33 @@ public:
     // -------------------- VARIABLES --------------------------
     using ArrayTypeVariablesScalar = TNL::Containers::NDArray<  RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceType>;
 
     using ArrayTypeVariablesVector = TNL::Containers::NDArray<  VectorType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceType>;
 
     using ArrayTypeVariablesScalarHost = TNL::Containers::NDArray<  RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceTypeHost>;
 
     using ArrayTypeVariablesVectorHost = TNL::Containers::NDArray<  VectorType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2>,
+                                                                NDArray3DSequenceType,
                                                                 DeviceTypeHost>;
 
     // -------------------- DFUNCTION --------------------------
     using ArrayTypeDFunction = TNL::Containers::NDArray<        RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2, 3>,
+                                                                NDArray4DSequenceType,
                                                                 DeviceType>;
 
     using ArrayTypeDFunctionHost = TNL::Containers::NDArray<    RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0, 0>,
-                                                                std::index_sequence<0, 1, 2, 3>,
+                                                                NDArray4DSequenceType,
                                                                 DeviceTypeHost>;
 
 
