@@ -61,6 +61,7 @@ public:
     using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
+
     using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
 
     // ---------------- MESH -----------------------
