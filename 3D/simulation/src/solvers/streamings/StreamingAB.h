@@ -55,12 +55,12 @@ struct StreamingAB
                     kd = i.z() + MD.c[vel][2];
 
 
-                    if (id >= 0 && jd >= 0 && kd >= 0 && id < dimX_int && jd < dimY_int &&
-                        kd < dimZ_int) {
+                    //if (id >= 0 && jd >= 0 && kd >= 0 && id < dimX_int && jd < dimY_int &&
+                    //kd < dimZ_int) {
                         if (mesh_ConstView(id, jd, kd) != 0) {
                             df_view(id, jd, kd, vel) = df_post_ConstView(i.x(), i.y(), i.z(), vel);
                         }
-                    }
+                    //}
                 }
             }
 

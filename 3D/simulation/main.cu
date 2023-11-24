@@ -39,7 +39,7 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumVariables<Model>;
-    using Collision             = CollisionSRT<Model>;
+    using Collision             = CollisionSRTunroll<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalfVector<Model>;
     using Inlet                 = InletVelocity<Model>;
@@ -113,7 +113,7 @@ int main() {
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.5f;                   //[m/s] //TODO should be automatically calculated
+    Constants->u_guess_fyz = 0.5f;                    //[m/s] //TODO should be automatically calculated
     Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -125,7 +125,7 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 10.f;                     //[s]
+    Constants->time = 0.001f;                     //[s]
     Constants->plot_every = 0.05f;              //[s]
     Constants->err_every = 0.002f;              //[s]
 

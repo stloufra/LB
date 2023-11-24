@@ -15,20 +15,27 @@
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Algorithms/reduce.h>
+
 #include "./collisions/CollisionSRT.h"
 #include "./collisions/CollisionSRTunroll.h"
+
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
+
 #include "./streamings//StreamingAB.h"
+
 #include "./boundaryConditions/BounceBackWallHalfVector.h"
 #include "./boundaryConditions/BounceBackWallHalfMesh.h"
 #include "./boundaryConditions/InletVelocity.h"
 #include "./boundaryConditions/OutletDensityEquilibrium.h"
+
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
+
 #include "./errorEvaluations/ErrorQuadratic.h"
+
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
 
 #include "../geometry/geometryMesherBoundary.h"
