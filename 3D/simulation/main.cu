@@ -74,7 +74,7 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 0.f);  //(1.f, 0.f, 0.f);
+    VectorType Init(0.f, 0.f, 0.2f); //change to 1 in z
     Constants->VelocityInit = Init;
     Constants->InitFileName = "variablesLattice199-backup-2-2-factor";
 
@@ -106,6 +106,7 @@ int main() {
 
     VectorType VelocityInlet1(0.f, 0.f, 0.1f);
     VectorType VelocityInlet2(0.f, -0.2f, 0.f);
+
     VectorType NormalInlet1(0.f, 0.f, -1.f);
     VectorType NormalInlet2(0.f, 1.f, 0.f);
     VectorType NormalOutlet(0.f, -1.f, 0.f);
@@ -114,6 +115,10 @@ int main() {
     d3 CenterInlet1{0.f, 140.f, -80.f};
     RealType RadiusInlet1 = 15.f;
     RealType MeanVelocityInlet1 = 0.1f;
+
+    d3 CenterInlet2{0.f, 200.f, 0.f};
+    RealType RadiusInlet2 = 4.5f;
+    RealType MeanVelocityInlet2 = 0.2f;
 
 
     //set physical data
@@ -131,8 +136,8 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 0.001f;                     //[s]
-    Constants->plot_every = 0.05f;              //[s]
+    Constants->time = 4.f;                     //[s]
+    Constants->plot_every = 0.01f;              //[s]
     Constants->err_every = 0.002f;              //[s]
 
     //----------------------LOADING MESH------------------------------//
@@ -144,7 +149,9 @@ int main() {
     timerMeshingBoundary.start();
     Mesher.meshingBoundaryWall(0);
     Mesher.meshingBoundaryConditionInletParaboloid(cuboidInlet1, CenterInlet1, RadiusInlet1, NormalInlet1, MeanVelocityInlet1, 1);
-    Mesher.meshingBoundaryConditionInletUniform(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
+    Mesher.meshingBoundaryConditionInletParaboloid(cuboidInlet2, CenterInlet2, RadiusInlet2, NormalInlet2, MeanVelocityInlet2, 1);
+
+    //Mesher.meshingBoundaryConditionInletUniform(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
     Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 1000.f,
                                           1); //if density = -1 then density is from nod itself
     Mesher.compileBoundaryArrayInlets(1);
@@ -165,8 +172,8 @@ int main() {
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
 
-    outputerVTK::variablesLatticeVTK(Data, Constants, 0, 1);
-    /*
+    //outputerVTK::variablesLatticeVTK(Data, Constants, 0, 1);
+
     Solver.runSimulation();
 
     //----------------------TIMERS OUTPUT--------------------------//
@@ -194,7 +201,7 @@ int main() {
     logger.writeHeader("Writting Output");
     Solver.timer_output.writeLog(logger, 0);
 
-    */
+
     return 0;
 }
 
