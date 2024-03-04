@@ -65,7 +65,7 @@ struct LBMConstants {
     string InitFileName;
 
     //turbulence
-    const RealType CLES = 0.173f;
+    const RealType CLES = 0.2f; //0.173f;
 
     //simulation
     RealType err;

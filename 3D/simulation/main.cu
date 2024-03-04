@@ -8,7 +8,7 @@
 
 #include "src/geometry/geometryMesherBoundary.h"
 #include "src/geometry/geometryObjectCuboid.h"
-#include "src/solvers/Solver.h"
+#include "src/solvers/SolverTurbulentLES.h"
 #include "src/traits/LBMTraits.h"
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
@@ -31,6 +31,7 @@ int main() {
 
     //------------------------INITIALIZATION--------------------------//
 
+    printf("Got here.");
 
     // initialize data carrier objects
     LBMConstantsPointer Constants;
@@ -40,13 +41,14 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionSRT<Model>;
+    using Collision             = CollisionSRTTurbulent<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Inlet                 = InletVelocity<Model>;
     using Outlet                = OutletDensityEquilibrium<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
+    using Turbulence            = OmegaLES<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
 
 
@@ -58,7 +60,7 @@ int main() {
     geometryMesherBoundary Mesher(Constants,
                                   Data);
 
-    Solver< Model,
+    SolverTurbulentLES< Model,
             Initialisation,
             Collision,
             Streaming,
@@ -66,6 +68,7 @@ int main() {
             Inlet,
             Outlet,
             Moments,
+            Turbulence,
             Error,
             NonDim> Solver( Constants,
                             Data);
@@ -74,57 +77,44 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 0.2f); //change to 1 in z
+    VectorType Init(20.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
-    Constants->InitFileName = "variablesLattice199-backup-2-2-factor";
 
 
     //set meshing data
-    Constants->resolution_factor = 3.f;                              // needs to be 1 or greater integer
-    Constants->additional_factor = 2.f;                              // at least 1 for additional wall around
-    Constants->point_outside = {0.f, 0.f, 20.f};
-    Constants->file_name = "Dummy.off";
+    Constants->resolution_factor = 0.2;
+    Constants->additional_factor = 4;                              // at least 1 for additional wall around
+    Constants->point_outside = {2, 1000, 0};
+    Constants->file_name = "Fany.off";
+
 
     //set geometry objects
 
     //resolution 3
-    geometryObjectCuboid cuboidInlet1({15.f, 160.f, -80.f},
-                                      {-15.f, 160.f, -80.f},
-                                      {15.f, 120.f, -79.5f},
+    geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
+                                      {150.f, 350.f, 408.f},
+                                      {158.f, 770.f, 408.f},
                                       3);
 
-    geometryObjectCuboid cuboidInlet2({15.f, 200.f, 15.f},
-                                      {-15.f, 200.f, 15.f},
-                                      {15.f, 199.5f, -5.f},
+
+    geometryObjectCuboid cuboidOutlet({3148.f, 350.f, -8.f},
+                                      {3148.f, 350.f, 408.f},
+                                      {3156.f, 770.f, 408.f},
                                       4);
 
-    geometryObjectCuboid cuboidOutlet({15.f, 0.f, 15.f},
-                                      {-15.f, 0.f, 15.f},
-                                      {15.f, 0.3f, -15.f},
-                                      5);
+    VectorType VelocityInlet(20.f, 0.f, 0.f);
 
 
-    VectorType VelocityInlet1(0.f, 0.f, 0.1f);
-    VectorType VelocityInlet2(0.f, -0.2f, 0.f);
+    VectorType NormalInlet(-1.f, 0.f, 0.f);
 
-    VectorType NormalInlet1(0.f, 0.f, -1.f);
-    VectorType NormalInlet2(0.f, 1.f, 0.f);
-    VectorType NormalOutlet(0.f, -1.f, 0.f);
+    VectorType NormalOutlet(1.f, 0.f, 0.f);
 
-    //parbolic profile
-    d3 CenterInlet1{0.f, 140.f, -80.f};
-    RealType RadiusInlet1 = 15.f;
-    RealType MeanVelocityInlet1 = 0.1f;
-
-    d3 CenterInlet2{0.f, 200.f, 0.f};
-    RealType RadiusInlet2 = 4.5f;
-    RealType MeanVelocityInlet2 = 0.2f;
 
 
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.5f;                    //[m/s] //TODO should be automatically calculated
+    Constants->u_guess_fyz = 25.5f;                    //[m/s] //TODO should be automatically calculated //0.5f
     Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -138,25 +128,22 @@ int main() {
 
     Constants->time = 4.f;                     //[s]
     Constants->plot_every = 0.01f;              //[s]
-    Constants->err_every = 0.002f;              //[s]
+    Constants->err_every = 0.001f;              //[s]
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "mesh", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
-    Mesher.meshingBoundaryWall(0);
-    Mesher.meshingBoundaryConditionInletParaboloid(cuboidInlet1, CenterInlet1, RadiusInlet1, NormalInlet1, MeanVelocityInlet1, 1);
-    Mesher.meshingBoundaryConditionInletParaboloid(cuboidInlet2, CenterInlet2, RadiusInlet2, NormalInlet2, MeanVelocityInlet2, 1);
-
-    //Mesher.meshingBoundaryConditionInletUniform(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
-    Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 1000.f,
-                                          1); //if density = -1 then density is from nod itself
-    Mesher.compileBoundaryArrayInlets(1);
-    Mesher.compileBoundaryArrayOutlets(1);
-    Mesher.arrayTransfer(1);
+        Mesher.meshingBoundaryWall(0);
+        Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, VelocityInlet, 1);
+        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
+                                              1); //TODO: if density = -1 then density is from nod itself
+        Mesher.compileBoundaryArrayInlets(1);
+        Mesher.compileBoundaryArrayOutlets(1);
+        Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();
 
 
@@ -180,7 +167,7 @@ int main() {
 
 
     logger.writeHeader("Timing of sections 1) Whole loop");
-    //logger.writeSystemInformation(true);
+    logger.writeSystemInformation(true);
     Solver.timer_loop.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Collision");

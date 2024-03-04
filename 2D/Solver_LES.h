@@ -468,13 +468,13 @@ public:
       const TNL::Containers::StaticArray<2, int> &i ) mutable
       {
           if (mesh_view(i.y()+1, i.x()+1) == 1) {
-              TensorType pi;
+              TensorType pi (0.f) ;
 
-              for (int alpha = 0; alpha < 2; alpha++) {
+              /*for (int alpha = 0; alpha < 2; alpha++) {
                   for (int beta = 0; beta < 2; beta++) {
                       pi(alpha)(beta) = 0;
                   }
-              }
+              }*/
 
 
               for (int k = 0; k < Nvel; k++) {

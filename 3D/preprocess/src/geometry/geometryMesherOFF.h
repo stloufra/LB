@@ -36,7 +36,7 @@ public:
     geometryMesherOFF() = delete;
 
     geometryMesherOFF(LBMConstantsPointer Constants_,
-                   LBMDataPointer Data_) {
+                      LBMDataPointer Data_) {
 
         Constants = Constants_;
         Data = Data_;
@@ -97,11 +97,16 @@ public:
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
-                    if (geometry_handler -> polyhedronInside(pnt_ask, pnt_outside)) {
+                    if (geometry_handler->polyhedronInside(pnt_ask, pnt_outside)) {
                         mesh_view(i, j, k) = 1;
                     }
                 }
             }
+        }
+
+        if (verbose) {
+            std::cout << "Number of lattice points is "
+                      << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
         }
 
         /*auto meshPoly = [=]
@@ -132,10 +137,10 @@ public:
     }
 
 
-    std::vector<boundaryConditionOutlet> boundary_vector_outlet_individual;
-    std::vector<boundaryConditionInlet> boundary_vector_inlet_individual;
-    std::vector<boundaryConditionInlet> boundary_vector_inlet;
-    std::vector<boundaryConditionOutlet> boundary_vector_outlet;
+    std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
+    std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
+    std::vector <boundaryConditionInlet> boundary_vector_inlet;
+    std::vector <boundaryConditionOutlet> boundary_vector_outlet;
 
     boundaryConditionInlet boundary_condition_inlet;
 

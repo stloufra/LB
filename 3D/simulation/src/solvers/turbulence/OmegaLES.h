@@ -36,9 +36,9 @@ struct OmegaLES {
         const auto Nvel = Constants->Nvel;
         const auto cs4 = Constants->cs4;
         const auto tau = Constants->tau;
-        const auto Cl = Constants -> Cl;
-        const auto Ct = Constants -> Ct;
-        const auto CLES = Constants -> CLES;
+        const auto Cl = Constants->Cl;
+        const auto Ct = Constants->Ct;
+        const auto CLES = Constants->CLES;
 
 
         MODELDATA MD;
@@ -70,19 +70,28 @@ struct OmegaLES {
         const TNL::Containers::StaticArray<3, int> &i ) mutable
         {
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
-                TensorType pi;
+                TensorType pi(0.f);
+
+                for (int vel = 0; vel < Nvel; vel++) {
+
+                    RealType feq = f_equilibrium(i.x(), i.y(), i.z(),vel);
+
+                    for (int alpha = 0; alpha < 3; alpha++) {
+                        for (int beta = 0; beta < 3; beta++) {
+
+                            pi(alpha)(beta) += MD.c[vel][alpha] * MD.c[vel][beta] * (df_view(i.x(), i.y(), i.z(), vel) -
+                                                                                     feq);
+
+                        }
+
+                    }
+                }
+
                 RealType PI = 0.f;
 
                 for (int alpha = 0; alpha < 3; alpha++) {
                     for (int beta = 0; beta < 3; beta++) {
-                        for (int vel = 0; vel < Nvel; vel++) {
-
-                            pi(alpha)(beta) += MD.c[vel][alpha] * MD.c[vel][beta] * (df_view(i.x(), i.y(), i.z(), vel) -
-                                                                                     f_equilibrium(i.x(), i.y(), i.z(),
-                                                                                                   vel));
-
-                        }
-                        PI += pi(alpha)(beta)*pi(alpha)(beta);
+                        PI += pi(alpha)(beta) * pi(alpha)(beta);
                     }
                 }
 
@@ -91,8 +100,7 @@ struct OmegaLES {
                 RealType tauLES;
 
                 tauLES = tau * 0.5f +
-                         sqrt(tau * tau + 2.f * CLES * Cl * Cl / (rho_view(i.x(), i.y(), i.z()) * cs4 * Ct * Ct) * PI) *
-                         0.5f;
+                         sqrt(tau * tau + 18.f * CLES / (rho_view(i.x(), i.y(), i.z())) * PI) * 0.5f;
 
                 omega_view(i.x(), i.y(), i.z()) = 1.f / tauLES;
             }

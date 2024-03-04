@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef OUTLETDENSITYEQUILIBRIUM_H
-#define OUTLETDENSITYEQUILIBRIUM_H
+#ifndef OUTLETNEIGHBOUREQUILIBRIUM_H
+#define OUTLETNEIGHBOUREQUILIBRIUM_H
 
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct OutletDensityEquilibrium {
+struct OutletNeighbourEquilibrium {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
     using VectorType = LBMTraits::VectorType;
@@ -61,9 +61,17 @@ struct OutletDensityEquilibrium {
 
             for (int vel = 0; vel < Nvel; vel++) {
 
-                if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0) {
-                    df_view(vert.x, vert.y, vert.z, MD.c_rev[vel]) = f_equilibrium_outlet(vert.x, vert.y, vert.z,
-                                                                                          vel, density);
+
+                if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <0) {
+
+                    int x = vert.x - norm.x();
+                    int y = vert.y - norm.y();
+                    int z = vert.z - norm.z();
+
+                    //TODO: check if node is fluid
+
+                    df_view(vert.x, vert.y, vert.z, vel) = f_equilibrium_outlet(x, y, z,
+                                                                                          vel, density); // without reverse (acting like a weird bounce back?!)
 
                 }
 

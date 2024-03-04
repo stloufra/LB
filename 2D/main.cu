@@ -9,7 +9,7 @@
 #include <TNL/Timer.h>
 #include <TNL/Logger.h>
 
-using DeviceType = TNL::Devices::Host;
+using DeviceType = TNL::Devices::Cuda; //sac
 using DeviceTypeHost = TNL::Devices::Host;
 
 using RealType = float;
@@ -25,10 +25,10 @@ int main()
     const RealType rho=1000.f;              //[kg/m3]
     const RealType ny=10e-5f;               //[m2/s]
 
-    const RealType ux=20.f;               //[m/s]
-    const RealType ux_guess=21.f;          //[m/s]
+    const RealType ux=10.f;               //[m/s] // 0.01 ok 0.1 fail
+    const RealType ux_guess=15.f;          //[m/s]
     const RealType uy=0.f;                  //[m/s]
-    const RealType u_max_lattice =0.07f;    //[0]
+    const RealType u_max_lattice =0.1f;    //[0]
 
     const RealType Fx = 0.f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
     const RealType Fy = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
@@ -80,7 +80,8 @@ int main()
 
     solver.output_VTK_lattice();
     solver.output_VTK(0,plot_every_it);
-    
+
+
     //solver run
     
     Timer timer_loop;
@@ -108,6 +109,7 @@ int main()
         solver.collision();
         timer_collision.stop();
 
+
         timer_streaming.start();
         solver.streaming();
         timer_streaming.stop();
@@ -121,15 +123,18 @@ int main()
         timer_postpro.stop();
 
         if(k%500==0 && k!=0)
-        {   
+        {
+
             timer_err.start();
             solver.Err();
-            printf("\n err=%e ux_center=%e uy_center=%e rho_center=%e k=%d\n",solver.err,solver.ux.getView()(Ny/2,Nx/2),solver.uy.getView()(Ny/2,Nx/2),solver.rho.getView()(Ny/2,Nx/2), k);
-            if (std::isnan(solver.err)) 
+            //printf("\n err=%e ux_center=%e uy_center=%e rho_center=%e k=%d\n",solver.err,solver.ux.getView()(Ny/2,Nx/2),solver.uy.getView()(Ny/2,Nx/2),solver.rho.getView()(Ny/2,Nx/2), k);
+            printf("\n err=%e, k=%d \n" ,solver.err, k);
+            if (std::isnan(solver.err))
              {
                 std::cout << "\n Error is NaN, breaking out.\n";
                 break;
              }
+
             timer_err.stop();
         }
 

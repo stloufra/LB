@@ -64,7 +64,7 @@ struct CollisionSRTTurbulent
 
                     df_post_view(i.x(), i.y(), i.z(), vel) =
                             df_view(i.x(), i.y(), i.z(), vel) -
-                            (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega_scale(i.x(), i.y(), i.z());
+                            (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega_view(i.x(), i.y(), i.z());
                 }
             }
             /*else {
