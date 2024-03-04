@@ -38,10 +38,10 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 4;                              // needs to be 1 or greater integer
-    Constants->additional_factor = 1;                              // at least 1 for additional wall around
-    Constants->point_outside = {20, 0, 0};
-    Constants->file_name = "les.off";
+    Constants->resolution_factor = 0.2;
+    Constants->additional_factor = 4;                              // at least 1 for additional wall around
+    Constants->point_outside = {2, 1000, 0};
+    Constants->file_name = "Fany.off";
 
 
     //----------------------HANDLING GEOMETRY--------------------------//
@@ -49,7 +49,7 @@ int main() {
 
     timer_handling.start();
         Handler->polyhedronFromFile(Constants, 0);        //read the file and store the polyhedron in the handler object
-        Handler->polyhedronBbox(0);               //compute the bounding box of the polyhedron
+        Handler->polyhedronBbox(1);               //compute the bounding box of the polyhedron
         Handler->writeToConstants(Constants);             //write the BBOX into the Constats
     timer_handling.stop();
 
@@ -67,10 +67,10 @@ int main() {
     //----------------------MESHING OUTPUT--------------------------//
 
     timer_VTK.start();
-        outputerVTK::MeshVTK(Data, Constants, "mesh");
+        outputerVTK::MeshVTK(Data, Constants, "meshLESsmall");
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "les_mesh");
+    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall");
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");

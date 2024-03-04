@@ -2,7 +2,7 @@
 # https://askubuntu.com/q/1351696
 SHELL := bash 
 
-include config.mk
+include ./src/config.mk
 
 SOURCES := $(wildcard *.cpp)
 TARGETS := $(SOURCES:%.cpp=%)

@@ -1,11 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include "Mesher.h"
-#include "Solver_sac.h"
-#include "Solver_LES.h"
-#include "Obj_cylinder.h"
-#include "Obj_rectangle.h"
-#include "Obj_template.h"
+#include "./src/geo/Mesher.h"
+#include "./src/sol/Solver_sac.h"
+#include "./src/sol/Solver_LES.h"
+#include "./src/geo/Obj_cylinder.h"
+#include "./src/geo/Obj_rectangle.h"
+#include "./src/geo/Obj_template.h"
 #include <TNL/Timer.h>
 #include <TNL/Logger.h>
 
