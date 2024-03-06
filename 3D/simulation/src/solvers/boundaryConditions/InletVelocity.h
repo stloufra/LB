@@ -18,7 +18,7 @@ struct InletVelocity {
     static void inlet(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
 
-        auto inlet_view = Data->meshBoundaryInlet;
+        auto inlet_view = Data->meshBoundaryInlet.getView();
 
         auto rho_view = Data->rho.getView();
         auto df_view = Data->df.getView();

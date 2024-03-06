@@ -18,7 +18,7 @@ struct BounceBackWallHalf
 
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
-        auto wall_view = Data->meshBoundaryWall;
+        auto wall_view = Data->meshBoundaryWall.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
         const auto Nvel = Constants ->Nvel;

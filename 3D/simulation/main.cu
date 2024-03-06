@@ -77,7 +77,7 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(20.f, 0.f, 0.f); //change to 1 in z
+    VectorType Init(5.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
@@ -93,16 +93,16 @@ int main() {
     //resolution 3
     geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
                                       {150.f, 350.f, 408.f},
-                                      {158.f, 770.f, 408.f},
+                                      {160.f, 770.f, 408.f},
                                       3);
 
 
-    geometryObjectCuboid cuboidOutlet({3148.f, 350.f, -8.f},
-                                      {3148.f, 350.f, 408.f},
+    geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
+                                      {3146.f, 345.f, 408.f},
                                       {3156.f, 770.f, 408.f},
                                       4);
 
-    VectorType VelocityInlet(20.f, 0.f, 0.f);
+    VectorType VelocityInlet(5.f, 0.f, 0.f);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
@@ -114,7 +114,7 @@ int main() {
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 25.5f;                    //[m/s] //TODO should be automatically calculated //0.5f
+    Constants->u_guess_fyz = 5.5f;                    //[m/s] //TODO should be automatically calculated //0.5f
     Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -132,7 +132,7 @@ int main() {
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall-er", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
@@ -159,15 +159,13 @@ int main() {
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
 
-    //outputerVTK::variablesLatticeVTK(Data, Constants, 0, 1);
-
     Solver.runSimulation();
 
     //----------------------TIMERS OUTPUT--------------------------//
 
 
     logger.writeHeader("Timing of sections 1) Whole loop");
-    logger.writeSystemInformation(true);
+    //logger.writeSystemInformation(true);
     Solver.timer_loop.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Collision");

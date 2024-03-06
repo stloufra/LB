@@ -18,7 +18,7 @@ struct OutletDensityEquilibrium {
     static void outlet(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
 
-        auto outlet_view = Data->meshBoundaryOutlet;
+        auto outlet_view = Data->meshBoundaryOutlet.getView();
         auto u_view = Data->u.getView();
 
         auto rho_view = Data->rho.getView();

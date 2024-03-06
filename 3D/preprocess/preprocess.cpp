@@ -38,8 +38,8 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.2;
-    Constants->additional_factor = 4;                              // at least 1 for additional wall around
+    Constants->resolution_factor = 0.1;
+    Constants->additional_factor = 6;                              // at least 1 for additional wall around
     Constants->point_outside = {2, 1000, 0};
     Constants->file_name = "Fany.off";
 
@@ -70,7 +70,7 @@ int main() {
         outputerVTK::MeshVTK(Data, Constants, "meshLESsmall");
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall");
+    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall-er");
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");
