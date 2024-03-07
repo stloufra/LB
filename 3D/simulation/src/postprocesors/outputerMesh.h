@@ -128,6 +128,11 @@ public:
             std::cout << "Dimension Y: " << Constants->dimY_int << std::endl;
             std::cout << "Dimension Z: " << Constants->dimZ_int << std::endl;
             std::cout << "BBminx: " << Constants->BBminx << std::endl;
+            std::cout << "BBminy: " << Constants->BBminy << std::endl;
+            std::cout << "BBminz: " << Constants->BBminz << std::endl;
+            std::cout << "BBmaxx: " << Constants->BBmaxx << std::endl;
+            std::cout << "BBmaxy: " << Constants->BBmaxy << std::endl;
+            std::cout << "BBmaxz: " << Constants->BBmaxz << std::endl;
         }
 
         Data->meshFluidHost.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);

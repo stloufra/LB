@@ -31,7 +31,6 @@ int main() {
 
     //------------------------INITIALIZATION--------------------------//
 
-    printf("Got here.");
 
     // initialize data carrier objects
     LBMConstantsPointer Constants;
@@ -77,7 +76,7 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(5.f, 0.f, 0.f); //change to 1 in z
+    VectorType Init(0.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
@@ -93,14 +92,13 @@ int main() {
     //resolution 3
     geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
                                       {150.f, 350.f, 408.f},
-                                      {160.f, 770.f, 408.f},
-                                      3);
+                                      {160.f, 770.f, 408.f},-1);
 
 
     geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
                                       {3146.f, 345.f, 408.f},
                                       {3156.f, 770.f, 408.f},
-                                      4);
+                                      -2);
 
     VectorType VelocityInlet(5.f, 0.f, 0.f);
 
@@ -108,6 +106,14 @@ int main() {
     VectorType NormalInlet(-1.f, 0.f, 0.f);
 
     VectorType NormalOutlet(1.f, 0.f, 0.f);
+
+    //inlet parabolic data
+
+    d3 inletCenter = {153.629 , 556.456, 300};
+    RealType inletDimX = 0.f;
+    RealType inletDimY = 400.f;
+    RealType inletDimZ = 200.f;
+    RealType meanVelocityInlet = 5.f;
 
 
 
@@ -138,9 +144,11 @@ int main() {
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
-        Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, VelocityInlet, 1);
+        Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
+        //Mesher.meshingBoundaryConditionInletUniform( cuboidInlet, NormalInlet, VelocityInlet, 0);
+
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
-                                              1); //TODO: if density = -1 then density is from nod itself
+                                                1); //TODO: if density = -1 then density is from nod itself
         Mesher.compileBoundaryArrayInlets(1);
         Mesher.compileBoundaryArrayOutlets(1);
         Mesher.arrayTransfer(1);

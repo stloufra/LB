@@ -31,16 +31,19 @@ typedef struct {
     Vertex vertex;
     Vector normal;
     Vector velocity;
+    bool regular;
 } boundaryConditionInlet;
 
 typedef struct {
     Vertex vertex;
     Vector normal;
     float density;
+    bool regular;
 } boundaryConditionOutlet;
 
 typedef struct {
     Vertex vertex;
+    bool regular;
 } boundaryConditionWall;
 
 typedef struct {
