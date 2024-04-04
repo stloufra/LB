@@ -27,6 +27,7 @@
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
+#include "./moments/MomentTimeAvg.h"
 #include "./errorEvaluations/ErrorQuadratic.h"
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
 

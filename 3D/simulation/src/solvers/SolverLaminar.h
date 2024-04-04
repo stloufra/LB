@@ -27,6 +27,7 @@
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
+#include "./moments/MomentTimeAvg.h"
 #include "./errorEvaluations/ErrorQuadratic.h"
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
 
@@ -127,6 +128,7 @@ public:
             timer_momentsUpdate.stop();
 
 
+
             if(k%Constants -> err_every_it==0 && k!=0)
             {
                 timer_err.start();
@@ -216,6 +218,7 @@ public:
     Timer timer_momentsUpdate;
     Timer timer_err;
     Timer timer_output;
+    Timer timer_timeAvg;
 
 };
 

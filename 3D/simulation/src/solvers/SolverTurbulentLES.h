@@ -27,6 +27,7 @@
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
+#include "./moments/MomentTimeAvg.h"
 #include "./turbulence/OmegaLES.h"
 #include "./errorEvaluations/ErrorQuadratic.h"
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
@@ -48,7 +49,8 @@ template<   typename MODELTYPE,
             typename MOMENTTYPE,
             typename TURBULENCETYPE,
             typename ERRORTYPE,
-            typename NONDYM>
+            typename NONDYM,
+            typename MOMENTTIMEAVGTYPE>
 
 class SolverTurbulentLES {
     using RealType = LBMTraits::RealType;
@@ -143,6 +145,12 @@ public:
                 MOMENTTYPE::momentUpdate(Data, Constants);
             timer_momentsUpdate.stop();
 
+            if(k > (Constants->iterations - Constants->iterationsMomentAvg))
+            {
+                timer_timeAvg.start();
+                    MOMENTTIMEAVGTYPE::momentAdd(Data, Constants);
+                timer_timeAvg.stop();
+            }
 
             if(k%Constants -> err_every_it==0 && k!=0)
             {
@@ -167,6 +175,18 @@ public:
 
             k++;
 
+        }
+
+        //Time averaging
+        if(Constants->timeAveraged == false)
+        {
+            timer_timeAvg.start();
+                MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+            timer_timeAvg.stop();
+
+            timer_output.start();
+                outputerVTK::variablesTimeAvgVTK(Data, Constants, 1);
+            timer_output.stop();
         }
 
 
@@ -209,8 +229,12 @@ public:
     void setArraySizes(){
 
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->rhoTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
         Data->omega.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->rho_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
@@ -238,6 +262,7 @@ public:
     Timer timer_momentsUpdate;
     Timer timer_err;
     Timer timer_output;
+    Timer timer_timeAvg;
 
 };
 

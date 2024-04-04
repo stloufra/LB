@@ -20,10 +20,16 @@ struct InitializationEquilibriumConstVector {
     static void initialization(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto rho_view = Data->rho.getView();
         auto u_view = Data->u.getView();
+        auto p_view = Data->p.getView();
+
+        auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
+        auto uTimeAvg_view = Data->uTimeAvg.getView();
+
         auto mesh_view = Data->meshFluid.getView();
+
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
-        auto p_view = Data->p.getView();
+
         auto inlet_view = Data->meshBoundaryInlet.getView();
 
         auto Cl = Constants->Cl;
@@ -31,12 +37,17 @@ struct InitializationEquilibriumConstVector {
         auto Cm = Constants->Cm;
         auto Cu_inverse = Constants->Cu_inverse;
         auto Cu = Constants->Cu;
+
         const auto Nvel = Constants->Nvel;
+
         auto rho_0 = Constants->rho_fyz;
 
         MODELDATA MD;
 
         VectorType u_0 = Constants->VelocityInit;
+
+        Constants->TimeAvgCounter = 0;
+        Constants->timeAveraged = false;
 
 
         auto f_equilibrium = [=]
@@ -76,6 +87,11 @@ struct InitializationEquilibriumConstVector {
                 u_view(i.x(), i.y(), i.z()).y() = 0.f;
                 u_view(i.x(), i.y(), i.z()).z() = 0.f;
             }
+
+            rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
+            uTimeAvg_view(i.x(), i.y(), i.z()).x() = 0.f;
+            uTimeAvg_view(i.x(), i.y(), i.z()).y() = 0.f;
+            uTimeAvg_view(i.x(), i.y(), i.z()).z() = 0.f;
         };
 
 

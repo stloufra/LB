@@ -79,6 +79,9 @@ struct LBMConstants {
 
     int iterations;
 
+    int iterationsMomentAvg;        // number of iteration to be time averaged
+    int TimeAvgCounter;             // number of iterations to be time averaged counter
+    bool timeAveraged;              // if true, already time averaged
 
 
 

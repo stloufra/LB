@@ -49,6 +49,7 @@ int main() {
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
+    using TimeAvg               = MomentTimeAvg<Model>;
 
 
     //initialize timers
@@ -69,8 +70,11 @@ int main() {
             Moments,
             Turbulence,
             Error,
-            NonDim> Solver( Constants,
+            NonDim,
+            TimeAvg> Solver( Constants,
                             Data);
+
+    bool runSim = true;
 
 
     //------------------------DATA IN--------------------------//
@@ -132,9 +136,10 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 4.f;                     //[s]
+    Constants->time = 0.4f;                      //[s]
     Constants->plot_every = 0.01f;              //[s]
     Constants->err_every = 0.001f;              //[s]
+    Constants->iterationsMomentAvg = 1000;       //[1]
 
     //----------------------LOADING MESH------------------------------//
 
@@ -164,10 +169,13 @@ int main() {
 
     //----------------------SOLVING PROBLEM------------------------//
 
+
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
 
-    Solver.runSimulation();
+    if(runSim) {
+        Solver.runSimulation();
+    }
 
     //----------------------TIMERS OUTPUT--------------------------//
 
@@ -193,6 +201,9 @@ int main() {
     logger.writeSeparator();
     logger.writeHeader("Writting Output");
     Solver.timer_output.writeLog(logger, 0);
+    logger.writeSeparator();
+    logger.writeHeader("Time Averaging");
+    Solver.timer_timeAvg.writeLog(logger, 0);
 
 
     return 0;

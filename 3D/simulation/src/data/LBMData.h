@@ -43,10 +43,14 @@ public:
     // variables
     ArrayTypeVariablesScalar rho;
     ArrayTypeVariablesScalar p;
-    ArrayTypeVariablesScalar omega;
-
     ArrayTypeVariablesVector u;
+
+    ArrayTypeVariablesScalar rhoTimeAvg;
+    ArrayTypeVariablesScalar pTimeAvg;
+    ArrayTypeVariablesVector uTimeAvg;
+
     ArrayTypeVariablesVector u_error;
+    ArrayTypeVariablesScalar omega;
 
     ArrayTypeVariablesScalarHost rho_out;
     ArrayTypeVariablesScalarHost p_out;
