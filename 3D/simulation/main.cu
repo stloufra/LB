@@ -44,7 +44,7 @@ int main() {
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Inlet                 = InletVelocity<Model>;
-    using Outlet                = OutletDensityEquilibrium<Model>;
+    using Outlet                = OutletNeighbourEquilibrium<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;

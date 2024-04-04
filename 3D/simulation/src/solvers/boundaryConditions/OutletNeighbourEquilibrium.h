@@ -24,6 +24,7 @@ struct OutletNeighbourEquilibrium {
         auto rho_view = Data->rho.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
+        auto mesh_view = Data->meshFluid.getView();
 
         const auto Nvel = Constants->Nvel;
 
@@ -51,6 +52,27 @@ struct OutletNeighbourEquilibrium {
             return MD.weight[vel] * density * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
+        auto f_equilibrium = [=]
+        __cuda_callable__(
+        const int &i,
+        const int &j,
+        const int &k,
+        const int &vel ) mutable
+        {
+            RealType uc, u2;
+
+            uc = MD.c[vel][0] * u_view(i, j, k).x()
+                 + MD.c[vel][1] * u_view(i, j, k).y()
+                 + MD.c[vel][2] * u_view(i, j, k).z();
+
+            u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
+                 + u_view(i, j, k).y() * u_view(i, j, k).y()
+                 + u_view(i, j, k).z() * u_view(i, j, k).z();
+
+
+            return MD.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+        };
+
         auto bb_outlet = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<1, int> &i  ) mutable
@@ -58,25 +80,43 @@ struct OutletNeighbourEquilibrium {
             Vertex vert = outlet_view[i.x()].vertex;
             Vector norm = outlet_view[i.x()].normal;
             RealType density = outlet_view[i.x()].density;
+            bool reg = outlet_view[i.x()].regular;
 
             for (int vel = 0; vel < Nvel; vel++) {
 
 
-                if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <0) {
+                if(norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0) {
 
-                    int x = vert.x - norm.x();
-                    int y = vert.y - norm.y();
-                    int z = vert.z - norm.z();
+                    if(reg) {
 
-                    //TODO: check if node is fluid
 
-                    df_view(vert.x, vert.y, vert.z, vel) = f_equilibrium_outlet(x, y, z,
-                                                                                          vel, density); // without reverse (acting like a weird bounce back?!)
+                        int xNeigh = vert.x + MD.c[vel][0];
+                        int yNeigh = vert.y + MD.c[vel][1];
+                        int zNeigh = vert.z + MD.c[vel][2];
 
+                        RealType fEqNeigh = f_equilibrium(xNeigh, yNeigh, zNeigh, vel);
+                        RealType fNeqNeigh = df_view(xNeigh, yNeigh, zNeigh, vel);
+                        RealType fEqBC = f_equilibrium_outlet(vert.x, vert.y, vert.z, vel, density);
+
+                        df_view(vert.x, vert.y, vert.z, vel) = fEqBC + (fEqNeigh - fNeqNeigh);
+                    }
+                    else{
+                        int xNeigh = vert.x + MD.c[vel][0];
+                        int yNeigh = vert.y + MD.c[vel][1];
+                        int zNeigh = vert.z + MD.c[vel][2];
+
+                        if (mesh_view(xNeigh, yNeigh, zNeigh) > 0) {
+
+                            RealType fEqNeigh = f_equilibrium(xNeigh, yNeigh, zNeigh, vel);
+                            RealType fNeqNeigh = df_view(xNeigh, yNeigh, zNeigh, vel);
+                            RealType fEqBC = f_equilibrium_outlet(vert.x, vert.y, vert.z, vel, density);
+
+                            df_view(vert.x, vert.y, vert.z, vel) = fEqBC + (fEqNeigh - fNeqNeigh);
+                        }
+
+                    }
                 }
-
             }
-
         };
 
 
