@@ -8,8 +8,7 @@
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct CollisionSRTunroll
-{
+struct CollisiionSRTunroll {
 
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -28,6 +27,8 @@ struct CollisionSRTunroll
         auto omega = Constants->omega;
 
 
+        MODELDATA MD;
+
         auto coll = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i )mutable
@@ -39,6 +40,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 0) -
                                                         0.296296f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
+                                                         + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -50,9 +60,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 1) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (u_view(i.x(), i.y(), i.z()).x())
-                                                         + 4.5f * (u_view(i.x(), i.y(), i.z()).x())
-                                                           * (u_view(i.x(), i.y(), i.z()).x())
+                                                         + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -64,9 +80,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 2) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (-u_view(i.x(), i.y(), i.z()).x())
-                                                         + 4.5f * (-u_view(i.x(), i.y(), i.z()).x())
-                                                           * (-u_view(i.x(), i.y(), i.z()).x())
+                                                         + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -78,9 +100,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 3) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (-u_view(i.x(), i.y(), i.z()).z())
-                                                         + 4.5f * (-u_view(i.x(), i.y(), i.z()).z())
-                                                           * (-u_view(i.x(), i.y(), i.z()).z())
+                                                         + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -92,9 +120,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 4) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (u_view(i.x(), i.y(), i.z()).z())
-                                                         + 4.5f * (u_view(i.x(), i.y(), i.z()).z())
-                                                           * (u_view(i.x(), i.y(), i.z()).z())
+                                                         + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -106,10 +140,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 5) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (-u_view(i.x(), i.y(), i.z()).y()
-                                                        )
-                                                         + 4.5f * (-u_view(i.x(), i.y(), i.z()).y())
-                                                           * (-u_view(i.x(), i.y(), i.z()).y())
+                                                         + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -121,15 +160,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 6) -
                                                         0.074074f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (
-                                                                +u_view(i.x(), i.y(), i.z()).y()
-                                                        )
-                                                         + 4.5f * (
-                                                                +u_view(i.x(), i.y(), i.z()).y()
-                                                        )
-                                                           * (
-                                                                   +u_view(i.x(), i.y(), i.z()).y()
-                                                           )
+                                                         + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -141,15 +180,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 7) -
                                                         0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                                  - u_view(i.x(), i.y(), i.z()).z())
-                                                         + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                           * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                              - u_view(i.x(), i.y(), i.z()).z())
+                                                         + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -161,15 +200,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 8) -
                                                         0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                                  + u_view(i.x(), i.y(), i.z()).z())
-                                                         + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                           * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                              + u_view(i.x(), i.y(), i.z()).z())
+                                                         + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -181,15 +220,15 @@ struct CollisionSRTunroll
                                                        (df_view(i.x(), i.y(), i.z(), 9) -
                                                         0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                         (1.f
-                                                         + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                                  + u_view(i.x(), i.y(), i.z()).z())
-                                                         + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                           * (u_view(i.x(), i.y(), i.z()).x()
-
-                                                              + u_view(i.x(), i.y(), i.z()).z())
+                                                         + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                  + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                  + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                         + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                           * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                              + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                              + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                          - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                    u_view(i.x(), i.y(), i.z()).x()
                                                                    + u_view(i.x(), i.y(), i.z()).y() *
@@ -201,15 +240,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 10) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-
-                                                               - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 0 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -221,15 +260,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 11) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                            )
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -241,15 +280,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 12) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                            )
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -261,15 +300,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 13) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (
-                                                                 +u_view(i.x(), i.y(), i.z()).y()
-                                                                 - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (
-                                                                 +u_view(i.x(), i.y(), i.z()).y()
-                                                                 - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (
-                                                                    +u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -281,15 +320,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 14) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (
-                                                                 -u_view(i.x(), i.y(), i.z()).y()
-                                                                 + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (
-                                                                 -u_view(i.x(), i.y(), i.z()).y()
-                                                                 + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (
-                                                                    -u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -301,15 +340,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 15) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                            )
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -321,15 +360,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 16) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                         )
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                            )
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 0 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 0 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -341,15 +380,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 17) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (
-                                                                 +u_view(i.x(), i.y(), i.z()).y()
-                                                                 + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (
-                                                                 +u_view(i.x(), i.y(), i.z()).y()
-                                                                 + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (
-                                                                    +u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -361,15 +400,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 18) -
                                                          0.018519f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (
-                                                                 -u_view(i.x(), i.y(), i.z()).y()
-                                                                 - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (
-                                                                 -u_view(i.x(), i.y(), i.z()).y()
-                                                                 - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (
-                                                                    -u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (0 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -381,15 +420,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 19) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                               - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -401,15 +440,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 20) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                               + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -421,15 +460,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 21) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                               + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -441,15 +480,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 22) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                               - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -461,15 +500,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 23) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                               - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -481,15 +520,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 24) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                               + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -501,15 +540,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 25) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                   - u_view(i.x(), i.y(), i.z()).y()
-                                                                   - u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (-u_view(i.x(), i.y(), i.z()).x()
-                                                                    - u_view(i.x(), i.y(), i.z()).y()
-                                                                    - u_view(i.x(), i.y(), i.z()).z())
-                                                            * (-u_view(i.x(), i.y(), i.z()).x()
-                                                               - u_view(i.x(), i.y(), i.z()).y()
-                                                               - u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + -1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (-1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + -1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -521,15 +560,15 @@ struct CollisionSRTunroll
                                                         (df_view(i.x(), i.y(), i.z(), 26) -
                                                          0.004630f * rho_view(i.x(), i.y(), i.z()) *
                                                          (1.f
-                                                          + 3.f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                   + u_view(i.x(), i.y(), i.z()).y()
-                                                                   + u_view(i.x(), i.y(), i.z()).z())
-                                                          + 4.5f * (u_view(i.x(), i.y(), i.z()).x()
-                                                                    + u_view(i.x(), i.y(), i.z()).y()
-                                                                    + u_view(i.x(), i.y(), i.z()).z())
-                                                            * (u_view(i.x(), i.y(), i.z()).x()
-                                                               + u_view(i.x(), i.y(), i.z()).y()
-                                                               + u_view(i.x(), i.y(), i.z()).z())
+                                                          + 3.f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                   + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                          + 4.5f * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                                    + 1 * u_view(i.x(), i.y(), i.z()).z())
+                                                            * (1 * u_view(i.x(), i.y(), i.z()).x()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).y()
+                                                               + 1 * u_view(i.x(), i.y(), i.z()).z())
                                                           - 1.5f * (u_view(i.x(), i.y(), i.z()).x() *
                                                                     u_view(i.x(), i.y(), i.z()).x()
                                                                     + u_view(i.x(), i.y(), i.z()).y() *
@@ -539,8 +578,38 @@ struct CollisionSRTunroll
                                                          )) * omega;
 
 
-            }
+            } else {
 
+                df_post_view(i.x(), i.y(), i.z(), 0) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 1) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 2) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 3) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 4) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 5) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 6) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 7) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 8) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 9) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 10) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 11) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 12) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 13) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 14) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 15) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 16) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 17) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 18) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 19) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 20) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 21) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 22) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 23) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 24) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 25) = 0;
+                df_post_view(i.x(), i.y(), i.z(), 26) = 0;
+
+
+            }
         };
 
 

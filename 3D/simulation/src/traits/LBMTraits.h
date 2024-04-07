@@ -31,16 +31,19 @@ typedef struct {
     Vertex vertex;
     Vector normal;
     Vector velocity;
+    bool regular;
 } boundaryConditionInlet;
 
 typedef struct {
     Vertex vertex;
     Vector normal;
     float density;
+    bool regular;
 } boundaryConditionOutlet;
 
 typedef struct {
     Vertex vertex;
+    bool regular;
 } boundaryConditionWall;
 
 typedef struct {
@@ -58,8 +61,10 @@ public:
 
     using DeviceTypeHost = TNL::Devices::Host;
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
+    using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
+
     using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
 
     // ---------------- MESH -----------------------

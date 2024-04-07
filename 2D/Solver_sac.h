@@ -272,7 +272,7 @@ public:
     const RealType (&weight)[9] = this->weight;
     const int (&c_rever)[9] = this->c_rever;
 
-    RealType omega = this->omega;
+
     const RealType Cu_inverse = this->Cu_inverse;
 
 

@@ -25,6 +25,7 @@ class geometryMesherBoundary {
 public:
 
     using RealType = typename LBMTraits::RealType;
+    using VectorType = typename LBMTraits::VectorType;
     using DeviceType = typename LBMTraits::DeviceType;
     using DeviceTypeHost = typename LBMTraits::DeviceTypeHost;
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
@@ -43,9 +44,18 @@ public:
         Data = Data_;
     }
 
+    void meshingBoundaryConditionInletUniform(geometryObjectCuboid &cuboid,
+                                              const Vector &normal_out,
+                                              const Vector &velocity_in,
+                                              bool verbose) {
+        // Function to fill the inlet velocities with uniform velocity profile.
+        // So far supports only inlets which are perpendicular to one of the axis.
 
-    void meshingBoundaryConditionInlet(geometryObjectCuboid &cuboid, const Vector& normal_in, const Vector& velocity_in, bool verbose) {
-        double lookx, looky, lookz;
+        if (std::abs(normal_out.x() + normal_out.y() + normal_out.z()) != 1) {
+            printf("Your normal is not tangent to one of the axes.\n");
+        }
+
+        RealType lookx, looky, lookz;
 
 
         int num = 0;
@@ -67,15 +77,23 @@ public:
                     d3 pnt_ask = {lookx, looky, lookz};
 
                     if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
-                        Data->meshFluidHost(i, j, k) = cuboid.id;
+                        if (neighboursFluidSearch(pnt_ask, 0)) {
 
+                            boundary_condition_inlet.normal = normal_out;
+                            boundary_condition_inlet.velocity = velocity_in;
+                            boundary_condition_inlet.vertex = {i, j, k};
 
-                        boundary_condition_inlet.normal = normal_in;
-                        boundary_condition_inlet.velocity = velocity_in;
-                        boundary_condition_inlet.vertex = {i, j, k};
+                            if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
+                                boundary_condition_inlet.regular = 0;
+                            } else {
+                                boundary_condition_inlet.regular = 1;
+                            }
 
-                        boundary_vector_inlet.push_back(boundary_condition_inlet);
-                        num += 1;
+                            Data->meshFluidHost(i, j, k) = cuboid.id;
+
+                            boundary_vector_inlet.push_back(boundary_condition_inlet);
+                            num += 1;
+                        }
                     }
                 }
             }
@@ -88,11 +106,182 @@ public:
         }
     }
 
+
+    void meshingBoundaryConditionInletParaboloidCircle(geometryObjectCuboid &cuboid,      // location of inlet
+                                                       const d3 &inletCenter,             // center of inlet
+                                                       const RealType &inletRadius,         // inlet radius
+                                                       const Vector &normal_out,
+                                                       const RealType &mean_velocity_in,
+                                                       bool verbose) {
+        // Function to fill the inlet velocities with parabolic velocity profile.
+        // So far supports only inlets which are perpendicular to one of the axis.
+
+        if (std::abs(normal_out.x() + normal_out.y() + normal_out.z()) != 1) {
+            printf("Your normal is not tangent to one of the axes.\n");
+        }
+
+
+        RealType lookx, looky, lookz;
+        VectorType Velocity(0.f, 0.f, 0.f);
+
+
+        meshingBoundaryConditionInletUniform(cuboid, normal_out, Velocity, 0);
+
+        int num = 0;
+
+        for (boundaryConditionInlet &BC: boundary_vector_inlet) {
+
+            Vertex vert = BC.vertex;
+
+            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
+                     Constants->additional_factor);
+            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
+                     Constants->additional_factor);
+            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
+                     Constants->additional_factor);
+
+            if (cuboid.isInside({lookx, looky, lookz})) {
+
+                // Calculate the distance from the inlet center
+                RealType distance = std::sqrt(
+                        std::pow(lookx - inletCenter.x, 2) +
+                        std::pow(looky - inletCenter.y, 2) +
+                        std::pow(lookz - inletCenter.z, 2)
+                );
+
+                // Check if the point is within the inlet radius
+                if (distance <= inletRadius) {
+                    // Calculate the parabolic velocity profile
+                    RealType parabolicVelocity = 3 * mean_velocity_in * (1.0 - std::pow(distance / inletRadius, 2));
+
+                    if (parabolicVelocity < 0) {
+                        parabolicVelocity = 0;
+                    }
+
+
+                    // Set the velocity components based on the orientation vector
+                    BC.velocity.x() = -parabolicVelocity * normal_out.x();
+                    BC.velocity.y() = -parabolicVelocity * normal_out.y();
+                    BC.velocity.z() = -parabolicVelocity * normal_out.z();
+
+                    num++;
+
+                }
+            }
+
+        }
+
+
+        if (verbose) {
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Inlet.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
+        }
+    }
+
+    void meshingBoundaryConditionInletParaboloidRectangle(geometryObjectCuboid &cuboid,
+                                                          const d3 &inletCenter,
+                                                          RealType &inletDimX,
+                                                          RealType &inletDimY,
+                                                          RealType &inletDimZ,
+                                                          const Vector &normal_out,
+                                                          const RealType &mean_velocity_in,
+                                                          bool verbose) {
+        // Function to fill the inlet velocities with parabolic velocity profile.
+        // So far supports only inlets which are perpendicular to one of the axes.
+
+        if (std::abs(normal_out.x() + normal_out.y() + normal_out.z()) != 1) {
+            printf("Your normal is not tangent to one of the axes.\n");
+        }
+
+        int num = 0;
+
+        RealType lookx, looky, lookz;
+
+        VectorType Velocity(0.f, 0.f, 0.f);
+
+        meshingBoundaryConditionInletUniform(cuboid, normal_out, Velocity, 0);
+
+
+        for (boundaryConditionInlet &BC: boundary_vector_inlet) {
+            Vertex vert = BC.vertex;
+
+            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
+                     Constants->additional_factor);
+            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
+                     Constants->additional_factor);
+            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
+                     Constants->additional_factor);
+
+            if (cuboid.isInside({lookx, looky, lookz})) {
+                // Calculate the distance from the inlet center
+
+                VectorType RevNormal(1 - std::abs(normal_out.x()), 1 - std::abs(normal_out.y()),
+                                     1 - std::abs(normal_out.z()));
+
+
+
+                //distances from corner with min x, min y and min z values
+
+                RealType distance_x = lookx - (inletCenter.x - inletDimX / 2);
+                RealType distance_y = looky - (inletCenter.y - inletDimY / 2);
+                RealType distance_z = lookz - (inletCenter.z - inletDimZ / 2);
+
+
+
+                // Calculate the parabolic approximate velocity profile
+                // u(x,y)=2 Uavg x (LX-x)*((y (LY-y))/((((LX)/(2)))^(2) (((LY)/(2)))^(2)))
+
+                RealType Part_x, Part_y, Part_z;
+
+                if (normal_out.x() == 0) {
+                    Part_x = distance_x * (inletDimX - distance_x);
+                } else {
+                    Part_x = 1.f;
+                    inletDimX = 1.f;
+                }
+
+                if (normal_out.y() == 0) {
+                    Part_y = distance_y * (inletDimY - distance_y);
+                } else {
+                    Part_y = 1.f;
+                    inletDimY = 1.f;
+                }
+
+                if (normal_out.z() == 0) {
+                    Part_z = distance_z * (inletDimZ - distance_z);
+                } else {
+                    Part_z = 1.f;
+                    inletDimZ = 1.f;
+                }
+
+                RealType inletConstant = inletDimX * inletDimY * inletDimZ * inletDimX * inletDimY * inletDimZ / 16;
+
+                RealType parabolicVelocity = 2 * mean_velocity_in * Part_x * Part_y * Part_z /
+                                             inletConstant;
+
+
+                if (parabolicVelocity < 0) {
+                    parabolicVelocity = 0;
+                }
+
+                // Set the velocity components based on the orientation vector
+                BC.velocity.x() = -parabolicVelocity * normal_out.x();
+                BC.velocity.y() = -parabolicVelocity * normal_out.y();
+                BC.velocity.z() = -parabolicVelocity * normal_out.z();
+                num++;
+            }
+        }
+
+        if (verbose) {
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Inlet.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
+        }
+    }
+
     void compileBoundaryArrayInlets(bool verbose) {
         Constants->inlet_num = boundary_vector_inlet.size();
-        std::cout << Constants->inlet_num << std::endl;
 
-        Data->meshBoundaryInletHost.setSizes(Constants ->inlet_num);
+        Data->meshBoundaryInletHost.setSizes(Constants->inlet_num);
 
 
         int i = 0;
@@ -103,12 +292,13 @@ public:
 
         if (verbose) {
             std::cout << "\nCreated boundary Array Inlets " << ".\n";
-            std::cout << "Boundary vertexes number: " << Constants -> inlet_num << std::endl;
+            std::cout << "Boundary vertexes number: " << Constants->inlet_num << std::endl;
         }
 
     }
 
-    void meshingBoundaryConditionOutlet(geometryObjectCuboid &cuboid, const Vector& normal_in, RealType density, bool verbose) {
+    void meshingBoundaryConditionOutlet(geometryObjectCuboid &cuboid, const Vector &normal_out, RealType density,
+                                        bool verbose) {
         double lookx, looky, lookz;
 
         boundaryConditionOutlet boundary_condition_outlet;
@@ -132,11 +322,19 @@ public:
                     d3 pnt_ask = {lookx, looky, lookz};
 
                     if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
-                        Data->meshFluidHost(i, j, k) = cuboid.id;
 
-                        boundary_condition_outlet.normal = normal_in;
+                        boundary_condition_outlet.normal = normal_out;
                         boundary_condition_outlet.density = density;
                         boundary_condition_outlet.vertex = {i, j, k};
+
+                        if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
+                            boundary_condition_inlet.regular = 0;
+                        } else {
+                            boundary_condition_inlet.regular = 1;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id;
+
 
                         boundary_vector_outlet.push_back(boundary_condition_outlet);
                         num += 1;
@@ -175,7 +373,7 @@ public:
 
         boundaryConditionWall boundary_condition_wall;
 
-        std::vector<boundaryConditionWall> boundary_vector_wall;
+        std::vector <boundaryConditionWall> boundary_vector_wall;
 
         for (int k = 0; k < Constants->dimZ_int; k++) {
 
@@ -190,13 +388,22 @@ public:
                                     if (i + l >= 0 && j + m >= 0 && k + n >= 0 && i + l < Constants->dimX_int &&
                                         j + m < Constants->dimY_int && k + n < Constants->dimZ_int) {
                                         if (Data->meshFluidHost(i + l, j + m, k + n) == 0) {
-                                            Data->meshFluidHost(i, j, k) = 2;
-                                            boundary_condition_wall.vertex = {i, j, k};
-                                            boundary_vector_wall.push_back(boundary_condition_wall);
+                                            Data->meshFluidHost(i, j, k) += 1;
                                         }
                                     }
                                 }
                             }
+                        }
+
+                        if (Data->meshFluidHost(i, j, k) > 2) {
+                            boundary_condition_wall.vertex = {i, j, k};
+                            boundary_condition_wall.regular = 1;
+
+                            if (Data->meshFluidHost(i, j, k) > 10) {
+                                boundary_condition_wall.regular = 0;
+                            }
+                            boundary_vector_wall.push_back(boundary_condition_wall);
+
                         }
                     }
                 }
@@ -228,18 +435,57 @@ public:
         Data->meshBoundaryOutlet = Data->meshBoundaryOutletHost;
 
         if (verbose) {
-            if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (std::is_same_v < DeviceType, TNL::Devices::Cuda >) {
                 std::cout << "\n Trasfered Arrays From Host to Cuda.\n";
-            } else if (std::is_same_v<DeviceType, TNL::Devices::Host>) {
+            } else if (std::is_same_v < DeviceType, TNL::Devices::Host >) {
                 std::cout << "\n Trasfered Arrays From Host to Host.\n";
             }
         }
     }
 
-    std::vector<boundaryConditionOutlet> boundary_vector_outlet_individual;
-    std::vector<boundaryConditionInlet> boundary_vector_inlet_individual;
-    std::vector<boundaryConditionInlet> boundary_vector_inlet;
-    std::vector<boundaryConditionOutlet> boundary_vector_outlet;
+    // HELPER FUNCTIONS
+
+    bool neighboursFluidSearch(d3 Point, int TypeSearched) {
+        int nx, ny, nz;
+
+        // Iterate through neighbors
+        for (int di = -1; di <= 1; ++di) {
+            for (int dj = -1; dj <= 1; ++dj) {
+                for (int dk = -1; dk <= 1; ++dk) {
+
+                    if (di == 0 && dj == 0 && dk == 0)  // Skip the central point
+                    {
+                        continue;
+                    }
+
+                    // Calculate neighbor indices
+                    nx = Point.x + di;
+                    ny = Point.y + dj;
+                    nz = Point.z + dk;
+
+                    // Check if the neighbor is within array bounds
+                    if (nx >= 0 && nx < Constants->dimX_int &&
+                        ny >= 0 && ny < Constants->dimY_int &&
+                        nz >= 0 && nz < Constants->dimZ_int) {
+
+                        // Check if the neighbor has a value of 1
+                        if (Data->meshFluidHost(nx, ny, nz) == TypeSearched) {
+                            return true;  // Found a neighbor with a value of TypeSearched
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;  // No neighbor with a value of TypeSearched found
+
+
+    }
+
+    std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
+    std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
+    std::vector <boundaryConditionInlet> boundary_vector_inlet;
+    std::vector <boundaryConditionOutlet> boundary_vector_outlet;
 
     boundaryConditionInlet boundary_condition_inlet;
 

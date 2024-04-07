@@ -13,15 +13,20 @@ struct LBMConstants {
     RealType BBmaxy;                //[m]
     RealType BBminz;                //[m]
     RealType BBmaxz;                //[m]
+
     int dimX_int;                   //[1]
     int dimY_int;                   //[1]
     int dimZ_int;                   //[1]
+
     RealType resolution_factor;     //[1]
     RealType additional_factor;     //[1]
+
     d3 point_outside;               //[m]
+
     string file_name;               //[word]
+
     int inlet_num;                  //[1]
-    int outlet_num;                    //[1]
+    int outlet_num;                 //[1]
     int wall_num;                   //[1]
 
 
@@ -56,24 +61,34 @@ struct LBMConstants {
     RealType Cu;
 
     //initialization
-
     VectorType VelocityInit = (0.f, 0.f, 0.f); //default
     string InitFileName;
 
+    //turbulence
+    const RealType CLES = 0.2f; //0.173f;
+
     //simulation
     RealType err;
-    RealType time;                  //[s]  
-    RealType plot_every;            //[s]
-    RealType err_every;            //[s]
-    int plot_every_it;
-    int err_every_it;
+    RealType time;                      //[s]
+
+    RealType plot_every = -1.f;             //[s]
+    RealType err_every = -1.f;              //[s]
+
+    int plot_every_it = -1;
+    int err_every_it = -1;
+
     int iterations;
 
-    //TODO: to model
-    int Nvel;
-    const RealType cs = 1/sqrt(3.f);
-    const RealType cs2 = 1/3.f;
+    int iterationsMomentAvg;        // number of iteration to be time averaged
+    int TimeAvgCounter;             // number of iterations to be time averaged counter
+    bool timeAveraged;              // if true, already time averaged
 
+
+
+    int Nvel;
+    const RealType cs = 1.f/sqrt(3.f);
+    const RealType cs2 = 1.f/3.f;
+    const RealType cs4 = 1.f/9.f;
 
     enum PATCH {
         solid = 0,

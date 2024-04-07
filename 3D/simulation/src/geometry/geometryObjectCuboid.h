@@ -37,7 +37,7 @@ class geometryObjectCuboid {
         }
     }
 
-    int id;
+    int id; //should be unique negative integer
 
     private:
 

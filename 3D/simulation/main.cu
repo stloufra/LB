@@ -8,7 +8,7 @@
 
 #include "src/geometry/geometryMesherBoundary.h"
 #include "src/geometry/geometryObjectCuboid.h"
-#include "src/solvers/Solver.h"
+#include "src/solvers/SolverTurbulentLES.h"
 #include "src/traits/LBMTraits.h"
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
@@ -21,6 +21,7 @@
 using namespace TNL;
 using DeviceType = typename LBMTraits::DeviceType;
 using VectorType = typename LBMTraits::VectorType;
+using RealType = typename LBMTraits::RealType;
 using DeviceTypeHost = typename LBMTraits::DeviceTypeHost;
 using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
 using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
@@ -38,15 +39,17 @@ int main() {
     // model types selection
     using Model = D3Q27;
 
-    using Initialisation        = InitializationEquilibriumVariables<Model>;
-    using Collision             = CollisionSRTunroll<Model>;
+    using Initialisation        = InitializationEquilibriumConstVector<Model>;
+    using Collision             = CollisionSRTTurbulent<Model>;
     using Streaming             = StreamingAB<Model>;
-    using BounceBackWall        = BounceBackWallHalfVector<Model>;
+    using BounceBackWall        = BounceBackWallHalf<Model>;
     using Inlet                 = InletVelocity<Model>;
-    using Outlet                = OutletDensityEquilibrium<Model>;
+    using Outlet                = OutletNeighbourEquilibrium<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
+    using Turbulence            = OmegaLES<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
+    using TimeAvg               = MomentTimeAvg<Model>;
 
 
     //initialize timers
@@ -57,7 +60,7 @@ int main() {
     geometryMesherBoundary Mesher(Constants,
                                   Data);
 
-    Solver< Model,
+    SolverTurbulentLES< Model,
             Initialisation,
             Collision,
             Streaming,
@@ -65,55 +68,63 @@ int main() {
             Inlet,
             Outlet,
             Moments,
+            Turbulence,
             Error,
-            NonDim> Solver( Constants,
+            NonDim,
+            TimeAvg> Solver( Constants,
                             Data);
+
+    bool runSim = true;
 
 
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(1.f, 0.f, 0.f);
+    VectorType Init(0.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
-    Constants->InitFileName = "variablesLattice199-backup-2-2-factor";
 
 
     //set meshing data
-    Constants->resolution_factor = 3.f;                              // needs to be 1 or greater integer
-    Constants->additional_factor = 2.f;                              // at least 1 for additional wall around
-    Constants->point_outside = {0.f, 0.f, 20.f};
-    Constants->file_name = "Dummy.off";
+    Constants->resolution_factor = 0.2;
+    Constants->additional_factor = 4;                              // at least 1 for additional wall around
+    Constants->point_outside = {2, 1000, 0};
+    Constants->file_name = "Fany.off";
+
 
     //set geometry objects
 
     //resolution 3
-    geometryObjectCuboid cuboidInlet1({15.f, 160.f, -80.f},
-                                      {-15.f, 160.f, -80.f},
-                                      {15.f, 120.f, -79.5f},
-                                      3);
-
-    geometryObjectCuboid cuboidInlet2({15.f, 200.f, 15.f},
-                                      {-15.f, 200.f, 15.f},
-                                      {15.f, 199.5f, -5.f},
-                                      4);
-
-    geometryObjectCuboid cuboidOutlet({15.f, 0.f, 15.f},
-                                      {-15.f, 0.f, 15.f},
-                                      {15.f, 0.3f, -15.f},
-                                      5);
+    geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
+                                      {150.f, 350.f, 408.f},
+                                      {160.f, 770.f, 408.f},-1);
 
 
-    VectorType VelocityInlet1(0.f, 0.f, 0.1f);
-    VectorType VelocityInlet2(0.f, -0.2f, 0.f);
-    VectorType NormalInlet1(0.f, 0.f, -1.f);
-    VectorType NormalInlet2(0.f, 1.f, 0.f);
-    VectorType NormalOutlet(0.f, -1.f, 0.f);
+    geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
+                                      {3146.f, 345.f, 408.f},
+                                      {3156.f, 770.f, 408.f},
+                                      -2);
+
+    VectorType VelocityInlet(5.f, 0.f, 0.f);
+
+
+    VectorType NormalInlet(-1.f, 0.f, 0.f);
+
+    VectorType NormalOutlet(1.f, 0.f, 0.f);
+
+    //inlet parabolic data
+
+    d3 inletCenter = {153.629 , 556.456, 300};
+    RealType inletDimX = 0.f;
+    RealType inletDimY = 400.f;
+    RealType inletDimZ = 200.f;
+    RealType meanVelocityInlet = 5.f;
+
 
 
     //set physical data
     Constants->rho_fyz = 1000.f;                      //[kg/m3]
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.5f;                    //[m/s] //TODO should be automatically calculated
+    Constants->u_guess_fyz = 5.5f;                    //[m/s] //TODO should be automatically calculated //0.5f
     Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -125,25 +136,27 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 0.001f;                     //[s]
-    Constants->plot_every = 0.05f;              //[s]
-    Constants->err_every = 0.002f;              //[s]
+    Constants->time = 0.4f;                      //[s]
+    Constants->plot_every = 0.01f;              //[s]
+    Constants->err_every = 0.001f;              //[s]
+    Constants->iterationsMomentAvg = 1000;       //[1]
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "mesh", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall-er", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
-    Mesher.meshingBoundaryWall(0);
-    Mesher.meshingBoundaryConditionInlet(cuboidInlet1, NormalInlet1, VelocityInlet1, 1);
-    Mesher.meshingBoundaryConditionInlet(cuboidInlet2, NormalInlet2, VelocityInlet2, 1);
-    Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, 1000.f,
-                                          1); //if density - 1 then density is from noditself
-    Mesher.compileBoundaryArrayInlets(1);
-    Mesher.compileBoundaryArrayOutlets(1);
-    Mesher.arrayTransfer(1);
+        Mesher.meshingBoundaryWall(0);
+        Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
+        //Mesher.meshingBoundaryConditionInletUniform( cuboidInlet, NormalInlet, VelocityInlet, 0);
+
+        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
+                                                1); //TODO: if density = -1 then density is from nod itself
+        Mesher.compileBoundaryArrayInlets(1);
+        Mesher.compileBoundaryArrayOutlets(1);
+        Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();
 
 
@@ -152,11 +165,17 @@ int main() {
 
     outputerVTK::MeshVTK(Data, Constants, "meshIN");
 
+
+
     //----------------------SOLVING PROBLEM------------------------//
+
 
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
-    Solver.runSimulation();
+
+    if(runSim) {
+        Solver.runSimulation();
+    }
 
     //----------------------TIMERS OUTPUT--------------------------//
 
@@ -182,6 +201,9 @@ int main() {
     logger.writeSeparator();
     logger.writeHeader("Writting Output");
     Solver.timer_output.writeLog(logger, 0);
+    logger.writeSeparator();
+    logger.writeHeader("Time Averaging");
+    Solver.timer_timeAvg.writeLog(logger, 0);
 
 
     return 0;

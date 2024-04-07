@@ -30,11 +30,15 @@ struct NonDimensiolnaliseFactorsVelocity
 
         Constants->L_fyz = abs(Constants->BBmaxx - Constants->BBminx) * Constants->conversion_factor_fyz;
 
+        RealType L_fyz_y = abs(Constants->BBmaxy - Constants->BBminy) * Constants->conversion_factor_fyz;
+        RealType L_fyz_z = abs(Constants->BBmaxz - Constants->BBminz) * Constants->conversion_factor_fyz;
+
+
         Constants->Cl = Constants->L_fyz / Constants->dimX_int;
 
         RealType U_fyz;
 
-        U_fyz = Constants -> u_guess_fyz;
+        U_fyz = Constants -> u_guess_fyz; //TODO: think of better way to do this
 
         Constants->Cu = U_fyz / Constants->U_lb;
         Constants->Cu_inverse = 1 / Constants->Cu;
@@ -42,9 +46,15 @@ struct NonDimensiolnaliseFactorsVelocity
         Constants->Crho = Constants->rho_fyz;
         Constants->Cm = Constants->Crho * Constants->Cl * Constants->Cl * Constants->Cl;
         Constants->Cpressure = Constants->Cm/Constants->Cl/Constants->Ct/Constants->Ct;
+
         Constants->Re = U_fyz * Constants->L_fyz / Constants->ny_fyz;
 
-        std::cout << "\n- Re is " << Constants->Re << "\n";
+        RealType Re_y = U_fyz * L_fyz_y / Constants->ny_fyz;
+        RealType Re_z = U_fyz * L_fyz_z / Constants->ny_fyz;
+
+        std::cout << "\n- Re (for L in X direction) is " << Constants->Re << "\n";
+        std::cout << "\n- Re (for L in Y direction) is " << Re_y << "\n";
+        std::cout << "\n- Re (for L in Z direction) is " << Re_z << "\n";
 
         Constants->ny = Constants->ny_fyz * Constants->Ct / Constants->Cl / Constants->Cl;
 

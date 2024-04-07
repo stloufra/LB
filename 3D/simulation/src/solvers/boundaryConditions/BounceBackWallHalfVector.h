@@ -18,12 +18,18 @@ struct BounceBackWallHalfVector
 
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
+<<<<<<< HEAD:3D/simulation/src/solvers/boundaryConditions/BounceBackWallHalfVector.h
         auto wall_ConstView = Data->meshBoundaryWall.getConstView();
         auto df_post_ConstView = Data->df_post.getConstView();
         auto mesh_ConstView = Data->meshFluid.getConstView();
 
         auto df_View = Data->df.getView();
 
+=======
+        auto wall_view = Data->meshBoundaryWall.getView();
+        auto df_view = Data->df.getView();
+        auto df_post_view = Data->df_post.getView();
+>>>>>>> LES:3D/simulation/src/solvers/boundaryConditions/BounceBackWallHalf.h
         const auto Nvel = Constants ->Nvel;
 
         MODELDATA MD;

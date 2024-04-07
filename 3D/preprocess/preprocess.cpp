@@ -38,47 +38,10 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 2;                              // needs to be 1 or greater integer
-    Constants->additional_factor = 2;                              // at least 1 for additional wall around
-    Constants->point_outside = {0, 0, 20};
-    Constants->file_name = "Dummy.off";
-
-    //set geometry objects
-
-    //resolution 3
-    geometryObjectCuboid cuboidInlet1({15, 160, -80},
-                                      {-15, 160, -80},
-                                      {15, 120, -79.5},
-                                      3);
-
-    geometryObjectCuboid cuboidInlet2({15, 200, 15},
-                                      {-15, 200, 15},
-                                      {15, 199.5, -5},
-                                      4);
-
-    geometryObjectCuboid cuboidOutlet({15, 0, 15},
-                                      {-15, 0, 15},
-                                      {15, 0.3, -15},
-                                      5);
-
-
-    /*
-     //resolution 1
-    geometryObjectCuboid cuboidInlet1({15, 160, -80},
-                                      {-15, 160, -80},
-                                      {15, 120, -79},
-                                      3);
-
-    geometryObjectCuboid cuboidInlet2({15, 200, 15},
-                                      {-15, 200, 15},
-                                      {15, 199, -5},
-                                      4);
-
-    geometryObjectCuboid cuboidOutlet({15, 0, 15},
-                                      {-15, 0, 15},
-                                      {15, 0.5, -15},
-                                      5);
-    */
+    Constants->resolution_factor = 0.1;
+    Constants->additional_factor = 6;                              // at least 1 for additional wall around
+    Constants->point_outside = {2, 1000, 0};
+    Constants->file_name = "Fany.off";
 
 
     //----------------------HANDLING GEOMETRY--------------------------//
@@ -86,7 +49,7 @@ int main() {
 
     timer_handling.start();
         Handler->polyhedronFromFile(Constants, 0);        //read the file and store the polyhedron in the handler object
-        Handler->polyhedronBbox(0);               //compute the bounding box of the polyhedron
+        Handler->polyhedronBbox(1);               //compute the bounding box of the polyhedron
         Handler->writeToConstants(Constants);             //write the BBOX into the Constats
     timer_handling.stop();
 
@@ -104,10 +67,10 @@ int main() {
     //----------------------MESHING OUTPUT--------------------------//
 
     timer_VTK.start();
-        outputerVTK::MeshVTK(Data, Constants, "mesh");
+        outputerVTK::MeshVTK(Data, Constants, "meshLESsmall");
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "mesh");
+    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall-er");
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");
