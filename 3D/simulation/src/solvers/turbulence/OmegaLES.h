@@ -65,7 +65,7 @@ struct OmegaLES {
         };
 
 
-        auto init_omega = [=]
+        auto omegaFunc = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i ) mutable
         {
@@ -109,7 +109,7 @@ struct OmegaLES {
 
         TNL::Containers::StaticArray<3, int> begin1{0, 0, 0};
         TNL::Containers::StaticArray<3, int> end1{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
-        parallelFor<DeviceType>(begin1, end1, init_omega);
+        parallelFor<DeviceType>(begin1, end1, omegaFunc);
     }
 
 

@@ -42,7 +42,7 @@ struct MomentTimeAvg
         TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin, end, timeAverage);
 
-        Constants->TimeAvgCounter += 1;
+        Constants-> TimeAvgCounter += 1;
 
     }
 
@@ -53,17 +53,21 @@ struct MomentTimeAvg
 
         auto timeAveraged = Constants->timeAveraged;
 
+        RealType TAC = static_cast<RealType>(Constants->TimeAvgCounter);
+
+        printf("Counter %d" , Constants->TimeAvgCounter);
+
         auto timeAverage = [=]
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i)
         mutable
         {
 
-            rhoTimeAvg_view(i.x(), i.y(), i.z()) /= Constants->TimeAvgCounter;
+            rhoTimeAvg_view(i.x(), i.y(), i.z()) /= TAC;
 
-            uTimeAvg_view(i.x(), i.y(), i.z()).x() /= Constants->TimeAvgCounter;
-            uTimeAvg_view(i.x(), i.y(), i.z()).y() /= Constants->TimeAvgCounter;
-            uTimeAvg_view(i.x(), i.y(), i.z()).z() /= Constants->TimeAvgCounter;
+            uTimeAvg_view(i.x(), i.y(), i.z()).x() /= TAC;
+            uTimeAvg_view(i.x(), i.y(), i.z()).y() /= TAC;
+            uTimeAvg_view(i.x(), i.y(), i.z()).z() /= TAC;
 
         };
 

@@ -89,7 +89,7 @@ public:
                                 boundary_condition_inlet.regular = 1;
                             }
 
-                            Data->meshFluidHost(i, j, k) = cuboid.id;
+                            Data->meshFluidHost(i, j, k) = - Data->meshFluidHost(i, j, k); // TODo change back to cuboid.id
 
                             boundary_vector_inlet.push_back(boundary_condition_inlet);
                             num += 1;
@@ -333,7 +333,7 @@ public:
                             boundary_condition_inlet.regular = 1;
                         }
 
-                        Data->meshFluidHost(i, j, k) = cuboid.id;
+                        Data->meshFluidHost(i, j, k) = -Data->meshFluidHost(i, j, k); // TODO: change back to cuboid.id
 
 
                         boundary_vector_outlet.push_back(boundary_condition_outlet);

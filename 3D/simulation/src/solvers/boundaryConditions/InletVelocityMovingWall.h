@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef INLETVELOCITY_H
-#define INLETVELOCITY_H
+#ifndef INLETVELOCITYMOVINGWALL_H
+#define INLETVELOCITYMOVINGWALL_H
 
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct InletVelocity {
+struct InletVelocityMovingWall {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
     using VectorType = LBMTraits::VectorType;

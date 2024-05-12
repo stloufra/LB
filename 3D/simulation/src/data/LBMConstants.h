@@ -67,6 +67,12 @@ struct LBMConstants {
     //turbulence
     const RealType CLES = 0.2f; //0.173f;
 
+    //boundary dumping
+
+    RealType omegaDumpingLow = -1.f; // if not set in main, dumping not performed
+    RealType omegaDumpingHigh = -1.f; // if not set in main, dumping not performed
+
+
     //simulation
     RealType err;
     RealType time;                      //[s]
@@ -80,7 +86,7 @@ struct LBMConstants {
     int iterations;
 
     int iterationsMomentAvg;        // number of iteration to be time averaged
-    int TimeAvgCounter;             // number of iterations to be time averaged counter
+    int TimeAvgCounter = 0;             // number of iterations to be time averaged counter
     bool timeAveraged;              // if true, already time averaged
 
 

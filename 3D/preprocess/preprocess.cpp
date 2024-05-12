@@ -38,7 +38,7 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.1;
+    Constants->resolution_factor = 0.12;
     Constants->additional_factor = 6;                              // at least 1 for additional wall around
     Constants->point_outside = {2, 1000, 0};
     Constants->file_name = "Fany.off";

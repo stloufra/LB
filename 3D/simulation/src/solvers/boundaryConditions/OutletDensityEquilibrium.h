@@ -15,6 +15,8 @@ struct OutletDensityEquilibrium {
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
+    static void outletOmega(LBMDataPointer &Data, LBMConstantsPointer &Constants) {}
+
     static void outlet(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
 

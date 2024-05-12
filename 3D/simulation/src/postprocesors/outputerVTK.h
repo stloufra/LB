@@ -266,6 +266,170 @@ public:
         }
     }
 
+    static void tauVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nCuda -> Host output Tau.\n" << std::endl; }
+
+
+            ArrayTypeVariablesScalarHost omega_out;
+
+
+            omega_out = Data->omega;
+
+
+            std::ofstream out_file("results/tau.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Tau double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << 1.f / omega_out(i, j, k) << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nHost -> Host output Tau.\n" << std::endl; }
+
+            std::ofstream out_file("results/tau.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Tau double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << 1.f / Data -> omega(i, j, k) << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        }
+    }
+
+    static void omegaVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nCuda -> Host output Omega.\n" << std::endl; }
+
+
+            ArrayTypeVariablesScalarHost omega_out;
+
+
+            omega_out = Data->omega;
+
+
+            std::ofstream out_file("results/omega.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Omega double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << omega_out(i, j, k) << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nHost -> Host output Omega.\n" << std::endl; }
+
+            std::ofstream out_file("results/omega.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Omega double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data -> omega(i, j, k) << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        }
+    }
+
     static void variablesVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int s, int plot_every, bool verbose) {
 
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {

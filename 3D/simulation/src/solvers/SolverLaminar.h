@@ -15,14 +15,23 @@
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Algorithms/reduce.h>
+
 #include "./collisions/CollisionSRTLaminar.h"
+#include "./collisions/CollisionCumD3Q27Laminar.h"
 #include "./collisions/CollisionSRTunroll.h"
+
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
+
 #include "./streamings//StreamingAB.h"
+
 #include "./boundaryConditions/BounceBackWallHalf.h"
-#include "./boundaryConditions/InletVelocity.h"
+#include "./boundaryConditions/InletVelocityMovingWall.h"
+#include "./boundaryConditions/InletVelocityZouHe.h"
 #include "./boundaryConditions/OutletDensityEquilibrium.h"
+#include "./boundaryConditions/OutletNeighbourEquilibrium.h"
+#include "./boundaryConditions/OutletNeighbourEquilibriumOmega.h"
+
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
@@ -47,7 +56,8 @@ template<   typename MODELTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
             typename ERRORTYPE,
-            typename NONDYM>
+            typename NONDYM,
+            typename MOMENTTIMEAVGTYPE>
 
 class SolverLaminar {
     using RealType = LBMTraits::RealType;
@@ -94,7 +104,9 @@ public:
 
         INITIALIZATIONTYPE::initialization(Data, Constants);
 
-        std::cout << "Initialization of simulation done." << std::endl;
+        if (verbose) {
+            std::cout << "Density, Velocity, Distribution functions initialized.\n";
+        }
     }
 
 
@@ -103,10 +115,13 @@ public:
 
         timer_loop.start();
 
-
         int k = 0;
         while(k<Constants -> iterations)
         {
+
+                timer_dumping.start();
+                OUTLETTYPE::outletOmega(Data, Constants);
+                timer_dumping.stop();
 
 
             timer_collision.start();
@@ -127,7 +142,12 @@ public:
                 MOMENTTYPE::momentUpdate(Data, Constants);
             timer_momentsUpdate.stop();
 
-
+            if(k > (Constants->iterations - Constants->iterationsMomentAvg))
+            {
+                timer_timeAvg.start();
+                    MOMENTTIMEAVGTYPE::momentAdd(Data, Constants);
+                timer_timeAvg.stop();
+            }
 
             if(k%Constants -> err_every_it==0 && k!=0)
             {
@@ -152,6 +172,18 @@ public:
 
             k++;
 
+        }
+
+        //Time averaging
+        if(Constants->timeAveraged == false)
+        {
+            timer_timeAvg.start();
+            MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+            timer_timeAvg.stop();
+
+            timer_output.start();
+                outputerVTK::variablesTimeAvgVTK(Data, Constants, 1);
+            timer_output.stop();
         }
 
 
@@ -194,9 +226,15 @@ public:
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->rhoTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+
         Data->rho_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->u_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
         Data->u_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
@@ -218,6 +256,7 @@ public:
     Timer timer_momentsUpdate;
     Timer timer_err;
     Timer timer_output;
+    Timer timer_dumping;
     Timer timer_timeAvg;
 
 };
