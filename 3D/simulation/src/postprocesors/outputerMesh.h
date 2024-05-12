@@ -68,58 +68,114 @@ public:
 
         std::string line;
 
+        if (std::is_same<RealType, double>::value) {
+            while (std::getline(inputFile, line)) {
+                if (line.find("Dimensions:") != std::string::npos) {
+                    int xDim, yDim, zDim;
+                    sscanf(line.c_str(), "Dimensions: %d %d %d", &xDim, &yDim, &zDim);
+                    Constants->dimX_int = xDim;
+                    Constants->dimY_int = yDim;
+                    Constants->dimZ_int = zDim;
 
-        while (std::getline(inputFile, line)) {
-            if (line.find("Dimensions:") != std::string::npos) {
-                int xDim, yDim, zDim;
-                sscanf(line.c_str(), "Dimensions: %d %d %d", &xDim, &yDim, &zDim);
-                Constants->dimX_int = xDim;
-                Constants->dimY_int = yDim;
-                Constants->dimZ_int = zDim;
+                } else if (line.find("Resolution Factor: ") != std::string::npos) {
+                    RealType resolutionFactor;
+                    sscanf(line.c_str(), "Resolution Factor: %lf", &resolutionFactor);
+                    Constants->resolution_factor = resolutionFactor;
 
-            } else if (line.find("Resolution Factor: ") != std::string::npos) {
-                RealType resolutionFactor;
-                sscanf(line.c_str(), "Resolution Factor: %g", &resolutionFactor);
-                Constants->resolution_factor = resolutionFactor;
+                } else if (line.find("Additional Factor: ") != std::string::npos) {
+                    RealType additionalFactor;
+                    sscanf(line.c_str(), "Additional Factor: %lf", &additionalFactor);
+                    Constants->additional_factor = additionalFactor;
 
-            } else if (line.find("Additional Factor: ") != std::string::npos) {
-                RealType additionalFactor;
-                sscanf(line.c_str(), "Additional Factor: %g", &additionalFactor);
-                Constants->additional_factor = additionalFactor;
+                } else if (line.find("BBmaxx:") != std::string::npos) {
+                    RealType bbMaxx;
+                    sscanf(line.c_str(), "BBmaxx: %lf", &bbMaxx);
+                    Constants->BBmaxx = bbMaxx;
 
-            } else if (line.find("BBmaxx:") != std::string::npos) {
-                RealType bbMaxx;
-                sscanf(line.c_str(), "BBmaxx: %g", &bbMaxx);
-                Constants->BBmaxx = bbMaxx;
+                } else if (line.find("BBmaxy:") != std::string::npos) {
+                    RealType bbMaxy;
+                    sscanf(line.c_str(), "BBmaxy: %lf", &bbMaxy);
+                    Constants->BBmaxy = bbMaxy;
 
-            } else if (line.find("BBmaxy:") != std::string::npos) {
-                RealType bbMaxy;
-                sscanf(line.c_str(), "BBmaxy: %g", &bbMaxy);
-                Constants->BBmaxy = bbMaxy;
+                } else if (line.find("BBmaxz:") != std::string::npos) {
+                    RealType bbmaxz;
+                    sscanf(line.c_str(), "BBmaxz: %lf", &bbmaxz);
+                    Constants->BBmaxz = bbmaxz;
 
-            } else if (line.find("BBmaxz:") != std::string::npos) {
-                RealType bbmaxz;
-                sscanf(line.c_str(), "BBmaxz: %g", &bbmaxz);
-                Constants->BBmaxz = bbmaxz;
+                } else if (line.find("BBminx:") != std::string::npos) {
+                    RealType bbminx;
+                    sscanf(line.c_str(), "BBminx: %lf", &bbminx);
+                    Constants->BBminx = bbminx;
 
-            } else if (line.find("BBminx:") != std::string::npos) {
-                RealType bbminx;
-                sscanf(line.c_str(), "BBminx: %g", &bbminx);
-                Constants->BBminx = bbminx;
+                } else if (line.find("BBminy:") != std::string::npos) {
+                    RealType bbminy;
+                    sscanf(line.c_str(), "BBminy: %lf", &bbminy);
+                    Constants->BBminy = bbminy;
 
-            } else if (line.find("BBminy:") != std::string::npos) {
-                RealType bbminy;
-                sscanf(line.c_str(), "BBminy: %g", &bbminy);
-                Constants->BBminy = bbminy;
+                } else if (line.find("BBminz:") != std::string::npos) {
+                    RealType bbminz;
+                    sscanf(line.c_str(), "BBminz: %lf", &bbminz);
+                    Constants->BBminz = bbminz;
+                    break;
+                }
 
-            } else if (line.find("BBminz:") != std::string::npos) {
-                RealType bbminz;
-                sscanf(line.c_str(), "BBminz: %g", &bbminz);
-                Constants->BBminz = bbminz;
-                break;
             }
-
         }
+
+        else if (std::is_same<RealType, float>::value) {
+            while (std::getline(inputFile, line)) {
+                if (line.find("Dimensions:") != std::string::npos) {
+                    int xDim, yDim, zDim;
+                    sscanf(line.c_str(), "Dimensions: %d %d %d", &xDim, &yDim, &zDim);
+                    Constants->dimX_int = xDim;
+                    Constants->dimY_int = yDim;
+                    Constants->dimZ_int = zDim;
+
+                } else if (line.find("Resolution Factor: ") != std::string::npos) {
+                    RealType resolutionFactor;
+                    sscanf(line.c_str(), "Resolution Factor: %f", &resolutionFactor);
+                    Constants->resolution_factor = resolutionFactor;
+
+                } else if (line.find("Additional Factor: ") != std::string::npos) {
+                    RealType additionalFactor;
+                    sscanf(line.c_str(), "Additional Factor: %f", &additionalFactor);
+                    Constants->additional_factor = additionalFactor;
+
+                } else if (line.find("BBmaxx:") != std::string::npos) {
+                    RealType bbMaxx;
+                    sscanf(line.c_str(), "BBmaxx: %f", &bbMaxx);
+                    Constants->BBmaxx = bbMaxx;
+
+                } else if (line.find("BBmaxy:") != std::string::npos) {
+                    RealType bbMaxy;
+                    sscanf(line.c_str(), "BBmaxy: %f", &bbMaxy);
+                    Constants->BBmaxy = bbMaxy;
+
+                } else if (line.find("BBmaxz:") != std::string::npos) {
+                    RealType bbmaxz;
+                    sscanf(line.c_str(), "BBmaxz: %f", &bbmaxz);
+                    Constants->BBmaxz = bbmaxz;
+
+                } else if (line.find("BBminx:") != std::string::npos) {
+                    RealType bbminx;
+                    sscanf(line.c_str(), "BBminx: %f", &bbminx);
+                    Constants->BBminx = bbminx;
+
+                } else if (line.find("BBminy:") != std::string::npos) {
+                    RealType bbminy;
+                    sscanf(line.c_str(), "BBminy: %f", &bbminy);
+                    Constants->BBminy = bbminy;
+
+                } else if (line.find("BBminz:") != std::string::npos) {
+                    RealType bbminz;
+                    sscanf(line.c_str(), "BBminz: %f", &bbminz);
+                    Constants->BBminz = bbminz;
+                    break;
+                }
+
+            }
+        }
+
 
         if (verbose) {
             std::cout << "Resolution factor: " << Constants->resolution_factor << std::endl;

@@ -53,6 +53,7 @@ public:
     ArrayTypeVariablesScalar omega;
 
     ArrayTypeVariablesScalarHost rho_out;
+    ArrayTypeVariablesScalarHost omega_out;
     ArrayTypeVariablesScalarHost p_out;
     ArrayTypeVariablesVectorHost u_out;
 

@@ -27,7 +27,7 @@ using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
 using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
 int main() {
-
+    // https://volkov.eng.ua.edu/
 
     //------------------------INITIALIZATION--------------------------//
 
@@ -40,11 +40,11 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionSRTTurbulent<Model>;
+    using Collision             = CollisionCumD3Q27TurbulentCombined<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
-    using Inlet                 = InletVelocity<Model>;
-    using Outlet                = OutletNeighbourEquilibrium<Model>;
+    using Inlet                 = InletVelocityMovingWall<Model>;
+    using Outlet                = OutletNeighbourEquilibriumOmega<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;
@@ -80,13 +80,13 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 0.f); //change to 1 in z
+    VectorType Init(0.f, 0.f, 3.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
     //set meshing data
-    Constants->resolution_factor = 0.2;
-    Constants->additional_factor = 4;                              // at least 1 for additional wall around
+    Constants->resolution_factor = 0.1;
+    Constants->additional_factor = 6;                              // at least 1 for additional wall around
     Constants->point_outside = {2, 1000, 0};
     Constants->file_name = "Fany.off";
 
@@ -96,11 +96,11 @@ int main() {
     //resolution 3
     geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
                                       {150.f, 350.f, 408.f},
-                                      {160.f, 770.f, 408.f},-1);
+                                      {155.f, 770.f, 408.f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
-                                      {3146.f, 345.f, 408.f},
+    geometryObjectCuboid cuboidOutlet({3148.f, 345.f, -8.f},
+                                      {3148.f, 345.f, 408.f},
                                       {3156.f, 770.f, 408.f},
                                       -2);
 
@@ -117,15 +117,18 @@ int main() {
     RealType inletDimX = 0.f;
     RealType inletDimY = 400.f;
     RealType inletDimZ = 200.f;
-    RealType meanVelocityInlet = 5.f;
+    RealType meanVelocityInlet = 5.5f;       // 5
 
+    //dumping tau outlet data
+    Constants -> omegaDumpingLow = 0.f;
+    Constants -> omegaDumpingHigh = 0.05f; // tau(Re=1000) = 0.55 -> 0.2
 
 
     //set physical data
-    Constants->rho_fyz = 1000.f;                      //[kg/m3]
+    Constants->rho_fyz = 1.293f;                      //[kg/m3]     1000
     Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 5.5f;                    //[m/s] //TODO should be automatically calculated //0.5f
-    Constants->Fx_fyz = 10.f;                         //[kg/m3/s2]  <- force density
+    Constants->u_guess_fyz = 5.5f;                    //[m/s] //TODO should be automatically calculated //5.5f
+    Constants->Fx_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->conversion_factor_fyz = 1.0f / 1000.f;    // convert to m
@@ -136,14 +139,14 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 0.4f;                      //[s]
-    Constants->plot_every = 0.01f;              //[s]
+    Constants->time = 8.0f;                      //[s]
+    Constants->plot_every = 0.1f;               //[s]
     Constants->err_every = 0.001f;              //[s]
-    Constants->iterationsMomentAvg = 1000;       //[1]
+    Constants->iterationsMomentAvg = 10000;      //[1]
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall-er", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
@@ -173,6 +176,8 @@ int main() {
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
 
+    //printf("Tau - %f.", Constants -> tau );
+
     if(runSim) {
         Solver.runSimulation();
     }
@@ -201,6 +206,9 @@ int main() {
     logger.writeSeparator();
     logger.writeHeader("Writting Output");
     Solver.timer_output.writeLog(logger, 0);
+    logger.writeSeparator();
+    logger.writeHeader("TimeDumping");
+    Solver.timer_dumping.writeLog(logger, 0);
     logger.writeSeparator();
     logger.writeHeader("Time Averaging");
     Solver.timer_timeAvg.writeLog(logger, 0);

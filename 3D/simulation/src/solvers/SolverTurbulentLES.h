@@ -16,19 +16,25 @@
 #include <TNL/Containers/Vector.h>
 #include <TNL/Algorithms/reduce.h>
 #include "./collisions/CollisionSRTTurbulent.h"
+#include "./collisions/CollisionCumD3Q27Turbulent2015.h"
+#include "./collisions/CollisionCumD3Q27Turbulent2017.h"
+#include "./collisions/CollisionCumD3Q27TurbulentCombined.h"
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
 #include "./streamings//StreamingAB.h"
 #include "./boundaryConditions/BounceBackWallHalf.h"
-#include "./boundaryConditions/InletVelocity.h"
+#include "./boundaryConditions/InletVelocityMovingWall.h"
+#include "./boundaryConditions/InletVelocityZouHe.h"
 #include "./boundaryConditions/OutletDensityEquilibrium.h"
 #include "./boundaryConditions/OutletNeighbourEquilibrium.h"
+#include "./boundaryConditions/OutletNeighbourEquilibriumOmega.h"
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
 #include "./moments/MomentTimeAvg.h"
 #include "./turbulence/OmegaLES.h"
+#include "./turbulence/OmegaNo.h"
 #include "./errorEvaluations/ErrorQuadratic.h"
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
 
@@ -99,13 +105,13 @@ public:
         INITIALIZATIONTYPE::initialization(Data, Constants);
 
         if (verbose) {
-            std::cout << "Density, Velocity, Distribution functions initionalized.\n";
+            std::cout << "Density, Velocity, Distribution functions initialized.\n";
         }
 
         TURBULENCETYPE::omega(Data, Constants);
 
         if (verbose) {
-            std::cout << "Omega functions initionalized.\n";
+            std::cout << "Omega functions initialized.\n";
         }
 
 
@@ -119,13 +125,18 @@ public:
 
         timer_loop.start();
 
-
         int k = 0;
         while(k<Constants -> iterations)
         {
-            timer_momentsUpdate.start();
+
+                timer_momentsUpdate.start();
                 TURBULENCETYPE::omega(Data, Constants);
-            timer_momentsUpdate.stop();
+                timer_momentsUpdate.stop();
+
+                timer_dumping.start();
+                OUTLETTYPE::outletOmega(Data, Constants);
+                timer_dumping.stop();
+
 
             timer_collision.start();
                 COLLISIONTYPE::collision(Data, Constants);
@@ -165,11 +176,12 @@ public:
                 timer_err.stop();
             }
 
-            if(k%Constants -> plot_every_it==0)
+            if(k%Constants -> plot_every_it==0 && k )//> (Constants->iterations - Constants->iterationsMomentAvg))
             {
 
                 timer_output.start();
                 outputerVTK::variablesLatticeVTK(Data, Constants, k/Constants -> plot_every_it, 1);
+                //outputerVTK::omegaVTK(Data, Constants, 1);
                 timer_output.stop();
             }
 
@@ -181,7 +193,7 @@ public:
         if(Constants->timeAveraged == false)
         {
             timer_timeAvg.start();
-                MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+            MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
             timer_timeAvg.stop();
 
             timer_output.start();
@@ -229,8 +241,8 @@ public:
     void setArraySizes(){
 
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->rhoTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->uTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
@@ -262,6 +274,7 @@ public:
     Timer timer_momentsUpdate;
     Timer timer_err;
     Timer timer_output;
+    Timer timer_dumping;
     Timer timer_timeAvg;
 
 };
