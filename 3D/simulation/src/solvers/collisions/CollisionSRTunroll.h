@@ -8,7 +8,7 @@
 #include "../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct CollisiionSRTunroll {
+struct CollisionSRTunroll {
 
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
