@@ -5,7 +5,7 @@
 #ifndef BOUNCEBACKWALLHALFMESH_H
 #define BOUNCEBACKWALLHALFMESH_H
 
-#include "../../traits/LBMTraits.h"
+#include "../../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
 struct BounceBackWallHalfMesh

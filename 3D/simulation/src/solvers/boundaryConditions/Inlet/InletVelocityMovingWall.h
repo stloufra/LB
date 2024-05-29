@@ -5,7 +5,7 @@
 #ifndef INLETVELOCITYMOVINGWALL_H
 #define INLETVELOCITYMOVINGWALL_H
 
-#include "../../traits/LBMTraits.h"
+#include "../../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
 struct InletVelocityMovingWall {

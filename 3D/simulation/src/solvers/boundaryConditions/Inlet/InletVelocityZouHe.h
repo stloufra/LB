@@ -5,7 +5,7 @@
 #ifndef INLETVELOCITYZOUHEOLB_H
 #define INLETVELOCITYZOUHEOLB_H
 
-#include "../../traits/LBMTraits.h"
+#include "../../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
 struct InletVelocityZouHeOLB {

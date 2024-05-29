@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef BOUNCEBACKWALLHALFVECTOR_H
-#define BOUNCEBACKWALLHALFVECTOR_H
+#ifndef BOUNCEBACKWALLHALF_H
+#define BOUNCEBACKWALLHALF_H
 
-#include "../../traits/LBMTraits.h"
+#include "../../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
-struct BounceBackWallHalfVector
+struct BounceBackWallHalf
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -18,19 +18,11 @@ struct BounceBackWallHalfVector
 
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
-<<<<<<< HEAD:3D/simulation/src/solvers/boundaryConditions/BounceBackWallHalfVector.h
-        auto wall_ConstView = Data->meshBoundaryWall.getConstView();
-        auto df_post_ConstView = Data->df_post.getConstView();
-        auto mesh_ConstView = Data->meshFluid.getConstView();
-
-        auto df_View = Data->df.getView();
-
-=======
         auto wall_view = Data->meshBoundaryWall.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
->>>>>>> LES:3D/simulation/src/solvers/boundaryConditions/BounceBackWallHalf.h
         const auto Nvel = Constants ->Nvel;
+        auto mesh_view = Data->meshFluid.getView();
 
         MODELDATA MD;
 
@@ -40,18 +32,19 @@ struct BounceBackWallHalfVector
         {
 
 
-            Vertex vert = wall_ConstView[i.x()].vertex;
+            Vertex vert = wall_view[i.x()].vertex;
 
-            int dx, dy, dz;
 
             for (int vel = 0; vel < Nvel; vel++) {
+
+                int dx, dy, dz;
 
                 dx = vert.x - MD.c[vel][0];
                 dy = vert.y - MD.c[vel][1];
                 dz = vert.z - MD.c[vel][2];
 
-                if (mesh_ConstView(dx, dy, dz) == 0) {
-                    df_View(vert.x, vert.y, vert.z, vel) = df_post_ConstView(vert.x, vert.y, vert.z, MD.c_rev[vel]);
+                if (mesh_view(dx, dy, dz) == 0) {
+                    df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, MD.c_rev[vel]);
                 }
 
             }

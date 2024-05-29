@@ -19,6 +19,9 @@ public:
     using ArrayTypeBoundaryWall = typename LBMTraits::ArrayTypeBoundaryWall;
     using ArrayTypeBoundaryWallHost = typename LBMTraits::ArrayTypeBoundaryWallHost;
 
+    using ArrayTypeBoundarySymmetry = typename LBMTraits::ArrayTypeBoundarySymmetry;
+    using ArrayTypeBoundarySymmetryHost = typename LBMTraits::ArrayTypeBoundarySymmetryHost;
+
     using ArrayTypeVariablesScalar = typename LBMTraits::ArrayTypeVariablesScalar;
     using ArrayTypeVariablesScalarHost = typename LBMTraits::ArrayTypeVariablesScalarHost;
 
@@ -32,12 +35,14 @@ public:
     ArrayTypeMeshHost meshFluidHost;
     ArrayTypeBoundaryInletHost meshBoundaryInletHost;
     ArrayTypeBoundaryOutletHost meshBoundaryOutletHost;
+    ArrayTypeBoundarySymmetryHost meshBoundarySymmetryHost;
     ArrayTypeBoundaryWallHost meshBoundaryWallHost;
 
     //mesh - device
     ArrayTypeMesh meshFluid;
     ArrayTypeBoundaryInlet meshBoundaryInlet;
     ArrayTypeBoundaryOutlet meshBoundaryOutlet;
+    ArrayTypeBoundarySymmetry meshBoundarySymmetry;
     ArrayTypeBoundaryWall meshBoundaryWall;
 
     // variables

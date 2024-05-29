@@ -89,7 +89,7 @@ public:
                                 boundary_condition_inlet.regular = 1;
                             }
 
-                            Data->meshFluidHost(i, j, k) = - Data->meshFluidHost(i, j, k); // TODo change back to cuboid.id
+                            Data->meshFluidHost(i, j, k) = cuboid.id; // - Data->meshFluidHost(i, j, k);
 
                             boundary_vector_inlet.push_back(boundary_condition_inlet);
                             num += 1;
@@ -278,25 +278,6 @@ public:
         }
     }
 
-    void compileBoundaryArrayInlets(bool verbose) {
-        Constants->inlet_num = boundary_vector_inlet.size();
-
-        Data->meshBoundaryInletHost.setSizes(Constants->inlet_num);
-
-
-        int i = 0;
-        for (boundaryConditionInlet BC: boundary_vector_inlet) {
-            Data->meshBoundaryInletHost[i] = BC;
-            i += 1;
-        }
-
-        if (verbose) {
-            std::cout << "\nCreated boundary Array Inlets " << ".\n";
-            std::cout << "Boundary vertexes number: " << Constants->inlet_num << std::endl;
-        }
-
-    }
-
     void meshingBoundaryConditionOutlet(geometryObjectCuboid &cuboid, const Vector &normal_out, RealType density,
                                         bool verbose) {
         double lookx, looky, lookz;
@@ -328,12 +309,12 @@ public:
                         boundary_condition_outlet.vertex = {i, j, k};
 
                         if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
-                            boundary_condition_inlet.regular = 0;
+                            boundary_condition_outlet.regular = 0;
                         } else {
-                            boundary_condition_inlet.regular = 1;
+                            boundary_condition_outlet.regular = 1;
                         }
 
-                        Data->meshFluidHost(i, j, k) = -Data->meshFluidHost(i, j, k); // TODO: change back to cuboid.id
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // -Data->meshFluidHost(i, j, k)
 
 
                         boundary_vector_outlet.push_back(boundary_condition_outlet);
@@ -343,9 +324,6 @@ public:
             }
         }
 
-        /*for (boundaryConditionOutlet BC: boundary_vector_outlet_individual) {
-            boundary_vector_outlet.push_back(BC);
-        }*/
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as outlet.\n";
@@ -353,19 +331,57 @@ public:
         }
     }
 
-    void compileBoundaryArrayOutlets(bool verbose) {
-        Data->meshBoundaryOutletHost.setSizes(boundary_vector_outlet.size());
-        Constants->outlet_num = boundary_vector_outlet.size();
+    void meshingBoundaryConditionSymmetry(geometryObjectCuboid &cuboid, const int &normal_out, bool verbose) {
+        // x = 0, y=1, z =2
 
-        int j = 0;
-        for (boundaryConditionOutlet BC: boundary_vector_outlet) {
-            Data->meshBoundaryOutletHost[j] = BC;
-            j += 1;
+
+        //#define SYMMETRY
+        double lookx, looky, lookz;
+
+        boundaryConditionSymmetry boundary_condition_symmetry;
+
+        int num = 0;
+
+        for (int k = 0; k < Constants->dimZ_int; k++) {
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+
+                for (int i = 0; i < Constants->dimX_int; i++) {
+
+                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
+                             Constants->additional_factor);
+                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
+                             Constants->additional_factor);
+                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
+                             Constants->additional_factor);
+
+                    d3 pnt_ask = {lookx, looky, lookz};
+
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+
+                        boundary_condition_symmetry.vertex = {i, j, k};
+                        boundary_condition_symmetry.normal = normal_out;
+
+                        if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
+                            boundary_condition_symmetry.regular = 0;
+                        } else {
+                            boundary_condition_symmetry.regular = 1;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
+
+
+                        boundary_vector_symmetry.push_back(boundary_condition_symmetry);
+                        num += 1;
+                    }
+                }
+            }
         }
 
+
         if (verbose) {
-            std::cout << "\nCreated boundary Array Outlet.\n";
-            std::cout << "Boundary vertexes number: " << boundary_vector_outlet.size() << std::endl;
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Symmetry.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
         }
     }
 
@@ -373,7 +389,6 @@ public:
 
         boundaryConditionWall boundary_condition_wall;
 
-        std::vector <boundaryConditionWall> boundary_vector_wall;
 
         for (int k = 0; k < Constants->dimZ_int; k++) {
 
@@ -395,7 +410,7 @@ public:
                             }
                         }
 
-                        if (Data->meshFluidHost(i, j, k) > 2) {
+                        if (Data->meshFluidHost(i, j, k) >2) { //TODO: before 2
                             boundary_condition_wall.vertex = {i, j, k};
                             boundary_condition_wall.regular = 1;
 
@@ -410,27 +425,110 @@ public:
             }
         }
 
-        Data->meshBoundaryWallHost.setSizes(boundary_vector_wall.size());
+        if (verbose) {
+            std::cout << "\nMeshed Wall.\n";
+            std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
+        }
+
+    }
+
+    void compileBoundaryArrayInlets(bool verbose) {
+
+        Constants->inlet_num = boundary_vector_inlet.size();
+
+        Data->meshBoundaryInletHost.setSizes(Constants->inlet_num);
+
+        int i = 0;
+        for (boundaryConditionInlet BC: boundary_vector_inlet) {
+            Data->meshBoundaryInletHost[i] = BC;
+            i += 1;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Inlets " << ".\n";
+            std::cout << "Boundary vertexes number: " << Constants->inlet_num << std::endl;
+        }
+
+    }
+
+    void compileBoundaryArrayOutlets(bool verbose) {
+        Data->meshBoundaryOutletHost.setSizes(boundary_vector_outlet.size());
+        Constants->outlet_num = boundary_vector_outlet.size();
+
+        int j = 0;
+        for (boundaryConditionOutlet BC: boundary_vector_outlet) {
+            Data->meshBoundaryOutletHost[j] = BC;
+            j += 1;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Outlet.\n";
+            std::cout << "Boundary vertexes number: " << boundary_vector_outlet.size() << std::endl;
+        }
+    }
+
+    void compileBoundaryArrayWall(bool verbose) {
+
+        auto it = boundary_vector_wall.begin();
+
+        int er = 0;
+
+        while (it != boundary_vector_wall.end()) {
+
+            const auto& Ver = it->vertex;
+
+            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) {
+                it = boundary_vector_wall.erase(it);
+                ++er;
+            }
+            else {
+                ++it;
+            }
+        }
+
+
         Constants->wall_num = boundary_vector_wall.size();
+
+        Data->meshBoundaryWallHost.setSizes(boundary_vector_wall.size());
 
         int k = 0;
 
         for (boundaryConditionWall BC: boundary_vector_wall) {
             Data->meshBoundaryWallHost[k] = BC;
-            k += 1;
+            ++k;
         }
 
         if (verbose) {
-            std::cout << "\nMeshed and created boundary Array Wall.\n";
+            std::cout << "\nCreated boundary Array Wall.\n";
+            std::cout << "Erased "<< er <<" elements.\n";
             std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
         }
+    };
+
+    void compileBoundaryArraySymmetry(bool verbose) {
 
 
-    }
+        Constants->symmetry_num = boundary_vector_symmetry.size();
+
+        Data->meshBoundarySymmetryHost.setSizes(Constants->symmetry_num);
+
+        int k = 0;
+
+        for (const auto& BC: boundary_vector_symmetry) {
+            Data->meshBoundarySymmetryHost[k] = BC;
+            ++k;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Symmetry.\n";
+            std::cout << "Symmetry vertexes number: " << boundary_vector_wall.size() << std::endl;
+        }
+    };
 
     void arrayTransfer(bool verbose) {
         Data->meshFluid = Data->meshFluidHost;
         Data->meshBoundaryWall = Data->meshBoundaryWallHost;
+        Data->meshBoundarySymmetry = Data->meshBoundarySymmetryHost;
         Data->meshBoundaryInlet = Data->meshBoundaryInletHost;
         Data->meshBoundaryOutlet = Data->meshBoundaryOutletHost;
 
@@ -482,10 +580,10 @@ public:
 
     }
 
-    std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
-    std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
     std::vector <boundaryConditionInlet> boundary_vector_inlet;
     std::vector <boundaryConditionOutlet> boundary_vector_outlet;
+    std::vector <boundaryConditionSymmetry > boundary_vector_symmetry;
+    std::vector <boundaryConditionWall> boundary_vector_wall;
 
     boundaryConditionInlet boundary_condition_inlet;
 

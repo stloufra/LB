@@ -277,9 +277,9 @@ struct CollisionCumD3Q27Turbulent2015 {
             const RealType Eq65RHS = k_000 * omega2 + (1.f - omega2) * (C_200 + C_020 + C_002) -
                                      3.f * rho * (1.f - omega2 / 2.f) * (ux * ux * Dxu + uy * uy * Dyv + uz * uz * Dzw);
 
-            const RealType Cs_200 = 1.f/3.f * (Eq61RHS + Eq64RHS + Eq65RHS);
-            const RealType Cs_020 = 1.f/3.f * (Eq64RHS - 2.f * Eq61RHS + Eq65RHS);
-            const RealType Cs_002 = 1.f/3.f * (Eq61RHS - 2.f * Eq64RHS + Eq65RHS);
+            const RealType Cs_200 = 1.f / 3.f * (Eq61RHS + Eq64RHS + Eq65RHS);
+            const RealType Cs_020 = 1.f / 3.f * (Eq64RHS - 2.f * Eq61RHS + Eq65RHS);
+            const RealType Cs_002 = 1.f / 3.f * (Eq61RHS - 2.f * Eq64RHS + Eq65RHS);
 
             //Eq G2015(64, 67)
             const RealType Cs_120 = (-C_102 - C_120) * omega3 * 0.5f + (C_102 - C_120) * omega4 * 0.5f + C_120;
@@ -297,79 +297,87 @@ struct CollisionCumD3Q27Turbulent2015 {
             const RealType Cs_111 = (1.f - omega5) * C_111;
 
             //Eq G2015(71, 72, 73) //2017 diff
-            const RealType Eq71RHS =  (1.f-omega6)*(C_220-2.f*C_202+C_022);
-            const RealType Eq72RHS =  (1.f-omega6)*(C_220+C_202-2.f*C_022);
-            const RealType Eq73RHS =  (1.f-omega7)*(C_220+C_202+C_022);
-            
-            const RealType Cs_220 = 1.f/3.f*(Eq71RHS+Eq72RHS+Eq73RHS);
-            const RealType Cs_202 = 1.f/3.f*(-Eq71RHS+Eq73RHS);
-            const RealType Cs_022 = 1.f/3.f*(-Eq72RHS+Eq73RHS);
-            
+            const RealType Eq71RHS = (1.f - omega6) * (C_220 - 2.f * C_202 + C_022);
+            const RealType Eq72RHS = (1.f - omega6) * (C_220 + C_202 - 2.f * C_022);
+            const RealType Eq73RHS = (1.f - omega7) * (C_220 + C_202 + C_022);
+
+            const RealType Cs_220 = 1.f / 3.f * (Eq71RHS + Eq72RHS + Eq73RHS);
+            const RealType Cs_202 = 1.f / 3.f * (-Eq71RHS + Eq73RHS);
+            const RealType Cs_022 = 1.f / 3.f * (-Eq72RHS + Eq73RHS);
+
             // Eq 46-48 //2017 diff
-            const RealType Cs_211 =  (1.f-omega8)*C_211;
-            const RealType Cs_121 =  (1.f-omega8)*C_121;
-            const RealType Cs_112 =  (1.f-omega8)*C_112;
+            const RealType Cs_211 = (1.f - omega8) * C_211;
+            const RealType Cs_121 = (1.f - omega8) * C_121;
+            const RealType Cs_112 = (1.f - omega8) * C_112;
             // Eqs 49-52
-            const RealType Cs_221 = (1.f-omega9)*C_221;
-            const RealType Cs_212 = (1.f-omega9)*C_212;
-            const RealType Cs_122 = (1.f-omega9)*C_122;
-            const RealType Cs_222 = (1.f-omega10)*C_222;
+            const RealType Cs_221 = (1.f - omega9) * C_221;
+            const RealType Cs_212 = (1.f - omega9) * C_212;
+            const RealType Cs_122 = (1.f - omega9) * C_122;
+            const RealType Cs_222 = (1.f - omega10) * C_222;
 
             //------------------------------------------------------------------------------------
             //------------------------------ CUMULANTS TO CENTRAL MOM. ---------------------------
             //------------------------------------------------------------------------------------
 
-            const RealType ks_000 =  k_000;
+            const RealType ks_000 = k_000;
 
             // Permutation again
 
             //Eq G2015(47) backwards
-            const RealType ks_110 = Cs_110 ;
-            const RealType ks_101 = Cs_101 ;
-            const RealType ks_011 = Cs_011 ;
+            const RealType ks_110 = Cs_110;
+            const RealType ks_101 = Cs_101;
+            const RealType ks_011 = Cs_011;
 
             //Eq G2015(48) backwards
-            const RealType ks_200 = Cs_200 ;
-            const RealType ks_020 = Cs_020 ;
-            const RealType ks_002 = Cs_002 ;
+            const RealType ks_200 = Cs_200;
+            const RealType ks_020 = Cs_020;
+            const RealType ks_002 = Cs_002;
 
             //Eq G2015(49) backwards
-            const RealType ks_120 = Cs_120 ;
-            const RealType ks_012 = Cs_012 ;
-            const RealType ks_201 = Cs_201 ;
+            const RealType ks_120 = Cs_120;
+            const RealType ks_012 = Cs_012;
+            const RealType ks_201 = Cs_201;
 
             const RealType ks_210 = Cs_210;
             const RealType ks_021 = Cs_021;
             const RealType ks_102 = Cs_102;
 
             //Eq G2015(50) backwards
-            const RealType ks_111 = Cs_111 ;
+            const RealType ks_111 = Cs_111;
 
             //Eq. G2015(85, 86, 87)
-            const RealType ks_100 =  -k_100;
-            const RealType ks_010 =  -k_010;
-            const RealType ks_001 =  -k_001;
+            const RealType ks_100 = -k_100;
+            const RealType ks_010 = -k_010;
+            const RealType ks_001 = -k_001;
 
             //Eq. G2015(81)
-            const RealType ks_211 = Cs_211+ (ks_200*ks_011 + 2.f*ks_101*ks_110)/rho;
-            const RealType ks_121 = Cs_121+ (ks_020*ks_101 + 2.f*ks_110*ks_011)/rho;
-            const RealType ks_112 = Cs_112+ (ks_002*ks_110 + 2.f*ks_011*ks_101)/rho;
+            const RealType ks_211 = Cs_211 + (ks_200 * ks_011 + 2.f * ks_101 * ks_110) / rho;
+            const RealType ks_121 = Cs_121 + (ks_020 * ks_101 + 2.f * ks_110 * ks_011) / rho;
+            const RealType ks_112 = Cs_112 + (ks_002 * ks_110 + 2.f * ks_011 * ks_101) / rho;
 
             //Eq. G2015(82)
-            const RealType ks_220 = Cs_220+ (ks_020*ks_200 + 2.f*ks_110*ks_110)/rho;
-            const RealType ks_022 = Cs_022+ (ks_002*ks_020 + 2.f*ks_011*ks_011)/rho;
-            const RealType ks_202 = Cs_202+ (ks_200*ks_002 + 2.f*ks_101*ks_101)/rho;
+            const RealType ks_220 = Cs_220 + (ks_020 * ks_200 + 2.f * ks_110 * ks_110) / rho;
+            const RealType ks_022 = Cs_022 + (ks_002 * ks_020 + 2.f * ks_011 * ks_011) / rho;
+            const RealType ks_202 = Cs_202 + (ks_200 * ks_002 + 2.f * ks_101 * ks_101) / rho;
 
             //Eq. G2015(83)
-            const RealType ks_122 = Cs_122+ (ks_020*ks_102 + ks_002*ks_120+ 4.f*ks_011*ks_111+ 2.f*(ks_110*ks_012+ks_101*ks_021))/rho;
-            const RealType ks_212 = Cs_212+ (ks_002*ks_210 + ks_200*ks_012+ 4.f*ks_101*ks_111+ 2.f*(ks_011*ks_201+ks_110*ks_102))/rho;
-            const RealType ks_221 = Cs_221+ (ks_200*ks_021 + ks_020*ks_201+ 4.f*ks_110*ks_111+ 2.f*(ks_101*ks_120+ks_011*ks_210))/rho;
+            const RealType ks_122 = Cs_122 + (ks_020 * ks_102 + ks_002 * ks_120 + 4.f * ks_011 * ks_111 +
+                                              2.f * (ks_110 * ks_012 + ks_101 * ks_021)) / rho;
+            const RealType ks_212 = Cs_212 + (ks_002 * ks_210 + ks_200 * ks_012 + 4.f * ks_101 * ks_111 +
+                                              2.f * (ks_011 * ks_201 + ks_110 * ks_102)) / rho;
+            const RealType ks_221 = Cs_221 + (ks_200 * ks_021 + ks_020 * ks_201 + 4.f * ks_110 * ks_111 +
+                                              2.f * (ks_101 * ks_120 + ks_011 * ks_210)) / rho;
             // gen2nowell.php END
 
             // Eq. G2015(84)
-            const RealType ks_222 = Cs_222 + (4.f*ks_111*ks_111 + ks_200*ks_022 + ks_020*ks_202 + ks_002*ks_220 + 4.f*(ks_011*ks_211 + ks_101*ks_121 + ks_110*ks_112)
-                                           + 2.f*(ks_120*ks_102 + ks_210*ks_012 + ks_201*ks_021))/rho
-                                 - (16.f*ks_110*ks_101*ks_011 + 4.f*(ks_101*ks_101*ks_020 + ks_011*ks_011*ks_200 + ks_110*ks_110*ks_002) + 2.f*ks_200*ks_020*ks_002)/rho/rho;
+            const RealType ks_222 = Cs_222 +
+                                    (4.f * ks_111 * ks_111 + ks_200 * ks_022 + ks_020 * ks_202 + ks_002 * ks_220 +
+                                     4.f * (ks_011 * ks_211 + ks_101 * ks_121 + ks_110 * ks_112)
+                                     + 2.f * (ks_120 * ks_102 + ks_210 * ks_012 + ks_201 * ks_021)) / rho
+                                    - (16.f * ks_110 * ks_101 * ks_011 + 4.f * (ks_101 * ks_101 * ks_020 +
+                                                                                ks_011 * ks_011 * ks_200 +
+                                                                                ks_110 * ks_110 * ks_002) +
+                                       2.f * ks_200 * ks_020 * ks_002) / rho / rho;
 
 
 

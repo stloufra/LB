@@ -25,12 +25,12 @@
 
 #include "./streamings//StreamingAB.h"
 
-#include "./boundaryConditions/BounceBackWallHalf.h"
-#include "./boundaryConditions/InletVelocityMovingWall.h"
-#include "./boundaryConditions/InletVelocityZouHe.h"
-#include "./boundaryConditions/OutletDensityEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibriumOmega.h"
+#include "boundaryConditions/Wall/BounceBackWallHalf.h"
+#include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
+#include "boundaryConditions/Inlet/InletVelocityZouHe.h"
+#include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"

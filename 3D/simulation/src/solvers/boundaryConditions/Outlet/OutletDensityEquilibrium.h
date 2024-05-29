@@ -1,11 +1,11 @@
-//
+git //
 // Created by stloufra on 10/30/23.
 //
 
 #ifndef OUTLETDENSITYEQUILIBRIUM_H
 #define OUTLETDENSITYEQUILIBRIUM_H
 
-#include "../../traits/LBMTraits.h"
+#include "../../../traits/LBMTraits.h"
 
 template<typename MODELDATA>
 struct OutletDensityEquilibrium {

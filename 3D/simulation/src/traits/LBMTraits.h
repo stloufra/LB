@@ -43,6 +43,12 @@ typedef struct {
 
 typedef struct {
     Vertex vertex;
+    int normal;
+    bool regular;
+} boundaryConditionSymmetry;
+
+typedef struct {
+    Vertex vertex;
     bool regular;
 } boundaryConditionWall;
 
@@ -110,7 +116,20 @@ public:
                                                                 TNL::Containers::SizesHolder<int, 0>,
                                                                 std::index_sequence<0>,
                                                                 DeviceTypeHost>;
-    // -------------------- VARIABLES --------------------------
+    // -------------------- SYMMETRY -------------------------
+
+    using ArrayTypeBoundarySymmetry = TNL::Containers::NDArray <    boundaryConditionSymmetry ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceType>;
+
+    using ArrayTypeBoundarySymmetryHost = TNL::Containers::NDArray< boundaryConditionSymmetry ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceTypeHost>;
+
+
+    // -------------------- VARIABLES ------------------------
     using ArrayTypeVariablesScalar = TNL::Containers::NDArray<  RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
                                                                 NDArray3DSequenceType,

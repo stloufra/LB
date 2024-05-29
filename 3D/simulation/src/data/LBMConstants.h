@@ -27,6 +27,7 @@ struct LBMConstants {
 
     int inlet_num;                  //[1]
     int outlet_num;                 //[1]
+    int symmetry_num;                   //[1]
     int wall_num;                   //[1]
 
 
@@ -65,7 +66,7 @@ struct LBMConstants {
     string InitFileName;
 
     //turbulence
-    const RealType CLES = 0.2f; //0.173f;
+    const RealType CLES = 0.173f; //0.173f;
 
     //boundary dumping
 

@@ -15,27 +15,37 @@
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Algorithms/reduce.h>
+
 #include "./collisions/CollisionSRTTurbulent.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2015.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2017.h"
 #include "./collisions/CollisionCumD3Q27TurbulentCombined.h"
+
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
+
 #include "./streamings//StreamingAB.h"
-#include "./boundaryConditions/BounceBackWallHalf.h"
-#include "./boundaryConditions/InletVelocityMovingWall.h"
-#include "./boundaryConditions/InletVelocityZouHe.h"
-#include "./boundaryConditions/OutletDensityEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibriumOmega.h"
+
+#include "boundaryConditions/Wall/BounceBackWallHalf.h"
+#include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
+#include "boundaryConditions/Symmetry/NoSymmetry.h"
+#include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
+#include "boundaryConditions/Inlet/InletVelocityZouHe.h"
+#include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
+
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
 #include "./moments/MomentDensityVelocityN15.h"
 #include "./moments/MomentPressure.h"
 #include "./moments/MomentTimeAvg.h"
+
 #include "./turbulence/OmegaLES.h"
 #include "./turbulence/OmegaNo.h"
+
 #include "./errorEvaluations/ErrorQuadratic.h"
+
 #include "./nonDimensionalisions/NonDimensiolnaliseFactorsVelocity.h"
 
 #include "../geometry/geometryMesherBoundary.h"
@@ -50,6 +60,7 @@ template<   typename MODELTYPE,
             typename COLLISIONTYPE,
             typename STREAMINGTYPE,
             typename BOUNCEBACKWALLTYPE,
+            typename SYMMETRYTYPE,
             typename INLETTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
@@ -148,6 +159,9 @@ public:
 
             timer_bounceback.start();
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
+                #ifdef SYMMETRY
+                 SYMMETRYTYPE::symmetry(Data, Constants);
+                #endif
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
             timer_bounceback.stop();

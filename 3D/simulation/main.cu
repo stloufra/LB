@@ -40,14 +40,15 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionCumD3Q27TurbulentCombined<Model>;
+    using Collision             = CollisionSRTTurbulent<Model>;
     using Streaming             = StreamingAB<Model>;
+    using Symmetry              = BounceSymmetryHalf<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Inlet                 = InletVelocityMovingWall<Model>;
     using Outlet                = OutletNeighbourEquilibriumOmega<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
-    using Turbulence            = OmegaLES<Model>;
+    using Turbulence            = OmegaNo<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
     using TimeAvg               = MomentTimeAvg<Model>;
 
@@ -65,6 +66,7 @@ int main() {
             Collision,
             Streaming,
             BounceBackWall,
+            Symmetry,
             Inlet,
             Outlet,
             Moments,
@@ -74,13 +76,14 @@ int main() {
             TimeAvg> Solver( Constants,
                             Data);
 
+
     bool runSim = true;
 
 
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 3.f); //change to 1 in z
+    VectorType Init(0.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
@@ -96,15 +99,15 @@ int main() {
     //resolution 3
     geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
                                       {150.f, 350.f, 408.f},
-                                      {155.f, 770.f, 408.f},-1);
+                                      {160.f, 770.f, 408.f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({3148.f, 345.f, -8.f},
-                                      {3148.f, 345.f, 408.f},
+    geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
+                                      {3146.f, 345.f, 408.f},
                                       {3156.f, 770.f, 408.f},
                                       -2);
 
-    VectorType VelocityInlet(5.f, 0.f, 0.f);
+    VectorType VelocityInlet(0.05f, 0.f, 0.f);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
@@ -117,7 +120,7 @@ int main() {
     RealType inletDimX = 0.f;
     RealType inletDimY = 400.f;
     RealType inletDimZ = 200.f;
-    RealType meanVelocityInlet = 5.5f;       // 5
+    RealType meanVelocityInlet = 0.05f;       // 5
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -125,9 +128,9 @@ int main() {
 
 
     //set physical data
-    Constants->rho_fyz = 1.293f;                      //[kg/m3]     1000
-    Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 5.5f;                    //[m/s] //TODO should be automatically calculated //5.5f
+    Constants->rho_fyz = 1293.f;                      //[kg/m3]     1000
+    Constants->ny_fyz = 10e-4f;                       //[m2/s]
+    Constants->u_guess_fyz = 0.05f;                    //[m/s] //TODO should be automatically calculated //5.5f
     Constants->Fx_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -139,14 +142,14 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 8.0f;                      //[s]
-    Constants->plot_every = 0.1f;               //[s]
+    Constants->time = 20.0f;                      //[s]
+    Constants->plot_every = 0.5f;               //[s]
     Constants->err_every = 0.001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall-er", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
