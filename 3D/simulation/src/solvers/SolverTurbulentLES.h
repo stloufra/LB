@@ -73,6 +73,7 @@ class SolverTurbulentLES {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
     using VectorType = LBMTraits::VectorType;
+    using VectorTypeInt = LBMTraits::VectorType;
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
@@ -132,6 +133,29 @@ public:
 
 
 
+    void probeWrite(){
+
+        auto u_view = Data->u.getView();
+        auto rho_view = Data->rho.getView();
+
+        int x =1;//= Constants -> ProbeLocationLat.x();
+        int y =1;//= Constants -> ProbeLocationLat.y();
+        int z =1;//= Constants -> ProbeLocationLat.z();
+
+        printf("HERE\n");
+
+        auto Rho = rho_view(x,y,z);
+        printf("HERE2\n");
+
+        auto Ux = u_view(1,1,1).x();
+        auto Uy = u_view(x,y,z).y();
+        auto Uz = u_view(x,y,z).z();
+
+
+
+        outputerVTK::probeWriteOut(Constants, Ux, Uy, Uz, Rho);
+    }
+
     void runSimulation() {
 
         timer_loop.start();
@@ -140,13 +164,13 @@ public:
         while(k<Constants -> iterations)
         {
 
-                timer_momentsUpdate.start();
-                TURBULENCETYPE::omega(Data, Constants);
-                timer_momentsUpdate.stop();
+            timer_momentsUpdate.start();
+            TURBULENCETYPE::omega(Data, Constants);
+            timer_momentsUpdate.stop();
 
-                timer_dumping.start();
-                OUTLETTYPE::outletOmega(Data, Constants);
-                timer_dumping.stop();
+            timer_dumping.start();
+            OUTLETTYPE::outletOmega(Data, Constants);
+            timer_dumping.stop();
 
 
             timer_collision.start();
@@ -159,9 +183,10 @@ public:
 
             timer_bounceback.start();
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
-                #ifdef SYMMETRY
+            #ifdef SYMMETRY
                  SYMMETRYTYPE::symmetry(Data, Constants);
-                #endif
+                 printf("symmetry\n");
+            #endif
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
             timer_bounceback.stop();
@@ -175,6 +200,11 @@ public:
                 timer_timeAvg.start();
                     MOMENTTIMEAVGTYPE::momentAdd(Data, Constants);
                 timer_timeAvg.stop();
+            }
+            printf("Here");
+            if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k!=0)
+            {
+                probeWrite();
             }
 
             if(k%Constants -> err_every_it==0 && k!=0)
@@ -250,6 +280,23 @@ public:
             std::cout << "\nCalculation will run for " << Constants->iterations << " iterations.\n";
         }
 
+        if(Constants->probe_every_it != -1) {
+            RealType xProbe = Constants ->ProbeLocation.x();
+            RealType yProbe = Constants ->ProbeLocation.y();
+            RealType zProbe = Constants ->ProbeLocation.z();
+
+            int xLat = std::round(xProbe/(Constants -> BBmaxx - Constants -> BBminx)*Constants -> dimX_int);
+            int yLat = std::round(yProbe/(Constants -> BBmaxy - Constants -> BBminy)*Constants -> dimY_int);
+            int zLat = std::round(zProbe/(Constants -> BBmaxz - Constants -> BBminz)*Constants -> dimZ_int);
+
+            if(verbose){
+                std::cout << "Probe location in lattice " << xLat << ", " << yLat << ", " << zLat << std::endl;
+            }
+
+            VectorTypeInt Probe(xLat, yLat, zLat);
+            Constants -> ProbeLocationLat = Probe;
+
+        }
     }
 
     void setArraySizes(){

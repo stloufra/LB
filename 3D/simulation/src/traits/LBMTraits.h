@@ -67,6 +67,7 @@ public:
 
     using DeviceTypeHost = TNL::Devices::Host;
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
+    using VectorTypeInt = TNL::Containers::StaticVector< 3, int >;
     using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;

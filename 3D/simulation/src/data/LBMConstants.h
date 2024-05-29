@@ -4,6 +4,7 @@
 struct LBMConstants {
     using RealType = typename LBMTraits::RealType;
     using VectorType = typename LBMTraits::VectorType;
+    using VectorTypeInt = typename LBMTraits::VectorTypeInt;
     using string = typename std::string;
 
     //mesh
@@ -64,31 +65,35 @@ struct LBMConstants {
     //initialization
     VectorType VelocityInit = (0.f, 0.f, 0.f); //default
     string InitFileName;
-
     //turbulence
     const RealType CLES = 0.173f; //0.173f;
 
     //boundary dumping
 
     RealType omegaDumpingLow = -1.f; // if not set in main, dumping not performed
+
     RealType omegaDumpingHigh = -1.f; // if not set in main, dumping not performed
-
-
     //simulation
     RealType err;
+
+
     RealType time;                      //[s]
-
     RealType plot_every = -1.f;             //[s]
+
     RealType err_every = -1.f;              //[s]
-
     int plot_every_it = -1;
-    int err_every_it = -1;
 
+    int err_every_it = -1;
     int iterations;
 
     int iterationsMomentAvg;        // number of iteration to be time averaged
-    int TimeAvgCounter = 0;             // number of iterations to be time averaged counter
+
+    int TimeAvgCounter = 0;         // number of iterations to be time averaged counter
     bool timeAveraged;              // if true, already time averaged
+
+    int probe_every_it = -1.f;             // number of iterations for probe sampling
+    VectorType ProbeLocation = (0.f, 0.f, 0.f); //default
+    VectorTypeInt ProbeLocationLat = (0, 0, 0); //default
 
 
 

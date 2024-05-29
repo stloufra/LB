@@ -691,6 +691,32 @@ public:
         }
     }
 
+    static void probeWriteOut(LBMConstantsPointer &Constants, RealType velX, RealType velY, RealType velZ, RealType rho) {
+        const std::string filename = "./results/probeData.csv";
+        std::ofstream file;
+
+        // Check if file exists by attempting to open it in read mode
+        std::ifstream infile(filename);
+        bool fileExists = infile.good();
+        infile.close();
+
+        // Open file in append mode
+        file.open(filename, std::ios_base::app);
+
+        // If the file doesn't exist, write the header
+        if (!fileExists) {
+            file << "Sampling frequency is: "<< Constants->Ct * Constants->probe_every_it << "\n";
+            file << "velX,velY,velZ,rho\n";
+        }
+
+        // Append the new row of data
+        file << static_cast<float>(velX) << ","
+             << static_cast<float>(velY) << ","
+             << static_cast<float>(velZ) << ","
+             << static_cast<float>(rho) << "\n";
+
+        file.close();
+    }
 
 };
 

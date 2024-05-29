@@ -27,10 +27,8 @@ using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
 using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
 int main() {
-    // https://volkov.eng.ua.edu/
 
     //------------------------INITIALIZATION--------------------------//
-
 
     // initialize data carrier objects
     LBMConstantsPointer Constants;
@@ -146,6 +144,11 @@ int main() {
     Constants->plot_every = 0.5f;               //[s]
     Constants->err_every = 0.001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
+
+    // set sampling parameters
+    Constants->probe_every_it = 10;
+    VectorType Probe(1500.f, 200.f, 200.f);
+    Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
 
