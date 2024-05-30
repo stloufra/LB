@@ -30,6 +30,8 @@ int main() {
 
     //------------------------INITIALIZATION--------------------------//
 
+    bool runSim = true;
+
     // initialize data carrier objects
     LBMConstantsPointer Constants;
     LBMDataPointer Data;
@@ -38,15 +40,15 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionSRTTurbulent<Model>;
+    using Collision             = CollisionCumD3Q27TurbulentCombined<Model>;
     using Streaming             = StreamingAB<Model>;
-    using Symmetry              = BounceSymmetryHalf<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
+    using Symmetry              = NoSymmetry<Model>;
     using Inlet                 = InletVelocityMovingWall<Model>;
     using Outlet                = OutletNeighbourEquilibriumOmega<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
-    using Turbulence            = OmegaNo<Model>;
+    using Turbulence            = OmegaLES<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
     using TimeAvg               = MomentTimeAvg<Model>;
 
@@ -75,13 +77,11 @@ int main() {
                             Data);
 
 
-    bool runSim = true;
-
 
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 0.f); //change to 1 in z
+    VectorType Init(0.f, 0.f, 3.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
@@ -105,7 +105,7 @@ int main() {
                                       {3156.f, 770.f, 408.f},
                                       -2);
 
-    VectorType VelocityInlet(0.05f, 0.f, 0.f);
+    VectorType VelocityInlet(5.f, 0.f, 0.f);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
@@ -118,7 +118,7 @@ int main() {
     RealType inletDimX = 0.f;
     RealType inletDimY = 400.f;
     RealType inletDimZ = 200.f;
-    RealType meanVelocityInlet = 0.05f;       // 5
+    RealType meanVelocityInlet = 5.5f;       // 5
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -126,9 +126,9 @@ int main() {
 
 
     //set physical data
-    Constants->rho_fyz = 1293.f;                      //[kg/m3]     1000
-    Constants->ny_fyz = 10e-4f;                       //[m2/s]
-    Constants->u_guess_fyz = 0.05f;                    //[m/s] //TODO should be automatically calculated //5.5f
+    Constants->rho_fyz = 1.293f;                      //[kg/m3]     1000
+    Constants->ny_fyz = 10e-5f;                       //[m2/s]
+    Constants->u_guess_fyz = 2.f*meanVelocityInlet;                    //[m/s] //TODO should be automatically calculated //5.5f
     Constants->Fx_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
@@ -140,19 +140,19 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 20.0f;                      //[s]
-    Constants->plot_every = 0.5f;               //[s]
-    Constants->err_every = 0.001f;              //[s]
+    Constants->time = 8.0f;                      //[s]
+    Constants->plot_every = 0.05f;               //[s]
+    Constants->err_every = 0.01f;                //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters
-    Constants->probe_every_it = 10;
+    Constants->probe_every_it = 100;
     VectorType Probe(1500.f, 200.f, 200.f);
     Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall-er", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
@@ -163,6 +163,7 @@ int main() {
 
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
                                                 1); //TODO: if density = -1 then density is from nod itself
+        Mesher.compileBoundaryArrayWall(1);
         Mesher.compileBoundaryArrayInlets(1);
         Mesher.compileBoundaryArrayOutlets(1);
         Mesher.arrayTransfer(1);
@@ -222,5 +223,3 @@ int main() {
 
     return 0;
 }
-
-

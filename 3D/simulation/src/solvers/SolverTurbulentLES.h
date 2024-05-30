@@ -72,8 +72,12 @@ template<   typename MODELTYPE,
 class SolverTurbulentLES {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
+
     using VectorType = LBMTraits::VectorType;
+    using VectorTypeProbeCuda = LBMTraits::VectorTypeProbeCuda;
+    using VectorTypeProbeHost = LBMTraits::VectorTypeProbeHost;
     using VectorTypeInt = LBMTraits::VectorType;
+
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
@@ -135,25 +139,31 @@ public:
 
     void probeWrite(){
 
+        VectorTypeProbeCuda HolderCUDA(4);
+        VectorTypeProbeHost HolderHOST(4);
+
         auto u_view = Data->u.getView();
         auto rho_view = Data->rho.getView();
 
-        int x =1;//= Constants -> ProbeLocationLat.x();
-        int y =1;//= Constants -> ProbeLocationLat.y();
-        int z =1;//= Constants -> ProbeLocationLat.z();
+        int x = Constants -> ProbeLocationLat.x();
+        int y = Constants -> ProbeLocationLat.y();
+        int z = Constants -> ProbeLocationLat.z();
 
-        printf("HERE\n");
+        auto HoCuView = HolderCUDA.getView();
+        auto init = [ = ] __cuda_callable__( int i ) mutable
+        {
+            HoCuView[0] = u_view(x,y,z).x();
+            HoCuView[1] = u_view(x,y,z).y();
+            HoCuView[2] = u_view(x,y,z).z();
+            HoCuView[3] = rho_view(x,y,z);
+        };
+        parallelFor< TNL::Devices::Cuda >( 0, 1, init );
 
-        auto Rho = rho_view(x,y,z);
-        printf("HERE2\n");
+        HolderHOST = HolderCUDA;
 
-        auto Ux = u_view(1,1,1).x();
-        auto Uy = u_view(x,y,z).y();
-        auto Uz = u_view(x,y,z).z();
+        auto HoHoView = HolderHOST.getConstView();
 
-
-
-        outputerVTK::probeWriteOut(Constants, Ux, Uy, Uz, Rho);
+        outputerVTK::probeWriteOut(Constants, HoHoView[0], HoHoView[1], HoHoView[2], HoHoView[3]);
     }
 
     void runSimulation() {
@@ -201,10 +211,12 @@ public:
                     MOMENTTIMEAVGTYPE::momentAdd(Data, Constants);
                 timer_timeAvg.stop();
             }
-            printf("Here");
+
             if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k!=0)
             {
+                timer_output.start();
                 probeWrite();
+                timer_output.stop();
             }
 
             if(k%Constants -> err_every_it==0 && k!=0)
@@ -224,8 +236,7 @@ public:
             {
 
                 timer_output.start();
-                outputerVTK::variablesLatticeVTK(Data, Constants, k/Constants -> plot_every_it, 1);
-                //outputerVTK::omegaVTK(Data, Constants, 1);
+                outputerVTK::variablesVTK(Data, Constants, k/Constants -> plot_every_it, 1);
                 timer_output.stop();
             }
 

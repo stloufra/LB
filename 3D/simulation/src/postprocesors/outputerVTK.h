@@ -55,6 +55,136 @@ public:
         std::cout << "Mesh written.\n";
     }
 
+    static void variablesVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int step, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nCuda -> Host output variables\n" << std::endl; }
+
+
+
+            Data->rho_out = Data->rho;
+            Data->u_out = Data->u;
+            Data->p_out = Data->p;
+
+
+            std::ofstream out_file("results/variables."+std::to_string(step)+".vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rho_out(i, j, k) * Constants->Crho << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "p " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->p_out(i, j, k) * Constants->Cpressure << "\n";
+                    }
+                }
+            }
+
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->u_out(i, j, k).x() * Constants->Cu << " "
+                                 << Data->u_out(i, j, k).y() * Constants->Cu << " "
+                                 << Data->u_out(i, j, k).z() * Constants->Cu << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nHost output variables\n" << std::endl; }
+
+
+            std::ofstream out_file("results/variables."+std::to_string(step)+".vtk");
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rho(i, j, k) * Constants->Crho << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->p(i, j, k) * Constants->Cpressure << "\n";
+                    }
+                }
+            }
+
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->u(i, j, k).x() * Constants->Cu << " "
+                                 << Data->u(i, j, k).y() * Constants->Cu << " "
+                                 << Data->u(i, j, k).z() * Constants->Cu << "\n";
+                    }
+                }
+            }
+
+            out_file.close();
+
+        }
+
+    }
+
     static void variablesLatticeVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int step, bool verbose) {
 
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
@@ -178,6 +308,348 @@ public:
                     }
                 }
             }
+
+            out_file.close();
+
+        }
+    }
+
+    static void variablesTimeAvgVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
+            if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
+
+            ArrayTypeVariablesScalarHost rho_out;
+            ArrayTypeVariablesVectorHost u_out;
+
+
+            rho_out = Data->rhoTimeAvg;
+            u_out = Data->uTimeAvg;
+
+
+            std::ofstream out_file("results/variablesTimeAvg.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << rho_out(i, j, k)* Constants->Crho << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << rho_out(i, j, k) * Constants -> cs2 * Constants->Cpressure << "\n";
+                    }
+                }
+            }
+
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << u_out(i, j, k).x()* Constants->Cu << " "
+                                 << u_out(i, j, k).y()* Constants->Cu << " "
+                                 << u_out(i, j, k).z()* Constants->Cu << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
+            if (verbose) { std::cout << "\nHost -> Host output Lattice units\n" << std::endl; }
+
+            std::ofstream out_file("results/variablesTimeAvg.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rhoTimeAvg(i, j, k)* Constants->Crho<< "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rhoTimeAvg(i, j, k)*Constants ->cs2 * Constants->Cpressure<< "\n";
+                    }
+                }
+            }
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->uTimeAvg(i, j, k).x()* Constants->Cu << " "
+                                 << Data->uTimeAvg(i, j, k).y()* Constants->Cu << " "
+                                 << Data->uTimeAvg(i, j, k).z()* Constants->Cu << "\n";
+                    }
+                }
+            }
+
+            out_file.close();
+
+        }
+    }
+
+    static void variablesTimeAvgLatticeVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
+            if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
+
+            ArrayTypeVariablesScalarHost rho_out;
+            ArrayTypeVariablesVectorHost u_out;
+
+
+            rho_out = Data->rhoTimeAvg;
+            u_out = Data->uTimeAvg;
+
+
+            std::ofstream out_file("results/variablesTimeAvg.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << rho_out(i, j, k) << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << rho_out(i, j, k) * Constants -> cs2 << "\n";
+                    }
+                }
+            }
+
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << u_out(i, j, k).x() << " " << u_out(i, j, k).y() << " "
+                                 << u_out(i, j, k).z() << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
+            if (verbose) { std::cout << "\nHost -> Host output Lattice units\n" << std::endl; }
+
+            std::ofstream out_file("results/variablesTimeAvg.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS " << "rho " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rhoTimeAvg(i, j, k) << "\n";
+                    }
+                }
+            }
+
+            out_file << "SCALARS " << "pressure " << "double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->rhoTimeAvg(i, j, k)*Constants ->cs2 << "\n";
+                    }
+                }
+            }
+
+            out_file << "VECTORS " << "U " << "double\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data->uTimeAvg(i, j, k).x() << " " << Data->uTimeAvg(i, j, k).y() << " " << Data->uTimeAvg(i, j, k).z()
+                                 << "\n";
+                    }
+                }
+            }
+
+            out_file.close();
+
+        }
+    }
+
+    static void omegaVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+
+        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
+            if (verbose) { std::cout << "\nCuda -> Host output Omega.\n" << std::endl; }
+
+
+            ArrayTypeVariablesScalarHost omega_out;
+
+
+            omega_out = Data->omega;
+
+
+            std::ofstream out_file("results/omega.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Omega double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << omega_out(i, j, k) << "\n";
+                    }
+                }
+            }
+
+
+            out_file.close();
+
+        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
+            if (verbose) { std::cout << "\nHost -> Host output Omega.\n" << std::endl; }
+
+            std::ofstream out_file("results/omega.vtk");
+
+
+            out_file << "# vtk DataFile Version 2.0\n";
+            out_file << "LBE variables\n";
+            out_file << "ASCII\n";
+            out_file << "DATASET STRUCTURED_POINTS\n";
+            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
+                     << "\n";
+            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
+                     << 1.f / Constants->resolution_factor
+                     << " "
+                     << 1.f / Constants->resolution_factor << "\n";
+            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
+                     << Constants->BBminy - Constants->additional_factor << " "
+                     << Constants->BBminz - Constants->additional_factor << "\n";
+            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+
+            out_file << "SCALARS Omega double 1\n";
+            out_file << "LOOKUP_TABLE default\n";
+
+            for (int k = 0; k < Constants->dimZ_int; k++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    for (int i = 0; i < Constants->dimX_int; i++) {
+                        out_file << Data -> omega(i, j, k) << "\n";
+                    }
+                }
+            }
+
 
             out_file.close();
 
@@ -348,349 +820,6 @@ public:
         }
     }
 
-    static void omegaVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
-
-        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
-            if (verbose) { std::cout << "\nCuda -> Host output Omega.\n" << std::endl; }
-
-
-            ArrayTypeVariablesScalarHost omega_out;
-
-
-            omega_out = Data->omega;
-
-
-            std::ofstream out_file("results/omega.vtk");
-
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS Omega double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << omega_out(i, j, k) << "\n";
-                    }
-                }
-            }
-
-
-            out_file.close();
-
-        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
-            if (verbose) { std::cout << "\nHost -> Host output Omega.\n" << std::endl; }
-
-            std::ofstream out_file("results/omega.vtk");
-
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS Omega double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data -> omega(i, j, k) << "\n";
-                    }
-                }
-            }
-
-
-            out_file.close();
-
-        }
-    }
-
-    static void variablesVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int s, int plot_every, bool verbose) {
-
-        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
-            if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
-
-
-
-            Data->rho_out = Data->rho;
-            Data->u_out = Data->u;
-            Data->p_out = Data->p;
-
-            std::string step =std::to_string(s/plot_every);
-
-            std::ofstream out_file("results/variables."+step+".vtk");
-
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS " << "rho " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rho_out(i, j, k) * Constants->Crho << "\n";
-                    }
-                }
-            }
-
-            out_file << "SCALARS " << "p " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->p_out(i, j, k) * Constants->Cpressure << "\n";
-                    }
-                }
-            }
-
-
-            out_file << "VECTORS " << "U " << "double\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->u_out(i, j, k).x() * Constants->Cu << " "
-                                 << Data->u_out(i, j, k).y() * Constants->Cu << " "
-                                 << Data->u_out(i, j, k).z() * Constants->Cu << "\n";
-                    }
-                }
-            }
-
-
-            out_file.close();
-
-        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
-            if (verbose) { std::cout << "\nHost output Lattice units\n" << std::endl; }
-
-            std::string step =std::to_string(s/plot_every);
-
-            std::ofstream out_file("results/variables."+step+".vtk");
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS " << "rho " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rho(i, j, k) * Constants->Crho << "\n";
-                    }
-                }
-            }
-
-            out_file << "SCALARS " << "rho " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->p(i, j, k) * Constants->Cpressure << "\n";
-                    }
-                }
-            }
-
-
-            out_file << "VECTORS " << "U " << "double\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->u(i, j, k).x() * Constants->Cu << " "
-                                 << Data->u(i, j, k).y() * Constants->Cu << " "
-                                 << Data->u(i, j, k).z() * Constants->Cu << "\n";
-                    }
-                }
-            }
-
-            out_file.close();
-
-        }
-
-    }
-
-    static void variablesTimeAvgVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
-
-        if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
-            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
-            if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
-
-            ArrayTypeVariablesScalarHost rho_out;
-            ArrayTypeVariablesVectorHost u_out;
-
-
-            rho_out = Data->rhoTimeAvg;
-            u_out = Data->uTimeAvg;
-
-
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
-
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS " << "rho " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) << "\n";
-                    }
-                }
-            }
-
-            out_file << "SCALARS " << "pressure " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) * Constants -> cs2 << "\n";
-                    }
-                }
-            }
-
-
-            out_file << "VECTORS " << "U " << "double\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << u_out(i, j, k).x() << " " << u_out(i, j, k).y() << " "
-                                 << u_out(i, j, k).z() << "\n";
-                    }
-                }
-            }
-
-
-            out_file.close();
-
-        } else if (std::is_same<DeviceType, TNL::Devices::Host>::value) {
-            if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
-            if (verbose) { std::cout << "\nHost -> Host output Lattice units\n" << std::endl; }
-
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
-
-
-            out_file << "# vtk DataFile Version 2.0\n";
-            out_file << "LBE variables\n";
-            out_file << "ASCII\n";
-            out_file << "DATASET STRUCTURED_POINTS\n";
-            out_file << "DIMENSIONS " << Constants->dimX_int << " " << Constants->dimY_int << " " << Constants->dimZ_int
-                     << "\n";
-            out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " "
-                     << 1.f / Constants->resolution_factor
-                     << " "
-                     << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
-            out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
-
-            out_file << "SCALARS " << "rho " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rhoTimeAvg(i, j, k) << "\n";
-                    }
-                }
-            }
-
-            out_file << "SCALARS " << "pressure " << "double 1\n";
-            out_file << "LOOKUP_TABLE default\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rhoTimeAvg(i, j, k)*Constants ->cs2 << "\n";
-                    }
-                }
-            }
-
-            out_file << "VECTORS " << "U " << "double\n";
-
-            for (int k = 0; k < Constants->dimZ_int; k++) {
-                for (int j = 0; j < Constants->dimY_int; j++) {
-                    for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->uTimeAvg(i, j, k).x() << " " << Data->uTimeAvg(i, j, k).y() << " " << Data->uTimeAvg(i, j, k).z()
-                                 << "\n";
-                    }
-                }
-            }
-
-            out_file.close();
-
-        }
-    }
-
     static void probeWriteOut(LBMConstantsPointer &Constants, RealType velX, RealType velY, RealType velZ, RealType rho) {
         const std::string filename = "./results/probeData.csv";
         std::ofstream file;
@@ -706,14 +835,15 @@ public:
         // If the file doesn't exist, write the header
         if (!fileExists) {
             file << "Sampling frequency is: "<< Constants->Ct * Constants->probe_every_it << "\n";
-            file << "velX,velY,velZ,rho\n";
+            file << "ux,uy,uz,rho,pressure\n";
         }
 
         // Append the new row of data
-        file << static_cast<float>(velX) << ","
-             << static_cast<float>(velY) << ","
-             << static_cast<float>(velZ) << ","
-             << static_cast<float>(rho) << "\n";
+        file << static_cast<float>(velX* Constants->Cu) << ","
+             << static_cast<float>(velY* Constants->Cu) << ","
+             << static_cast<float>(velZ* Constants->Cu) << ","
+                << static_cast<float>(rho* Constants->Crho) << ","
+             << static_cast<float>(rho*Constants ->cs2 * Constants->Cpressure) << "\n";
 
         file.close();
     }

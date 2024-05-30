@@ -7,6 +7,7 @@
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Algorithms/reduce.h>
 #include <TNL/Containers/StaticVector.h>
+#include <TNL/Containers/Vector.h>
 #include <vector>
 
 #pragma once
@@ -64,14 +65,16 @@ public:
     using RealType = float;
 
     using DeviceType = TNL::Devices::Cuda;
-
     using DeviceTypeHost = TNL::Devices::Host;
+
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
     using VectorTypeInt = TNL::Containers::StaticVector< 3, int >;
+    using VectorTypeProbeCuda = TNL::Containers::Vector< RealType, DeviceType >;
+    using VectorTypeProbeHost = TNL::Containers::Vector< RealType, DeviceTypeHost >;
+
     using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
-
     using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
 
     // ---------------- MESH -----------------------
