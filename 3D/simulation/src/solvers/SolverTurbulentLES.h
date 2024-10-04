@@ -34,6 +34,7 @@
 #include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmegaRF.h"
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"

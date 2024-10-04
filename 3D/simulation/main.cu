@@ -40,12 +40,12 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionCumD3Q27TurbulentCombined<Model>;
+    using Collision             = CollisionCumD3Q27Turbulent2017<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Symmetry              = NoSymmetry<Model>;
     using Inlet                 = InletVelocityMovingWall<Model>;
-    using Outlet                = OutletNeighbourEquilibriumOmega<Model>;
+    using Outlet                = OutletNeighbourEquilibriumOmegaRF<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;
