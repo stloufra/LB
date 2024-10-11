@@ -17,7 +17,7 @@ cuda: $(CUDA_TARGETS)
 
 .PHONY: clean
 clean:
-	rm -f *.d *.o *.cuo results/*.vtk $(TARGETS) $(CUDA_TARGETS)
+	rm -f *.d *.o *.cuo results/*.vtk  results/*.txt $(TARGETS) $(CUDA_TARGETS)
 
 .PHONY: run
 run:
