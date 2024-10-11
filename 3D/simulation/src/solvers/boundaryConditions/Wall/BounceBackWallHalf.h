@@ -18,7 +18,7 @@ struct BounceBackWallHalf
 
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
-        auto wall_view = Data->meshBoundaryWall.getView();
+        auto wall_view = Data->meshBoundaryWall.getView(); //defined in mesher
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
         const auto Nvel = Constants ->Nvel;
@@ -34,19 +34,20 @@ struct BounceBackWallHalf
 
             Vertex vert = wall_view[i.x()].vertex;
 
+            if(mesh_view(vert.x, vert.y, vert.z) != -1){ //no bb on inlet
 
-            for (int vel = 0; vel < Nvel; vel++) {
+		    for (int vel = 0; vel < Nvel; vel++) {
 
-                int dx, dy, dz;
+		        int dx, dy, dz;
 
-                dx = vert.x - MD.c[vel][0];
-                dy = vert.y - MD.c[vel][1];
-                dz = vert.z - MD.c[vel][2];
+		        dx = vert.x - MD.c[vel][0];
+		        dy = vert.y - MD.c[vel][1];
+		        dz = vert.z - MD.c[vel][2];
 
-                if (mesh_view(dx, dy, dz) == 0) {
-                    df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, MD.c_rev[vel]);
-                }
-
+		        if (mesh_view(dx, dy, dz) == 0) {
+		            df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, MD.c_rev[vel]);
+		        }
+		}
             }
 
         };

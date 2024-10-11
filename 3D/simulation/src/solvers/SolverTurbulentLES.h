@@ -27,10 +27,15 @@
 #include "./streamings//StreamingAB.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
+
 #include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
 #include "boundaryConditions/Symmetry/NoSymmetry.h"
+
 #include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
 #include "boundaryConditions/Inlet/InletVelocityZouHe.h"
+#include "boundaryConditions/Inlet/InletVelocityEquilibrium.h"
+
+#include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
 #include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"

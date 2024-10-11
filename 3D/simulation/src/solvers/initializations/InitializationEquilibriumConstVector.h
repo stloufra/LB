@@ -94,6 +94,19 @@ struct InitializationEquilibriumConstVector {
             uTimeAvg_view(i.x(), i.y(), i.z()).z() = 0.f;
         };
 
+        auto inletVelocities = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<1, int> &i  ) mutable
+        {
+
+            Vector velc = inlet_view[i.x()].velocity;
+            Vertex vert = inlet_view[i.x()].vertex;
+
+            u_view(vert.x, vert.y, vert.z).x() = velc.x();
+            u_view(vert.x, vert.y, vert.z).y() = velc.y();
+            u_view(vert.x, vert.y, vert.z).z() = velc.z();
+
+        };
 
         auto init_df = [=]
         __cuda_callable__(
@@ -117,28 +130,14 @@ struct InitializationEquilibriumConstVector {
         TNL::Containers::StaticArray<3, int> end1{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin1, end1, init_variables);
 
+        parallelFor<DeviceType>(0, Constants->inlet_num, inletVelocities);
 
         parallelFor<DeviceType>(begin1, end1, init_df);
 
 
 
 
-        auto inletVelocities = [=]
-        __cuda_callable__(
-        const TNL::Containers::StaticArray<1, int> &i  ) mutable
-        {
-
-            Vector velc = inlet_view[i.x()].velocity;
-            Vertex vert = inlet_view[i.x()].vertex;
-
-            u_view(vert.x, vert.y, vert.z).x() = velc.x();
-            u_view(vert.x, vert.y, vert.z).y() = velc.y();
-            u_view(vert.x, vert.y, vert.z).z() = velc.z();
-
-        };
-
-
-        parallelFor<DeviceType>(0, Constants->inlet_num, inletVelocities);
+   
     }
 
 };

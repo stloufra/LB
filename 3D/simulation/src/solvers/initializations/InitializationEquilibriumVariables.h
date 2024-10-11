@@ -31,6 +31,7 @@ struct InitializationEquilibriumVariables {
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
         auto p_view = Data->p.getView();
+        auto inlet_view = Data->meshBoundaryInlet.getView();
 
         auto Cl = Constants->Cl;
         auto Ct = Constants->Ct;
@@ -135,6 +136,22 @@ struct InitializationEquilibriumVariables {
 
             return MD.weight[velo] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
+
+        auto inletVelocities = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<1, int> &i  ) mutable
+        {
+
+            Vector velc = inlet_view[i.x()].velocity;
+            Vertex vert = inlet_view[i.x()].vertex;
+
+            u_view(vert.x, vert.y, vert.z).x() = velc.x();
+            u_view(vert.x, vert.y, vert.z).y() = velc.y();
+            u_view(vert.x, vert.y, vert.z).z() = velc.z();
+
+        };
+
+        parallelFor<DeviceType>(0, Constants->inlet_num, inletVelocities);
 
 
         auto init_df = [=]

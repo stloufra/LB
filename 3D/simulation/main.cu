@@ -40,12 +40,13 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionCumD3Q27Turbulent2017<Model>;
+    using Collision             = CollisionCumD3Q27Turbulent2015<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Symmetry              = NoSymmetry<Model>;
-    using Inlet                 = InletVelocityMovingWall<Model>;
-    using Outlet                = OutletNeighbourEquilibriumOmegaRF<Model>;
+
+    using Inlet                 = InletVelocityEquilibrium<Model>;
+    using Outlet                = OutletDensityInterpolated<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;
@@ -92,16 +93,17 @@ int main() {
     Constants->file_name = "Fany.off";
 
 
-    //set geometry objects
+    //set geometry objects -1 streaming from it | no-bounce back - INLET
+    //set geometry objects -2 streaming from and into it | bounce back - OUTLET
 
     //resolution 3
     geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
                                       {150.f, 350.f, 408.f},
-                                      {160.f, 770.f, 408.f},-1);
+                                      {155.f, 770.f, 408.f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({3146.f, 345.f, -8.f},
-                                      {3146.f, 345.f, 408.f},
+    geometryObjectCuboid cuboidOutlet({3148.f, 345.f, -8.f},
+                                      {3148.f, 345.f, 408.f},
                                       {3156.f, 770.f, 408.f},
                                       -2);
 
@@ -141,8 +143,8 @@ int main() {
     // set simulation parameters
 
     Constants->time = 8.0f;                      //[s]
-    Constants->plot_every = 0.05f;               //[s]
-    Constants->err_every = 0.01f;                //[s]
+    Constants->plot_every = 0.1f;               //[s]
+    Constants->err_every = 0.001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters

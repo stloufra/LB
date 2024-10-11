@@ -26,11 +26,16 @@
 #include "./streamings//StreamingAB.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
+
 #include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
 #include "boundaryConditions/Inlet/InletVelocityZouHe.h"
+#include "boundaryConditions/Inlet/InletVelocityEquilibrium.h"
+
+
 #include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
