@@ -7,6 +7,7 @@
 #include <iostream>
 #include <omp.h>
 #include <cassert>
+#include <cmath>
 #include "Obj_template.h"
 #include <TNL/Containers/NDArray.h>
 
@@ -93,6 +94,33 @@ public:
                     velocities_y(j+1,i+1) = v_y;
                 }
             }  
+        }
+
+        std::cout<< "Meshing of ";
+        std::cout<< PATCH(type);
+        std::cout <<" undergone successfully."<<"\n";
+    }
+
+    void meshing_inlet(Obj_template &obj, RealType u_x_mean, RealType y_center, RealType height, int type)
+    {
+
+        RealType u_max = (3.0f / 2.0f) * u_x_mean;
+
+        for(int j=-1; j < Ny + 1; j++)
+        {
+            for(int i=-1; i < Nx + 1 ; i++)
+            {
+                if(obj.is_inside(i,j))
+                {
+                    RealType u_x = u_max * (1 - std::pow((y_center - j)/(height/2.f),2));
+
+                    u_x = u_x >= 0 ? u_x : 0;
+
+                    mesh(j+1,i+1) = type;
+                    velocities_x(j+1,i+1)= u_x;
+                    velocities_y(j+1,i+1) = 0;
+                }
+            }
         }
 
         std::cout<< "Meshing of ";
