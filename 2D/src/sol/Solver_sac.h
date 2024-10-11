@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <cassert>
+#include <filesystem>
 #include <omp.h>
 #include "../geo/Mesher.h"
 #include <TNL/Containers/NDArray.h>
@@ -213,8 +214,6 @@ public:
     StaticArray< 3, int > end{ Nx, Ny, Nvel};
     parallelFor< DeviceType >( begin, end, coll );
 
-
-    
   }
 
   void collision_CLBM()
@@ -228,8 +227,8 @@ public:
     auto df_post_view = df_post.getView();
 
     RealType tau = this->tau;
-    RealType fx = this->Fx/rho;
-    RealType fy = this->Fx/rho;
+    RealType Fx = this->Fx;
+    RealType Fy = this->Fx;
 
 
     auto coll = [=] __cuda_callable__ ( const StaticArray< 2, int >& i  ) mutable
@@ -239,6 +238,9 @@ public:
         RealType rho = rho_view(i.y(), i.x());
         RealType ux = ux_view(i.y(), i.x());
         RealType uy = uy_view(i.y(), i.x());
+
+        RealType fx = 0;//Fx/rho;
+        RealType fy = 0;//Fy/rho;
 
         RealType df0 = df_view(i.y(), i.x(), 0);
         RealType df1 = df_view(i.y(), i.x(), 1);
@@ -785,6 +787,34 @@ public:
     }
 
   }
+
+  void appendError(int k) {
+    std::string filepath = "results/error.txt";
+    // Check if file exists; create it if not
+    if (!std::filesystem::exists(filepath)) {
+        std::ofstream outfile(filepath);
+        if (!outfile) {
+            std::cerr << "Error creating file: " << filepath << std::endl;
+            return;
+        }
+        outfile << "Iteration, Error\n";  // Header for new file
+        outfile.close();
+    }
+
+    // Open the file in append mode
+    std::ofstream outfile(filepath, std::ios_base::app);
+    if (!outfile) {
+        std::cerr << "Error opening file: " << filepath << std::endl;
+        return;
+    }
+
+    // Append the iteration and error
+    outfile << k << ", " << err << "\n";
+
+    // Close the file
+    outfile.close();
+}
+
 
   void convert_to_lattice(RealType L_fyz, RealType U_fyz, RealType rho_fyz, RealType ny_fyz, RealType U_lb)
   {

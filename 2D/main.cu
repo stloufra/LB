@@ -34,7 +34,7 @@ int main()
     const RealType Fy = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
 
     const RealType time =10000000.f;         //[s]
-    const RealType plot_every=200.f;         //[s]
+    const RealType plot_every=0.f;           //[s] rewritten on line 86
 
     int plot_every_it;
     int iterations;
@@ -63,7 +63,7 @@ int main()
     mesh_rectangle.meshing(front_wall,0);
     mesh_rectangle.meshing(back_wall,0);
     mesh_rectangle.meshing(outlet, 3);
-    mesh_rectangle.meshing_moving(inlet, ux, 0, 2);
+    mesh_rectangle.meshing_inlet(inlet, ux, 3.f/4.f*Ny, Ny/2, 2);
 
     //mesh_rectangle.meshing(cylinder, 0);
     mesh_rectangle.meshing(blockage,0);
@@ -83,7 +83,7 @@ int main()
     std::cout<<"\nCalculation will run for "<<iterations<<" iterations.\n";
 
     //manual plotting
-    plot_every_it = 500;
+    plot_every_it = 10000;
     std::cout<<"\nPlotting every " << plot_every_it << " iterations.\n";
     
     solver.initialization_eq(rho, ux/2, uy, Fx, Fy, 0);
@@ -108,7 +108,7 @@ int main()
 
 
     int k = 0;
-    while(k<iterations && run_simulation) //err>=10e-4)
+    while(solver.err>=10e-4)
     {
         k++;
         /*timer_postpro.start();
@@ -134,15 +134,16 @@ int main()
         timer_postpro.stop();
 
 
-        if(k%500==0 && k!=0)
+        if(k%500==0)
         {
 
             timer_err.start();
             solver.Err();
-            //printf("\n err=%e ux_center=%e uy_center=%e rho_center=%e k=%d\n",solver.err,solver.ux.getView()(Ny/2,Nx/2),solver.uy.getView()(Ny/2,Nx/2),solver.rho.getView()(Ny/2,Nx/2), k);
+            solver.appendError(k);
             printf("\n err=%e, k=%d \n" ,solver.err, k);
-            if (std::isnan(solver.err))
-             {
+
+
+            if (std::isnan(solver.err)) {
                 std::cout << "\n Error is NaN, breaking out.\n";
                 break;
              }
@@ -153,20 +154,12 @@ int main()
 
         
 
-        if(k%plot_every_it==0) // && k <= 6000)
+        if(k%plot_every_it==0)
         {   
             timer_output.start();
             solver.output_VTK(k,plot_every_it);
             timer_output.stop();
         }
-
-       /* if(k%5==0 && k > 6000)
-        {
-            timer_output.start();
-            solver.output_VTK(k,5);
-            timer_output.stop();
-        }*/
-   
     }
 
     timer_loop.stop();
