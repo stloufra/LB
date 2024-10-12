@@ -46,13 +46,13 @@ public:
 
         Constants->dimX_int = std::ceil(
                 (Constants->BBmaxx - Constants->BBminx) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor);// * Constants->resolution_factor);
         Constants->dimY_int = std::ceil(
                 (Constants->BBmaxy - Constants->BBminy) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor);// * Constants->resolution_factor);
         Constants->dimZ_int = std::ceil(
                 (Constants->BBmaxz - Constants->BBminz) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor);// * Constants->resolution_factor);
 
         Data->meshFluidHost.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
@@ -89,11 +89,11 @@ public:
             for (int j = 0; j < Constants->dimY_int; j++) {
                 for (int k = 0; k < Constants->dimZ_int; k++) {
                     lookx = static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                            Constants->additional_factor;
+                            0.99*Constants->additional_factor / Constants->resolution_factor;
                     looky = static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                            Constants->additional_factor;
+                            0.99*Constants->additional_factor / Constants->resolution_factor;
                     lookz = static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                            Constants->additional_factor;
+                            0.99*Constants->additional_factor / Constants->resolution_factor;
 
                     d3 pnt_ask = {lookx, looky, lookz};
 

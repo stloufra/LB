@@ -38,19 +38,19 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.12;
-    Constants->additional_factor = 6;                              // at least 1 for additional wall around
-    Constants->point_outside = {2, 1000, 0};
-    Constants->file_name = "Fany.off";
+    Constants->resolution_factor = 700;
+    Constants->additional_factor = 1;                      // at least 1 for additional wall around
+    Constants->point_outside = {1, 1, 1};
+    Constants->file_name = "BackwardStepTurbulent.off";
 
 
     //----------------------HANDLING GEOMETRY--------------------------//
 
 
     timer_handling.start();
-        Handler->polyhedronFromFile(Constants, 0);        //read the file and store the polyhedron in the handler object
-        Handler->polyhedronBbox(1);               //compute the bounding box of the polyhedron
-        Handler->writeToConstants(Constants);             //write the BBOX into the Constats
+        Handler->polyhedronFromFile(Constants, 0);    //read the file and store the polyhedron in the handler object
+        Handler->polyhedronBbox(1);                     //compute the bounding box of the polyhedron
+        Handler->writeToConstants(Constants);               //write the BBOX into the Constats
     timer_handling.stop();
 
 
@@ -67,10 +67,10 @@ int main() {
     //----------------------MESHING OUTPUT--------------------------//
 
     timer_VTK.start();
-        outputerVTK::MeshVTK(Data, Constants, "meshLESsmall");
+        outputerVTK::MeshVTK(Data, Constants, "BackwardStepTurbulent");
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall-er");
+    outputerMesh::MeshMatrixOut(Data, Constants, "BackwardStepTurbulent");
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");

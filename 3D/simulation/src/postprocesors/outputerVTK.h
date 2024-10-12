@@ -36,9 +36,9 @@ public:
         out_file << "ASPECT_RATIO " << 1.f / Constants->resolution_factor << " " << 1.f / Constants->resolution_factor
                  << " "
                  << 1.f / Constants->resolution_factor << "\n";
-        out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                 << Constants->BBminy - Constants->additional_factor << " "
-                 << Constants->BBminz - Constants->additional_factor << "\n";
+        out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
         out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
         out_file << "SCALARS " << "object " << "double 1\n";
@@ -80,9 +80,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -139,9 +139,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -213,9 +213,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -271,9 +271,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -341,9 +341,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -401,9 +401,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -472,9 +472,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -531,9 +531,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "rho " << "double 1\n";
@@ -599,9 +599,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS Omega double 1\n";
@@ -634,9 +634,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS Omega double 1\n";
@@ -681,9 +681,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "DFunciton_" + std::to_string(velocity) << " double 1\n";
@@ -716,9 +716,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS " << "DFunciton_" + std::to_string(velocity) << " double 1\n";
@@ -763,9 +763,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS Tau double 1\n";
@@ -798,9 +798,9 @@ public:
                      << 1.f / Constants->resolution_factor
                      << " "
                      << 1.f / Constants->resolution_factor << "\n";
-            out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor << " "
-                     << Constants->BBminy - Constants->additional_factor << " "
-                     << Constants->BBminz - Constants->additional_factor << "\n";
+           out_file << "ORIGIN " << Constants->BBminx - Constants->additional_factor / Constants->resolution_factor<< " "
+                 << Constants->BBminy - Constants->additional_factor / Constants->resolution_factor << " "
+                 << Constants->BBminz - Constants->additional_factor /  Constants->resolution_factor<< "\n";
             out_file << "POINT_DATA " << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
 
             out_file << "SCALARS Tau double 1\n";
