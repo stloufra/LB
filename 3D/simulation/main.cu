@@ -109,6 +109,8 @@ int main() {
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
 
+    VectorType velocityInletUniform(46.78f, 0.f, 0.f);
+
     VectorType NormalOutlet(1.f, 0.f, 0.f);
 
     //inlet parabolic data
@@ -139,8 +141,8 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 8.0f;                      //[s]
-    Constants->plot_every = 0.1f;               //[s]
+    Constants->time = 80.0f;                      //[s]
+    Constants->plot_every = 0.5f;               //[s]
     Constants->err_every = 0.001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
@@ -157,7 +159,10 @@ int main() {
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
-        Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
+        //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
+
+
+        Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
                                                 1); //TODO: if density = -1 then density is from nod itself
         Mesher.compileBoundaryArrayWall(1);

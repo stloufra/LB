@@ -32,6 +32,10 @@ struct NonDimensiolnaliseFactorsVelocity
         RealType L_fyz_y = (abs(Constants->BBmaxy - Constants->BBminy) + 2*Constants -> additional_factor/ Constants -> resolution_factor) * Constants->conversion_factor_fyz;
         RealType L_fyz_z = (abs(Constants->BBmaxz - Constants->BBminz)+ 2*Constants -> additional_factor/ Constants -> resolution_factor) * Constants->conversion_factor_fyz;
 
+        std::cout << "L in X direction is: " <<  Constants->L_fyz << std::endl;
+        std::cout << "L in Y direction is: " << L_fyz_y << std::endl;
+        std::cout << "L in Z direction is: " << L_fyz_z << std::endl;
+
 
         Constants->Cl = Constants->L_fyz / Constants->dimX_int;
 
