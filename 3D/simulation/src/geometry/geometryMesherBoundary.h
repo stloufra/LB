@@ -68,11 +68,11 @@ public:
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
                     lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor );
                     looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
                     lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -134,11 +134,11 @@ public:
             Vertex vert = BC.vertex;
 
             lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
             looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
             lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
 
             if (cuboid.isInside({lookx, looky, lookz})) {
 
@@ -206,11 +206,11 @@ public:
             Vertex vert = BC.vertex;
 
             lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
             looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
             lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor);
+                     Constants->additional_factor/ Constants->resolution_factor);
 
             if (cuboid.isInside({lookx, looky, lookz})) {
                 // Calculate the distance from the inlet center
@@ -294,11 +294,11 @@ public:
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
                     lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
                     looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
                     lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -349,11 +349,11 @@ public:
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
                     lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
                     looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
                     lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor);
+                             Constants->additional_factor/ Constants->resolution_factor);
 
                     d3 pnt_ask = {lookx, looky, lookz};
 

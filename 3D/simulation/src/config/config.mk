@@ -26,7 +26,7 @@ else
 endif
 
 # CUDA compiler flags
-CUDA_CXXFLAGS := -std=c++17 --expt-relaxed-constexpr --expt-extended-lambda $(TNL_INCLUDE_DIRS)
+CUDA_CXXFLAGS := -std=c++17 --expt-relaxed-constexpr --expt-extended-lambda $(TNL_INCLUDE_DIRS) -diag-suppress 174
 
 ifeq ($(WITH_DEBUG),yes)
     CUDA_CXXFLAGS += -DHAVE_CUDA

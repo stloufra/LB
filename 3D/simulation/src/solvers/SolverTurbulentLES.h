@@ -302,13 +302,16 @@ public:
             RealType yProbe = Constants ->ProbeLocation.y();
             RealType zProbe = Constants ->ProbeLocation.z();
 
-            int xLat = std::round(xProbe/(Constants -> BBmaxx - Constants -> BBminx)*Constants -> dimX_int);
-            int yLat = std::round(yProbe/(Constants -> BBmaxy - Constants -> BBminy)*Constants -> dimY_int);
-            int zLat = std::round(zProbe/(Constants -> BBmaxz - Constants -> BBminz)*Constants -> dimZ_int);
+            int xLat = std::round(xProbe/(Constants -> BBmaxx - Constants -> BBminx + 2*(Constants->additional_factor/Constants->resolution_factor))*Constants -> dimX_int);
+            int yLat = std::round(yProbe/(Constants -> BBmaxy - Constants -> BBminy+ 2*(Constants->additional_factor/Constants->resolution_factor))*Constants -> dimY_int);
+            int zLat = std::round(zProbe/(Constants -> BBmaxz - Constants -> BBminz+ 2*(Constants->additional_factor/Constants->resolution_factor))*Constants -> dimZ_int);
+
 
             if(verbose){
                 std::cout << "Probe location in lattice " << xLat << ", " << yLat << ", " << zLat << std::endl;
             }
+
+            assert(xLat >= Constants -> dimX_int && "Probe must be in the domain!");
 
             VectorTypeInt Probe(xLat, yLat, zLat);
             Constants -> ProbeLocationLat = Probe;

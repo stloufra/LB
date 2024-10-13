@@ -86,28 +86,25 @@ int main() {
     Constants->VelocityInit = Init;
 
 
-    //set meshing data
+   /* //set meshing data
     Constants->resolution_factor = 0.1;
     Constants->additional_factor = 6;                              // at least 1 for additional wall around
     Constants->point_outside = {2, 1000, 0};
-    Constants->file_name = "Fany.off";
+    Constants->file_name = "Fany.off";*/
 
 
     //set geometry objects -1 streaming from it | no-bounce back - INLET
     //set geometry objects -2 streaming from and into it | bounce back - OUTLET
 
     //resolution 3
-    geometryObjectCuboid cuboidInlet({150.f, 350.f, -8.f},
-                                      {150.f, 350.f, 408.f},
-                                      {155.f, 770.f, 408.f},-1);
+    geometryObjectCuboid cuboidInlet({-0.099f, 0.15f, -0.01f},
+                                      {-0.099f, -0.01f, 0.11f},
+                                      {-0.11, 0.15f, -0.01f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({3148.f, 345.f, -8.f},
-                                      {3148.f, 345.f, 408.f},
-                                      {3156.f, 770.f, 408.f},
-                                      -2);
-
-    VectorType VelocityInlet(5.f, 0.f, 0.f);
+    geometryObjectCuboid cuboidOutlet({0.4575f, 0.15f, -0.01f},
+                                      {0.4575f, -0.01f, 0.11f},
+                                      {0.46f, 0.15f, -0.01f},-2);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
@@ -116,11 +113,11 @@ int main() {
 
     //inlet parabolic data
 
-    d3 inletCenter = {153.629 , 556.456, 300};
+    d3 inletCenter = {-0.1f , 0.075, 0.06};
     RealType inletDimX = 0.f;
-    RealType inletDimY = 400.f;
-    RealType inletDimZ = 200.f;
-    RealType meanVelocityInlet = 5.5f;       // 5
+    RealType inletDimY = 0.15f;
+    RealType inletDimZ = 0.1f;
+    RealType meanVelocityInlet = 46.78f;       // 5
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -128,13 +125,13 @@ int main() {
 
 
     //set physical data
-    Constants->rho_fyz = 1.293f;                      //[kg/m3]     1000
-    Constants->ny_fyz = 10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 2.f*meanVelocityInlet;                    //[m/s] //TODO should be automatically calculated //5.5f
-    Constants->Fx_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
-    Constants->Fy_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
-    Constants->Fz_fyz = 0.0f;                         //[kg/m3/s2]  <- force density
-    Constants->conversion_factor_fyz = 1.0f / 1000.f;    // convert to m
+    Constants->rho_fyz = 1.293f;                        //[kg/m3]     1000
+    Constants->ny_fyz = 2*10e-5f;                       //[m2/s]
+    Constants->u_guess_fyz = 4.f*meanVelocityInlet;     //[m/s]
+    Constants->Fx_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
+    Constants->Fy_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
+    Constants->Fz_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
+    Constants->conversion_factor_fyz = 1.0f;            // convert to m
 
     //set lattice data
 
@@ -149,20 +146,18 @@ int main() {
 
     // set sampling parameters
     Constants->probe_every_it = 100;
-    VectorType Probe(1500.f, 200.f, 200.f);
+    VectorType Probe(0.301f, 0.075f, 0.05f);
     Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "lesMeshSmall", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "BackwardStepTurbulent", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
         Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
-        //Mesher.meshingBoundaryConditionInletUniform( cuboidInlet, NormalInlet, VelocityInlet, 0);
-
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
                                                 1); //TODO: if density = -1 then density is from nod itself
         Mesher.compileBoundaryArrayWall(1);
@@ -184,8 +179,6 @@ int main() {
 
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
-
-    //printf("Tau - %f.", Constants -> tau );
 
     if(runSim) {
         Solver.runSimulation();

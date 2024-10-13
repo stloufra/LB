@@ -89,11 +89,11 @@ public:
             for (int j = 0; j < Constants->dimY_int; j++) {
                 for (int k = 0; k < Constants->dimZ_int; k++) {
                     lookx = static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                            0.99*Constants->additional_factor / Constants->resolution_factor;
+                            0.95*Constants->additional_factor / Constants->resolution_factor;
                     looky = static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                            0.99*Constants->additional_factor / Constants->resolution_factor;
+                            0.95*Constants->additional_factor / Constants->resolution_factor;
                     lookz = static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                            0.99*Constants->additional_factor / Constants->resolution_factor;
+                            0.95*Constants->additional_factor / Constants->resolution_factor;
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
