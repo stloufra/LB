@@ -40,7 +40,7 @@ struct StreamingAB
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i  ) mutable
         {
-            if (mesh_view(i.x(), i.y(), i.z()) > 0 || mesh_view(i.y(), i.x(), i.z()) == -2 || mesh_view(i.y(), i.x(), i.z()) == -3 ) {
+            if (mesh_view(i.x(), i.y(), i.z()) > 0 || mesh_view(i.x(), i.y(), i.z()) == -2 || mesh_view(i.x(), i.y(), i.z()) == -3 ) {
 
                 for (int vel = 0; vel < Nvel; vel++) {
                     int id;
@@ -53,7 +53,7 @@ struct StreamingAB
 
                     if (id >= 0 && jd >= 0 && kd >= 0 && id < dimX_int && jd < dimY_int && //TODO
                         kd < dimZ_int) {
-                        if (mesh_view(id, jd, kd) > 0 || mesh_view(id, jd, kd) == -2 || mesh_view(i.y(), i.x(), i.z()) == -3) {
+                        if (mesh_view(id, jd, kd) > 0 || mesh_view(id, jd, kd) == -2 || mesh_view(id, jd, kd) == -3) {
                             df_view(i.x(), i.y(), i.z(), vel) = df_post_view(id, jd, kd, vel);
                         }
                         else if( mesh_view(id, jd, kd) == -1)
