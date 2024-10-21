@@ -220,7 +220,7 @@ public:
                 timer_timeAvg.stop();
             }
 
-            if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k!=0)
+            if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k>=(Constants->iterations - Constants->probe_iterations))
             {
                 timer_output.start();
                 probeWrite();

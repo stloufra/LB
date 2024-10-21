@@ -67,12 +67,9 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor/ Constants->resolution_factor );
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor/ Constants->resolution_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -133,12 +130,9 @@ public:
 
             Vertex vert = BC.vertex;
 
-            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor/ Constants->resolution_factor);
-            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor/ Constants->resolution_factor);
-            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor/ Constants->resolution_factor);
+            lookx = (static_cast<double>(vert.x)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+            looky = (static_cast<double>(vert.y)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+            lookz = (static_cast<double>(vert.z)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
             if (cuboid.isInside({lookx, looky, lookz})) {
 
@@ -205,12 +199,9 @@ public:
         for (boundaryConditionInlet &BC: boundary_vector_inlet) {
             Vertex vert = BC.vertex;
 
-            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor/ Constants->resolution_factor);
-            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor/ Constants->resolution_factor);
-            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor/ Constants->resolution_factor);
+            lookx = (static_cast<double>(vert.x)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+            looky = (static_cast<double>(vert.y)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+            lookz = (static_cast<double>(vert.z)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
             if (cuboid.isInside({lookx, looky, lookz})) {
                 // Calculate the distance from the inlet center
@@ -293,12 +284,10 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor/ Constants->resolution_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -348,12 +337,10 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor/ Constants->resolution_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -402,12 +389,10 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor/ Constants->resolution_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor/ Constants->resolution_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
 
                     d3 pnt_ask = {lookx, looky, lookz};
 

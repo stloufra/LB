@@ -28,9 +28,9 @@ struct NonDimensiolnaliseFactorsVelocity
 
         assert(Constants->U_lb < Constants->cs && "Speed should not be greater than speed of sound!");
 
-        Constants->L_fyz = (abs(Constants->BBmaxx - Constants->BBminx) + 2*Constants -> additional_factor/ Constants -> resolution_factor)  * Constants->conversion_factor_fyz;
-        RealType L_fyz_y = (abs(Constants->BBmaxy - Constants->BBminy) + 2*Constants -> additional_factor/ Constants -> resolution_factor) * Constants->conversion_factor_fyz;
-        RealType L_fyz_z = (abs(Constants->BBmaxz - Constants->BBminz)+ 2*Constants -> additional_factor/ Constants -> resolution_factor) * Constants->conversion_factor_fyz;
+        Constants->L_fyz = abs(Constants->BBmaxx - Constants->BBminx) * Constants->conversion_factor_fyz;
+        RealType L_fyz_y = abs(Constants->BBmaxy - Constants->BBminy) * Constants->conversion_factor_fyz;
+        RealType L_fyz_z = abs(Constants->BBmaxz - Constants->BBminz) * Constants->conversion_factor_fyz;
 
         std::cout << "L in X direction is: " <<  Constants->L_fyz << std::endl;
         std::cout << "L in Y direction is: " << L_fyz_y << std::endl;

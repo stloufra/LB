@@ -93,6 +93,7 @@ struct LBMConstants {
     bool timeAveraged;              // if true, already time averaged
 
     int probe_every_it = -1.f;             // number of iterations for probe sampling
+    int probe_iterations = -1.f;
     VectorType ProbeLocation = (0.f, 0.f, 0.f); //default
     VectorTypeInt ProbeLocationLat = (0, 0, 0); //default
 

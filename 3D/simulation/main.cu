@@ -100,41 +100,26 @@ int main() {
     //set geometry objects -3 periodic
 
     //resolution 3
-    geometryObjectCuboid cuboidInlet({-0.099f, 0.15f, -0.01f},
-                                      {-0.099f, -0.01f, 0.11f},
-                                      {-0.11, 0.15f, -0.01f},-1);
+    geometryObjectCuboid cuboidInlet({-0.0005f, 0.1505f, -0.0005f},
+                                      {-0.0005f, -0.0005f, 0.1005f},
+                                      {0.0006f, 0.1505f, -0.0005f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({0.4575f, 0.15f, -0.01f},
-                                      {0.4575f, -0.01f, 0.11f},
-                                      {0.46f, 0.15f, -0.01f},-2);
+    geometryObjectCuboid cuboidOutlet({2.5005f, 0.1505f, -0.0005f},
+                                      {2.4993f, -0.0005f, 0.1005f},
+                                      {2.5005f, 0.1505f, -0.0005f},-2);
 
-    geometryObjectCuboid cuboidPeriodic1({-0.12f, 0.001f, -0.01f},
-                                      {-0.12f, -0.001f, 0.11f},
-                                      {0.46f, 0.001f, -0.01f},-3);
 
-    geometryObjectCuboid cuboidPeriodic2({-0.12f, 0.15f, -0.01f},
-                                      {-0.12f, 0.1475f, 0.11f},
-                                      {0.46f, 0.15f, -0.01f},-3);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
-
-    VectorType velocityInletUniform(46.78f, 0.f, 0.f);
+    RealType meanVelocityInlet = 46.78f;
+    VectorType velocityInletUniform( meanVelocityInlet, 0.f, 0.f);
 
     VectorType NormalOutlet(1.f, 0.f, 0.f);
 
-    VectorType NormalPeriodic1(0.f, -1.f, 0.f);
-
-    VectorType NormalPeriodic2(0.f, 1.f, 0.f);
 
     //inlet parabolic data
-
-    d3 inletCenter = {-0.1f , 0.075, 0.06};
-    RealType inletDimX = 0.f;
-    RealType inletDimY = 0.15f;
-    RealType inletDimZ = 0.1f;
-    RealType meanVelocityInlet = 46.78f;       // 5
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -144,7 +129,7 @@ int main() {
     //set physical data
     Constants->rho_fyz = 1.293f;                        //[kg/m3]     1000
     Constants->ny_fyz = 2*10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 4.f*meanVelocityInlet;     //[m/s]
+    Constants->u_guess_fyz = 2.5f*meanVelocityInlet;     //[m/s]
     Constants->Fx_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
@@ -157,29 +142,25 @@ int main() {
     // set simulation parameters
 
     Constants->time = 8.0f;                      //[s]
-    Constants->plot_every = 0.001f;               //[s]
+    Constants->plot_every = 0.1f;               //[s]
     Constants->err_every = 0.0001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters
-    Constants->probe_every_it = 100;
-    VectorType Probe(0.301f, 0.075f, 0.05f);
+
+    Constants->probe_every_it = 1;
+    Constants->probe_iterations = 20000;
+    VectorType Probe(2.2f, 0.075f, 0.05f);
     Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "BackwardStepTurbulent", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "TurbulentProfilePipe", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
-        //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
-
-
-        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic1,NormalPeriodic1, 105, 1);
-        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic2,NormalPeriodic2, 1, 1);
-
 
         Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,1);
