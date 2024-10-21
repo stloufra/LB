@@ -38,10 +38,10 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.15;
+    Constants->resolution_factor = 1000;
     Constants->additional_factor = 1;                      // at least 1 for additional wall around
     Constants->point_outside = {1, 1, 1};
-    Constants->file_name = "BackwardStepLaminar.off";
+    Constants->file_name = "TurbulentProfilePipe.off";
 
 
     //----------------------HANDLING GEOMETRY--------------------------//
@@ -67,10 +67,10 @@ int main() {
     //----------------------MESHING OUTPUT--------------------------//
 
     timer_VTK.start();
-        outputerVTK::MeshVTK(Data, Constants, "BackwardStepLaminar");
+        outputerVTK::MeshVTK(Data, Constants, "TurbulentProfilePipe");
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "BackwardStepLaminar");
+    outputerMesh::MeshMatrixOut(Data, Constants, "TurbulentProfilePipe");
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");

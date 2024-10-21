@@ -76,7 +76,7 @@ public:
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
-                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) > 0) {
                         if (neighboursFluidSearch(pnt_ask, 0)) {
 
                             boundary_condition_inlet.normal = normal_out;
@@ -331,7 +331,7 @@ public:
         }
     }
 
-    void meshingBoundaryConditionSymmetry(geometryObjectCuboid &cuboid, const int &normal_out, bool verbose) {
+    void meshingBoundaryConditionSymmetry(geometryObjectCuboid &cuboid, const Vector &normal_out, bool verbose) {
         // x = 0, y=1, z =2
 
 
@@ -381,6 +381,68 @@ public:
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as Symmetry.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
+        }
+    }
+
+    void meshingBoundaryConditionPeriodic(geometryObjectCuboid &cuboid, const Vector &normal_out, int periodicIndex_, bool verbose) {
+        // x = 0, y=1, z =2
+
+        double lookx, looky, lookz;
+
+        boundaryConditionPeriodic boundary_condition_periodic;
+
+        int num = 0;
+
+        int ii,jj,kk;
+
+        for (int k = 0; k < Constants->dimZ_int; k++) {
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+
+                for (int i = 0; i < Constants->dimX_int; i++) {
+
+                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
+                             Constants->additional_factor/ Constants->resolution_factor);
+                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
+                             Constants->additional_factor/ Constants->resolution_factor);
+                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
+                             Constants->additional_factor/ Constants->resolution_factor);
+
+                    d3 pnt_ask = {lookx, looky, lookz};
+
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+
+                        boundary_condition_periodic.vertex = {i, j, k};
+                        boundary_condition_periodic.normal = normal_out;
+                        boundary_condition_periodic.periodicIndex = periodicIndex_; ;
+
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
+                            boundary_condition_periodic.regular = 1;
+                            //Data->meshFluidHost(i, j, k) = -3;
+                        } else {
+                            boundary_condition_periodic.regular = 0;
+                            //Data->meshFluidHost(i, j, k) = -100;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
+
+
+                        boundary_vector_periodic.push_back(boundary_condition_periodic);
+                        num += 1;
+
+                        ii =i;
+                        jj=j;
+                        kk=k;
+                    }
+                }
+            }
+        }
+
+        printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+
+        if (verbose) {
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
             std::cout << "Boundary vertexes number: " << num << std::endl;
         }
     }
@@ -477,7 +539,7 @@ public:
 
             const auto& Ver = it->vertex;
 
-            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) {
+            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) { // wbu symmetry
                 it = boundary_vector_wall.erase(it);
                 ++er;
             }
@@ -525,10 +587,30 @@ public:
         }
     };
 
+    void compileBoundaryArrayPeriodic(bool verbose) {
+
+        Constants->periodic_num = boundary_vector_periodic.size();
+
+        Data->meshBoundaryPeriodicHost.setSizes(Constants->periodic_num);
+
+        int k = 0;
+
+        for (const auto& BC: boundary_vector_periodic) {
+            Data->meshBoundaryPeriodicHost[k] = BC;
+            ++k;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Periodic.\n";
+            std::cout << "Periodic vertexes number: " << boundary_vector_periodic.size() << std::endl;
+        }
+    };
+
     void arrayTransfer(bool verbose) {
         Data->meshFluid = Data->meshFluidHost;
         Data->meshBoundaryWall = Data->meshBoundaryWallHost;
         Data->meshBoundarySymmetry = Data->meshBoundarySymmetryHost;
+        Data->meshBoundaryPeriodic = Data->meshBoundaryPeriodicHost;
         Data->meshBoundaryInlet = Data->meshBoundaryInletHost;
         Data->meshBoundaryOutlet = Data->meshBoundaryOutletHost;
 
@@ -583,6 +665,7 @@ public:
     std::vector <boundaryConditionInlet> boundary_vector_inlet;
     std::vector <boundaryConditionOutlet> boundary_vector_outlet;
     std::vector <boundaryConditionSymmetry > boundary_vector_symmetry;
+    std::vector <boundaryConditionPeriodic > boundary_vector_periodic;
     std::vector <boundaryConditionWall> boundary_vector_wall;
 
     boundaryConditionInlet boundary_condition_inlet;
