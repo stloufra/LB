@@ -34,7 +34,7 @@ struct BounceBackWallHalf
 
             Vertex vert = wall_view[i.x()].vertex;
 
-            if(mesh_view(vert.x, vert.y, vert.z) != -1){ //no bb on inlet
+            if(mesh_view(vert.x, vert.y, vert.z) != -1){ //no bb on inlet TODO: useless
 
 		    for (int vel = 0; vel < Nvel; vel++) {
 

@@ -44,9 +44,16 @@ typedef struct {
 
 typedef struct {
     Vertex vertex;
-    int normal;
+    Vector normal;
     bool regular;
 } boundaryConditionSymmetry;
+
+typedef struct {
+    Vertex vertex;
+    Vector normal;
+    int periodicIndex;
+    bool regular;
+} boundaryConditionPeriodic;
 
 typedef struct {
     Vertex vertex;
@@ -128,6 +135,18 @@ public:
                                                                 DeviceType>;
 
     using ArrayTypeBoundarySymmetryHost = TNL::Containers::NDArray< boundaryConditionSymmetry ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceTypeHost>;
+
+    // -------------------- PERIODIC -------------------------
+
+    using ArrayTypeBoundaryPeriodic = TNL::Containers::NDArray <    boundaryConditionPeriodic ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceType>;
+
+    using ArrayTypeBoundaryPeriodicHost = TNL::Containers::NDArray< boundaryConditionPeriodic ,
                                                                 TNL::Containers::SizesHolder<int, 0>,
                                                                 std::index_sequence<0>,
                                                                 DeviceTypeHost>;

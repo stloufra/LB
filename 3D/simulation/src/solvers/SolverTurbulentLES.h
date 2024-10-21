@@ -28,6 +28,9 @@
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
 
+#include "boundaryConditions/Periodic/Periodic.h"
+#include "boundaryConditions/Periodic/NoPeriodic.h"
+
 #include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
 #include "boundaryConditions/Symmetry/NoSymmetry.h"
 
@@ -67,6 +70,7 @@ template<   typename MODELTYPE,
             typename STREAMINGTYPE,
             typename BOUNCEBACKWALLTYPE,
             typename SYMMETRYTYPE,
+            typename PERIODICTYPE,
             typename INLETTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
@@ -199,10 +203,8 @@ public:
 
             timer_bounceback.start();
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
-            #ifdef SYMMETRY
-                 SYMMETRYTYPE::symmetry(Data, Constants);
-                 printf("symmetry\n");
-            #endif
+                SYMMETRYTYPE::symmetry(Data, Constants);
+                PERIODICTYPE::periodic(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
             timer_bounceback.stop();

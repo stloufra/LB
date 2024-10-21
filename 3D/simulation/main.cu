@@ -44,6 +44,7 @@ int main() {
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Symmetry              = NoSymmetry<Model>;
+    using Periodic              = Periodic<Model>;
 
     using Inlet                 = InletVelocityEquilibrium<Model>;
     using Outlet                = OutletDensityInterpolated<Model>;
@@ -68,6 +69,7 @@ int main() {
             Streaming,
             BounceBackWall,
             Symmetry,
+            Periodic,
             Inlet,
             Outlet,
             Moments,
@@ -94,7 +96,8 @@ int main() {
 
 
     //set geometry objects -1 streaming from it | no-bounce back - INLET
-    //set geometry objects -2 streaming from and into it | bounce back - OUTLET
+    //set geometry objects -2 streaming from and into it | bounce back - OUTLET && SYMMETRY
+    //set geometry objects -3 periodic
 
     //resolution 3
     geometryObjectCuboid cuboidInlet({-0.099f, 0.15f, -0.01f},
@@ -106,12 +109,24 @@ int main() {
                                       {0.4575f, -0.01f, 0.11f},
                                       {0.46f, 0.15f, -0.01f},-2);
 
+    geometryObjectCuboid cuboidPeriodic1({-0.12f, 0.001f, -0.01f},
+                                      {-0.12f, -0.001f, 0.11f},
+                                      {0.46f, 0.001f, -0.01f},-3);
+
+    geometryObjectCuboid cuboidPeriodic2({-0.12f, 0.15f, -0.01f},
+                                      {-0.12f, 0.1475f, 0.11f},
+                                      {0.46f, 0.15f, -0.01f},-3);
+
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
 
     VectorType velocityInletUniform(46.78f, 0.f, 0.f);
 
     VectorType NormalOutlet(1.f, 0.f, 0.f);
+
+    VectorType NormalPeriodic1(0.f, -1.f, 0.f);
+
+    VectorType NormalPeriodic2(0.f, 1.f, 0.f);
 
     //inlet parabolic data
 
@@ -141,9 +156,9 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 80.0f;                      //[s]
-    Constants->plot_every = 0.5f;               //[s]
-    Constants->err_every = 0.001f;              //[s]
+    Constants->time = 8.0f;                      //[s]
+    Constants->plot_every = 0.001f;               //[s]
+    Constants->err_every = 0.0001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters
@@ -162,11 +177,16 @@ int main() {
         //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
 
 
+        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic1,NormalPeriodic1, 105, 1);
+        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic2,NormalPeriodic2, 1, 1);
+
+
         Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
-        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
-                                                1); //TODO: if density = -1 then density is from nod itself
+        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,1);
+
         Mesher.compileBoundaryArrayWall(1);
         Mesher.compileBoundaryArrayInlets(1);
+        Mesher.compileBoundaryArrayPeriodic(1);
         Mesher.compileBoundaryArrayOutlets(1);
         Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();

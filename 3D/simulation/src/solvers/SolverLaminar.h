@@ -27,6 +27,9 @@
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
 
+#include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
+#include "boundaryConditions/Symmetry/NoSymmetry.h"
+
 #include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
 #include "boundaryConditions/Inlet/InletVelocityZouHe.h"
 #include "boundaryConditions/Inlet/InletVelocityEquilibrium.h"
@@ -57,6 +60,7 @@ template<   typename MODELTYPE,
             typename COLLISIONTYPE,
             typename STREAMINGTYPE,
             typename BOUNCEBACKWALLTYPE,
+            typename SYMMETRYTYPE,
             typename INLETTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
@@ -124,9 +128,9 @@ public:
         while(k<Constants -> iterations)
         {
 
-                timer_dumping.start();
-                OUTLETTYPE::outletOmega(Data, Constants);
-                timer_dumping.stop();
+            timer_dumping.start();
+            OUTLETTYPE::outletOmega(Data, Constants);
+            timer_dumping.stop();
 
 
             timer_collision.start();
@@ -139,6 +143,7 @@ public:
 
             timer_bounceback.start();
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
+                SYMMETRYTYPE::symmetry(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
             timer_bounceback.stop();

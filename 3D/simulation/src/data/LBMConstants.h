@@ -29,6 +29,7 @@ struct LBMConstants {
     int inlet_num;                  //[1]
     int outlet_num;                 //[1]
     int symmetry_num;                   //[1]
+    int periodic_num;                   //[1]
     int wall_num;                   //[1]
 
 
