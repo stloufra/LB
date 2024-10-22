@@ -19,14 +19,14 @@ using RealType = float;
 int main()
 {
     const RealType L = 15.0f;                //[m] - x dimension
-    const int Nx = 3000;                     //[1]
-    const int Ny = 400;                      //[1]
+    const int Nx = 700;                     //[1]
+    const int Ny = 100;                      //[1]
 
     const RealType rho=1000.f;              //[kg/m3]
     const RealType ny=1e-6f;                //[m2/s]
 
-    const RealType ux=1e-4f;                //[m/s] // 0.01 ok 0.1 fail
-    const RealType ux_guess=4e-4f;          //[m/s]
+    const RealType ux=1e-5f;                //[m/s] // 0.01 ok 0.1 fail
+    const RealType ux_guess=4e-5f;          //[m/s]
     const RealType uy=0.f;                  //[m/s]
     const RealType u_max_lattice =0.09f;    //[0]
 
@@ -34,9 +34,11 @@ int main()
     const RealType Fy = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
 
     const RealType time =10000000.f;         //[s]
-    const RealType plot_every=0.f;           //[s] rewritten on line 86
+    //const RealType plot_every=0.f;           //[s] rewritten on line 86
 
-    int plot_every_it;
+    const int plot_every_it = 5000;
+    const int err_every_it = 1000;
+
     int iterations;
 
     bool run_simulation = true;
@@ -47,26 +49,33 @@ int main()
     //objects !! pristup od 0 !! horní index o 1 mensi
 
     Obj_rectangle lower_wall( -1.f, Nx , -1.f, -1.f);
+    Obj_rectangle symmetry( 0.f, Nx-1 , 0.f, 0.f);
     Obj_rectangle upper_wall( -1.f, Nx, Ny , Ny );
     Obj_rectangle front_wall(-1, -1, 0, Ny-1 );
     Obj_rectangle back_wall(Nx , Nx, 0, Ny-1);
     Obj_rectangle inlet(0, 0, 0, Ny-1 );
     Obj_rectangle outlet(Nx-1 , Nx-1, 0, Ny-1);
     //Obj_cylinder cylinder(Ny/5, Nx/4,Ny/2+0.05f*Ny);
-    Obj_rectangle blockage(-1, Nx/5, -1, Ny/2);
+    //Obj_rectangle blockage(-1, Nx/5, -1, Ny/2);
+
+    Obj_rectangle Symblockage(Nx/6, Nx/5, -1, Ny/4);
+
 
     // MESH - structured bolean values of BC
-    // 0 = solid | 1 = fluid | 2 = equilibrium inlet (ux, left) | 3 = outlet (rho=1, right) | 4 = moving wall (up) | 5 = moving wall (down)
+    // 0 = solid | 1 = fluid | 2 = equilibrium inlet (ux, left) | 3 = outlet (rho=1, right) | 4 = moving wall (up) | 5 = moving wall (down) | 6 = symmetry
 
     mesh_rectangle.meshing(lower_wall,0);
     mesh_rectangle.meshing(upper_wall,0);
     mesh_rectangle.meshing(front_wall,0);
     mesh_rectangle.meshing(back_wall,0);
+
+    mesh_rectangle.meshing(symmetry,6);
     mesh_rectangle.meshing(outlet, 3);
-    mesh_rectangle.meshing_inlet(inlet, ux, 3.f/4.f*Ny, Ny/2, 2);
+    //mesh_rectangle.meshing_inlet(inlet, ux, 3.f/4.f*Ny, Ny/2, 2);
+    mesh_rectangle.meshing_inlet(inlet, ux, 0, Ny*2, 2);
 
     //mesh_rectangle.meshing(cylinder, 0);
-    mesh_rectangle.meshing(blockage,0);
+    mesh_rectangle.meshing(Symblockage,0);
 
     //output mesh
     mesh_rectangle.output_VTK();
@@ -77,14 +86,13 @@ int main()
     solver.convert_to_lattice(L, ux_guess, rho, ny, u_max_lattice);
 
     
-    plot_every_it = std::ceil(plot_every/solver.Ct_pub);
+    //plot_every_it = std::ceil(plot_every/solver.Ct_pub);
     //std::cout<<"\nPlotting every " << plot_every_it << " iterations.\n";
     iterations = std::ceil(time/solver.Ct_pub);
     std::cout<<"\nCalculation will run for "<<iterations<<" iterations.\n";
 
-    //manual plotting
-    plot_every_it = 10000;
-    std::cout<<"\nPlotting every " << plot_every_it << " iterations.\n";
+
+
     
     solver.initialization_eq(rho, ux/2, uy, Fx, Fy, 0);
 
@@ -134,7 +142,7 @@ int main()
         timer_postpro.stop();
 
 
-        if(k%500==0)
+        if(k%err_every_it==0)
         {
 
             timer_err.start();

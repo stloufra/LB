@@ -112,7 +112,7 @@ public:
 
     auto init_variables = [=] __cuda_callable__ ( const StaticArray< 2, int >& i  ) mutable 
     {
-      if( mesh_view(i.y()+1, i.x()+1) ==1 || mesh_view(i.y()+1, i.x()+1) ==3 )
+      if( mesh_view(i.y()+1, i.x()+1) ==1 || mesh_view(i.y()+1, i.x()+1) ==3 || mesh_view(i.y()+1, i.x()+1) ==6 )
       {
         rho_view(i.y(),i.x())=rho0/Cm*Cl*Cl*Cl;
         ux_view(i.y(),i.x()) = ux0*Cu_inverse;
@@ -203,7 +203,7 @@ public:
 
     auto coll = [=] __cuda_callable__ ( const StaticArray< 3, int >& i  ) mutable 
     {
-      if (mesh_view(i.y()+1, i.x()+1) == 1 || mesh_view(i.y()+1, i.x()+1) == 3)
+      if (mesh_view(i.y()+1, i.x()+1) == 1 || mesh_view(i.y()+1, i.x()+1) == 3 || mesh_view(i.y()+1, i.x()+1) == 6)
       {
         RealType feq = f_equilibrium(i.y(), i.x(), i.z());
         df_post_view(i.y(), i.x(), i.z()) = df_view(i.y(),i.x(), i.z()) - (df_view(i.y(), i.x(), i.z())-feq)*omega;
@@ -233,7 +233,7 @@ public:
 
     auto coll = [=] __cuda_callable__ ( const StaticArray< 2, int >& i  ) mutable
     {
-      if (mesh_view(i.y()+1, i.x()+1) == 1 || mesh_view(i.y()+1, i.x()+1) == 3)
+      if (mesh_view(i.y()+1, i.x()+1) == 1 || mesh_view(i.y()+1, i.x()+1) == 3 || mesh_view(i.y()+1, i.x()+1) == 6)
       {
         RealType rho = rho_view(i.y(), i.x());
         RealType ux = ux_view(i.y(), i.x());
@@ -329,14 +329,14 @@ public:
     
     auto stream = [=] __cuda_callable__ ( const StaticArray< 3, int >& i  ) mutable 
     {
-      if (mesh_view(i.y()+1, i.x()+1) == 1 ||  mesh_view(i.y()+1, i.x()+1) == 3)
+      if (mesh_view(i.y()+1, i.x()+1) == 1 ||  mesh_view(i.y()+1, i.x()+1) == 3 || mesh_view(i.y()+1, i.x()+1) == 6 )
       {
         int jd; int id;
         
         jd = i.y() - cy_pos[i.z()];
         id = i.x() - cx_pos[i.z()];
 
-        if(mesh_view(jd+1,id+1)==1 || mesh_view(jd+1,id+1) == 3 ){
+        if(mesh_view(jd+1,id+1)==1 || mesh_view(jd+1,id+1) == 3 || mesh_view(jd+1,id+1) == 6 ){
            if(jd>=0 && jd < Ny && id>=0 && id < Nx){
             df_view(i.y(), i.x(), i.z())=df_post_view(jd,id,i.z());
            }
@@ -380,7 +380,7 @@ public:
 
 
     // MESH - structured bolean values of BC
-    // 0 = solid | 1 = fluid | 2 = inlet | 3 = outlet | 4 = moving wall up | 5 = moving wall down
+    // 0 = solid | 1 = fluid | 2 = inlet | 3 = outlet | 4 = moving wall up | 5 = moving wall down | 6 = symmetry
 
 
     auto f_equilibrium = [=] __cuda_callable__ ( const int &j,const int &i, const int &k ) mutable 
@@ -412,7 +412,7 @@ public:
       int dx = cx_pos[i.z()];
       int dy = cy_pos[i.z()];
 
-      if(mesh_view(i.y()+1,i.x()+1) ==1 || mesh_view(i.y()+1,i.x()+1)==3 )
+      if(mesh_view(i.y()+1,i.x()+1) ==1  || mesh_view(i.y()+1,i.x()+1)==3 )
       {
         int neighbour_x; int neighbour_y;
 
@@ -449,25 +449,6 @@ public:
           }
       }
 
-      else if(mesh_view(i.y()+1,i.x()+1)==3) //OUTLET RIGHT
-      {   
-
-        int x = i.x();
-
-        df_view(i.y(),x,3)=cs*df_post_view(i.y(),x-1,3) + (1-cs)*df_post_view(i.y(),x,3);
-        df_view(i.y(),x,7)=cs*df_post_view(i.y(),x-1,7) + (1-cs)*df_post_view(i.y(),x,7);
-        df_view(i.y(),x,6)=cs*df_post_view(i.y(),x-1,6) + (1-cs)*df_post_view(i.y(),x,6);
-
-        RealType rho=df_view(i.y(),i.x(),0)+df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),2)+df_view(i.y(),i.x(),3)+df_view(i.y(),i.x(),4)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),7)+df_view(i.y(),i.x(),8);
-        RealType ux=(df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),3)-df_view(i.y(),i.x(),6)-df_view(i.y(),i.x(),7))/rho_view(i.y(),i.x());
-        RealType uy=(df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),2)-df_view(i.y(),i.x(),7)-df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),4))/rho_view(i.y(),i.x());
-
-        for(int v=0; v<Nvel; v++){
-        	df_view(i.y(),x,v)= df_view(i.y(),x,v) - f_equilibrium_defined(v, ux, uy, rho) + f_equilibrium_defined(v, ux, uy, 1.f);
-		}
-
-      } 
-
 
       else if(mesh_view(i.y()+1,i.x()+1)==4) //WALL MOVING UP
       {
@@ -490,6 +471,117 @@ public:
           df_view(y,i.x(),6)=df_post_view(y,i.x(),8)+6*rho_view(y,i.x())*weight[6]*cx_pos[6]*velocities_x_view(i.y()+1,i.x()+1)*Cu_inverse; 
         }
       }
+
+
+
+      else if(mesh_view(i.y()+1,i.x()+1)==3) //OUTLET RIGHT
+      {
+
+        int x = i.x();
+
+        df_view(i.y(),x,3)=cs*df_post_view(i.y(),x-1,3) + (1-cs)*df_post_view(i.y(),x,3);
+        df_view(i.y(),x,7)=cs*df_post_view(i.y(),x-1,7) + (1-cs)*df_post_view(i.y(),x,7);
+        df_view(i.y(),x,6)=cs*df_post_view(i.y(),x-1,6) + (1-cs)*df_post_view(i.y(),x,6);
+
+        RealType rho=df_view(i.y(),i.x(),0)+df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),2)+df_view(i.y(),i.x(),3)+df_view(i.y(),i.x(),4)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),7)+df_view(i.y(),i.x(),8);
+        RealType ux=(df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),3)-df_view(i.y(),i.x(),6)-df_view(i.y(),i.x(),7))/rho_view(i.y(),i.x());
+        RealType uy=(df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),2)-df_view(i.y(),i.x(),7)-df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),4))/rho_view(i.y(),i.x());
+
+        for(int v=0; v<Nvel; v++){
+          df_view(i.y(),x,v)= df_view(i.y(),x,v) - f_equilibrium_defined(v, ux, uy, rho) + f_equilibrium_defined(v, ux, uy, 1.f);
+        }
+
+      }
+
+      else if(mesh_view(i.y()+1,i.x()+1)==3) //OUTLET RIGHT
+      {
+
+        int x = i.x();
+
+        df_view(i.y(),x,3)=cs*df_post_view(i.y(),x-1,3) + (1-cs)*df_post_view(i.y(),x,3);
+        df_view(i.y(),x,7)=cs*df_post_view(i.y(),x-1,7) + (1-cs)*df_post_view(i.y(),x,7);
+        df_view(i.y(),x,6)=cs*df_post_view(i.y(),x-1,6) + (1-cs)*df_post_view(i.y(),x,6);
+
+        RealType rho=df_view(i.y(),i.x(),0)+df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),2)+df_view(i.y(),i.x(),3)+df_view(i.y(),i.x(),4)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),7)+df_view(i.y(),i.x(),8);
+        RealType ux=(df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),3)-df_view(i.y(),i.x(),6)-df_view(i.y(),i.x(),7))/rho_view(i.y(),i.x());
+        RealType uy=(df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),2)-df_view(i.y(),i.x(),7)-df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),4))/rho_view(i.y(),i.x());
+
+        for(int v=0; v<Nvel; v++){
+          df_view(i.y(),x,v)= df_view(i.y(),x,v) - f_equilibrium_defined(v, ux, uy, rho) + f_equilibrium_defined(v, ux, uy, 1.f);
+        }
+
+      }
+
+      else if(mesh_view(i.y()+1,i.x()+1)==6) //SYMMETRY down
+      {
+        int y = i.y();
+        int x = i.x();
+
+        df_view(y,x,2)=df_post_view(y,x,4);
+
+        if(mesh_view(y+1,x+2)==0) // -->
+        {
+          df_view(y,x,6)=df_post_view(y,x,8);
+          df_view(y,x,3)=df_post_view(y,x,1);
+          df_view(y,x,7)=df_post_view(y,x,5);
+
+        }
+        else
+        {
+          df_view(y,x,6)=df_post_view(y,x+1,7);
+        }
+
+        if(mesh_view(y+1,x)==0) // <--
+        {
+          df_view(y,x,5)=df_post_view(y,x,7);
+          df_view(y,x,1)=df_post_view(y,x,3);
+          df_view(y,x,8)=df_post_view(y,x,6);
+
+        }
+        else
+        {
+          df_view(y,x,5)=df_post_view(y,x-1,8);
+        }
+
+
+        if(mesh_view(y+1,x+2)==3) // -->
+        {
+          df_view(y,x+1,5)=df_post_view(y,x,8);
+          //df_view(y,x+1,2)=df_post_view(y,x+1,4);
+        }
+
+      }
+
+
+
+
+    };
+
+    auto bb_outlet = [=] __cuda_callable__ ( const StaticArray< 2, int >& i  ) mutable
+    {
+
+      if(mesh_view(i.y()+1,i.x()+1)==3) //OUTLET RIGHT
+      {
+        if(mesh_view(i.y()+1,i.x())==6){
+          df_view(i.y(),i.x(),5)=df_post_view(i.y(),i.x()-1,8);
+        }
+
+        int x = i.x();
+
+        df_view(i.y(),x,3)=cs*df_post_view(i.y(),x-1,3) + (1-cs)*df_post_view(i.y(),x,3);
+        df_view(i.y(),x,7)=cs*df_post_view(i.y(),x-1,7) + (1-cs)*df_post_view(i.y(),x,7);
+        df_view(i.y(),x,6)=cs*df_post_view(i.y(),x-1,6) + (1-cs)*df_post_view(i.y(),x,6);
+
+        RealType rho=df_view(i.y(),i.x(),0)+df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),2)+df_view(i.y(),i.x(),3)+df_view(i.y(),i.x(),4)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),7)+df_view(i.y(),i.x(),8);
+        RealType ux=(df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),3)-df_view(i.y(),i.x(),6)-df_view(i.y(),i.x(),7))/rho;
+        RealType uy=(df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),2)-df_view(i.y(),i.x(),7)-df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),4))/rho;
+
+        for(int v=0; v<Nvel; v++){
+          df_view(i.y(),x,v)= df_view(i.y(),x,v) - f_equilibrium_defined(v, ux, uy, rho) + f_equilibrium_defined(v, ux, uy, 1.f);
+        }
+
+      }
+
     };
 
 
@@ -497,9 +589,17 @@ public:
     StaticArray< 3, int > end1{ Nx, Ny, Nvel};
     parallelFor< DeviceType >( begin1, end1, bb_wall);
 
+
+    StaticArray< 2, int > begin3{ Nx-4, 0};
+    StaticArray< 2, int > end3{ Nx, Ny};
+    parallelFor< DeviceType >( begin3, end3, bb_outlet );
+
     StaticArray< 2, int > begin2{ 0, 0};
     StaticArray< 2, int > end2{ Nx, Ny};
     parallelFor< DeviceType >( begin2, end2, bb_bc );
+
+
+
   }
 
   void postpro()
@@ -517,7 +617,7 @@ public:
    
     auto post = [=] __cuda_callable__ ( const StaticArray< 2, int >& i  ) mutable 
     {
-      if(mesh_view(i.y()+1,i.x()+1)==1 ||  mesh_view(i.y()+1, i.x()+1) == 3)
+      if(mesh_view(i.y()+1,i.x()+1)==1 ||  mesh_view(i.y()+1, i.x()+1) == 2 || mesh_view(i.y()+1, i.x()+1) == 3 ||  mesh_view(i.y()+1, i.x()+1) == 6)
       {
         rho_view(i.y(),i.x())=df_view(i.y(),i.x(),0)+df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),2)+df_view(i.y(),i.x(),3)+df_view(i.y(),i.x(),4)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),6)+df_view(i.y(),i.x(),7)+df_view(i.y(),i.x(),8);
         ux_view(i.y(),i.x())=(df_view(i.y(),i.x(),1)+df_view(i.y(),i.x(),5)+df_view(i.y(),i.x(),8)-df_view(i.y(),i.x(),3)-df_view(i.y(),i.x(),6)-df_view(i.y(),i.x(),7))/rho_view(i.y(),i.x()) + Fx/rho_view(i.y(),i.x())*tau;
