@@ -75,7 +75,7 @@ struct InletVelocityEquilibrium {
                  RealType duxb = (uxb-ux1); //dx = 1
                  RealType dux1 = (ux1-ux2);
 
-                 RealType rhob = rho_view(i+1,j,k) + ny/3*(dux1 - duxb); //1/cs^2 = 3
+                 RealType rhob = rho_view(i-1,j,k) + ny/3*(dux1 - duxb); //1/cs^2 = 3
 
                  for(int v=0; v<Nvel; v++){
                      df_view(i,j,k,v)= f_equilibrium_defined(uxb, uyb, uzb, rhob, v);

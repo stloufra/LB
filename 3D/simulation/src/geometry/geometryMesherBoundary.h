@@ -297,10 +297,10 @@ public:
                         boundary_condition_outlet.density = density;
                         boundary_condition_outlet.vertex = {i, j, k};
 
-                        if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
-                            boundary_condition_outlet.regular = 0;
-                        } else {
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
                             boundary_condition_outlet.regular = 1;
+                        } else {
+                            boundary_condition_outlet.regular = 0;
                         }
 
                         Data->meshFluidHost(i, j, k) = cuboid.id; // -Data->meshFluidHost(i, j, k)
@@ -349,10 +349,10 @@ public:
                         boundary_condition_symmetry.vertex = {i, j, k};
                         boundary_condition_symmetry.normal = normal_out;
 
-                        if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
-                            boundary_condition_symmetry.regular = 0;
-                        } else {
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
                             boundary_condition_symmetry.regular = 1;
+                        } else {
+                            boundary_condition_symmetry.regular = 0;
                         }
 
                         Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
