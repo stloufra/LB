@@ -48,6 +48,10 @@ public:
                                               const Vector &normal_out,
                                               const Vector &velocity_in,
                                               bool verbose) {
+
+        if (velocity_in.x() == velocity_in.y() && velocity_in.x() == velocity_in.z()) {
+            throw std::invalid_argument("Expected a 3D vector for velocity_in. If valid comment me.");
+        }
         // Function to fill the inlet velocities with uniform velocity profile.
         // So far supports only inlets which are perpendicular to one of the axis.
 

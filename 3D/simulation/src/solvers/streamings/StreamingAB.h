@@ -7,7 +7,7 @@
 
 #include "../../traits/LBMTraits.h"
 
-template<typename MODELDATA>
+template <typename MODELDATA>
 struct StreamingAB
 {
     using RealType = LBMTraits::RealType;
@@ -16,9 +16,8 @@ struct StreamingAB
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
-    static void streaming(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
-
-
+    static void streaming(LBMDataPointer& Data, LBMConstantsPointer& Constants)
+    {
         using RealType = LBMTraits::RealType;
         using DeviceType = LBMTraits::DeviceType;
         using VectorType = LBMTraits::VectorType;
@@ -37,12 +36,12 @@ struct StreamingAB
         MODELDATA MD;
 
         auto stream = [=]
-        __cuda_callable__(
-        const TNL::Containers::StaticArray<3, int> &i  ) mutable
-        {
-            if (mesh_view(i.x(), i.y(), i.z()) > 0 || mesh_view(i.x(), i.y(), i.z()) == -2 || mesh_view(i.x(), i.y(), i.z()) == -3 ) {
-
-                for (int vel = 0; vel < Nvel; vel++) {
+                __cuda_callable__(
+                const TNL::Containers::StaticArray<3, int>& i) mutable{
+            if (mesh_view(i.x(), i.y(), i.z()) > 0 || mesh_view( i.x(), i.y(), i.z()) == -2 || mesh_view(i.x(), i.y(), i.z()) == -3)
+            {
+                for (int vel = 0; vel < Nvel; vel++)
+                {
                     int id;
                     int jd;
                     int kd;
@@ -51,26 +50,22 @@ struct StreamingAB
                     kd = i.z() - MD.c[vel][2];
 
 
-                    if (id >= 0 && jd >= 0 && kd >= 0 && id < dimX_int && jd < dimY_int && //TODO
-                        kd < dimZ_int) {
-                        if (mesh_view(id, jd, kd) > 0 || mesh_view(id, jd, kd) == -2 || mesh_view(id, jd, kd) == -3) {
-                            df_view(i.x(), i.y(), i.z(), vel) = df_post_view(id, jd, kd, vel);
-                        }
-                        else if( mesh_view(id, jd, kd) == -1)
-                        {
-                            df_view(i.x(), i.y(), i.z(), vel) = df_view(id, jd, kd, vel);
-                        }
-                   }
+                    if (mesh_view(id, jd, kd) > 0 || mesh_view(id, jd,  kd) == -2 || mesh_view(id, jd, kd) == -3)
+                    {
+                        df_view(i.x(), i.y(), i.z(), vel) = df_post_view(id, jd, kd, vel);
+                    }
+                    else if (mesh_view(id, jd, kd) == -1)
+                    {
+                        df_view(i.x(), i.y(), i.z(), vel) = df_view(id, jd, kd, vel);
+                    }
                 }
             }
-
         };
 
-        TNL::Containers::StaticArray<3, int> begin{0, 0, 0};
-        TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        TNL::Containers::StaticArray < 3, int > begin{0, 0, 0};
+        TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin, end, stream);
     }
-
 };
 
 #endif

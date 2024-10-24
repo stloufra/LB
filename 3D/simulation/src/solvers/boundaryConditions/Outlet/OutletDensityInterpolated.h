@@ -21,6 +21,7 @@ struct OutletDensityInterpolated {
 
 
         auto outlet_view = Data->meshBoundaryOutlet.getView();
+        auto mesh_view = Data->meshFluid.getView();
         auto u_view = Data->u.getView();
 
         auto rho_view = Data->rho.getView();
@@ -29,6 +30,7 @@ struct OutletDensityInterpolated {
 
         const auto Nvel = Constants->Nvel;
         const auto cs = Constants->cs;
+
 
         MODELDATA MD;
 
@@ -172,6 +174,7 @@ struct OutletDensityInterpolated {
             Vertex vert = outlet_view[nod.x()].vertex;
             Vector norm = outlet_view[nod.x()].normal;
             RealType density = outlet_view[nod.x()].density;
+            bool reg = outlet_view[nod.x()].regular;
 
             int i = vert.x;
             int j = vert.y;
@@ -180,6 +183,20 @@ struct OutletDensityInterpolated {
             Vector xp(1.f, 0.f, 0.f), xm(-1.f, 0.f, 0.f);
 
             if ( norm == xp){
+                if(!reg)
+                {
+                    for (int vel = 0; vel < Nvel; vel++){
+
+                        int dy = vert.y - MD.c[vel][1];
+                        int dz = vert.z - MD.c[vel][2];
+
+                        if(mesh_view(i, dy, dz) == 0)
+                        {
+                            df_view(i, j, k, vel) = df_view(i, j, k, MD.c_rev[vel]);
+                        }
+                    }
+                }
+
                 for (int vel = 0; vel < Nvel; vel++) {
                     if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0) { //pokud miri dovnitr
 

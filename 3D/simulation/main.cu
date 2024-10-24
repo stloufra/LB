@@ -43,6 +43,7 @@ int main() {
     using Collision             = CollisionCumD3Q27Laminar<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
+
     using Symmetry              = BounceSymmetryHalf<Model>;
 
     using Inlet                 = InletVelocityEquilibrium<Model>;
@@ -82,7 +83,7 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.f, 0.f, 0.01f); //change to 1 in z
+    VectorType Init(0.01f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
@@ -126,6 +127,8 @@ int main() {
     RealType inletDimZ = 100.f;
     RealType meanVelocityInlet = 0.02f;       // 5
 
+    VectorType VelocityInlet(meanVelocityInlet, 0.f, 0.f);
+
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
     Constants -> omegaDumpingHigh = 0.05f; // tau(Re=1000) = 0.55 -> 0.2
@@ -147,7 +150,7 @@ int main() {
     // set simulation parameters
 
     Constants->time = 1000000.0f;                   //[s]
-    Constants->plot_every = 1.f;               //[s]
+    Constants->plot_every = 10.f;               //[s]
     Constants->err_every = 0.01f;              //[s]
     //Constants->iterationsMomentAvg = 10000;      //[1]
 
@@ -165,16 +168,16 @@ int main() {
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
         //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
-        Mesher.meshingBoundaryConditionInletUniform( cuboidInlet,  NormalInlet, meanVelocityInlet, 1 );
+        Mesher.meshingBoundaryConditionInletUniform( cuboidInlet,  NormalInlet, VelocityInlet, 1 );
 
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
                                                 1);
-        //Mesher.meshingBoundaryConditionSymmetry(cuboidSymmetry, NormalSymmery, 1);
+        Mesher.meshingBoundaryConditionSymmetry(cuboidSymmetry, NormalSymmery, 1);
 
         Mesher.compileBoundaryArrayWall(1);
         Mesher.compileBoundaryArrayInlets(1);
         Mesher.compileBoundaryArrayOutlets(1);
-        //Mesher.compileBoundaryArraySymmetry(1);
+        Mesher.compileBoundaryArraySymmetry(1);
 
         Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();

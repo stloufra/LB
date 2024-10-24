@@ -145,7 +145,7 @@ public:
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
-                //SYMMETRYTYPE::symmetry(Data, Constants);
+                SYMMETRYTYPE::symmetry(Data, Constants);
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();

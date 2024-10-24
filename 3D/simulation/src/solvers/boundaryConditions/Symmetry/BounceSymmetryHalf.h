@@ -102,15 +102,14 @@ struct BounceSymmetryHalf {
                                     , x, y, z, vel, MD.c[vel][0], MD.c[vel][1], MD.c[vel][2], MD.c_sym_y[vel], dx, y, dz);
                             }
 #endif
-                            if(vel == 20)
-                            {
-                                printf("Fucked up.");
-                            }
+
                             df_view(x, y, z, vel) = df_post_view(dx, y, dz, MD.c_sym_y[vel]);
+
                         }
                     }
 
-                    /*else if (!reg)
+
+                    else if (!reg)
                     {
                         if (mesh_view(dx, y, dz) != 0 && mesh_view(dx, y, dz) != -2)
                         {
@@ -138,7 +137,7 @@ struct BounceSymmetryHalf {
                             //o stenu BB
                             df_view(x, y, z, vel) = df_post_view(x, y, z, MD.c_rev[vel]);
                         }
-                    }*/
+                    }
                 }
             }
             /*else if (abs_cast(norm) == norm_z) {
@@ -169,9 +168,13 @@ struct BounceSymmetryHalf {
                 printf("Fail. \n");
             }
         };
-
+#ifdef DEBUG
+#endif
 
         parallelFor<DeviceType>(0, Constants->symmetry_num, bb_sym);
+
+
+
     }
 };
 

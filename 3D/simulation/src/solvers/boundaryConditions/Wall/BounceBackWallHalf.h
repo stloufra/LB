@@ -34,7 +34,6 @@ struct BounceBackWallHalf
 
             Vertex vert = wall_view[i.x()].vertex;
 
-            if(mesh_view(vert.x, vert.y, vert.z) != -1){ //no bb on inlet TODO: useless
 
 		    for (int vel = 0; vel < Nvel; vel++) {
 
@@ -47,8 +46,8 @@ struct BounceBackWallHalf
 		        if (mesh_view(dx, dy, dz) == 0) {
 		            df_view(vert.x, vert.y, vert.z, vel) = df_post_view(vert.x, vert.y, vert.z, MD.c_rev[vel]);
 		        }
-		}
             }
+
 
         };
 
