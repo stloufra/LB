@@ -8,7 +8,7 @@
 
 #include "src/geometry/geometryMesherBoundary.h"
 #include "src/geometry/geometryObjectCuboid.h"
-#include "src/solvers/SolverLaminar.h"
+#include "src/solvers/SolverTurbulentLES.h"
 #include "src/traits/LBMTraits.h"
 #include "src/postprocesors/outputerVTK.h"
 #include "src/postprocesors/outputerMesh.h"
@@ -40,17 +40,17 @@ int main() {
     using Model = D3Q27;
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
-    using Collision             = CollisionCumD3Q27Laminar<Model>;
+    using Collision             = CollisionCumD3Q27Turbulent2015<Model>;
     using Streaming             = StreamingAB<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
-
-    using Symmetry              = BounceSymmetryHalf<Model>;
+    using Symmetry              = NoSymmetry<Model>;
+    using Periodic              = Periodic<Model>;
 
     using Inlet                 = InletVelocityEquilibrium<Model>;
     using Outlet                = OutletDensityInterpolated<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
-    //using Turbulence            = OmegaLES<Model>;
+    using Turbulence            = OmegaLES<Model>;
     using NonDim                = NonDimensiolnaliseFactorsVelocity<Model>;
     using TimeAvg               = MomentTimeAvg<Model>;
 
@@ -63,16 +63,17 @@ int main() {
     geometryMesherBoundary Mesher(Constants,
                                   Data);
 
-    SolverLaminar< Model,
+    SolverTurbulentLES< Model,
             Initialisation,
             Collision,
             Streaming,
             BounceBackWall,
             Symmetry,
+            Periodic,
             Inlet,
             Outlet,
             Moments,
-            //Turbulence,
+            Turbulence,
             Error,
             NonDim,
             TimeAvg> Solver( Constants,
@@ -83,51 +84,57 @@ int main() {
     //------------------------DATA IN--------------------------//
 
     //set simulation initialization
-    VectorType Init(0.01f, 0.f, 0.f); //change to 1 in z
+    VectorType Init(35.f, 0.f, 0.f); //change to 1 in z
     Constants->VelocityInit = Init;
 
 
    /* //set meshing data
-    Constants->resolution_factor = 0.3;
-    Constants->additional_factor = 1;                              // at least 1 for additional wall around
+    Constants->resolution_factor = 0.1;
+    Constants->additional_factor = 6;                              // at least 1 for additional wall around
     Constants->point_outside = {2, 1000, 0};
     Constants->file_name = "Fany.off";*/
 
 
     //set geometry objects -1 streaming from it | no-bounce back - INLET
-    //set geometry objects -2 streaming from and into it | bounce back - OUTLET
+    //set geometry objects -2 streaming from and into it | bounce back - OUTLET && SYMMETRY
+    //set geometry objects -3 periodic
 
     //resolution 3
-    geometryObjectCuboid cuboidInlet({-0.099f, 200.f, -10.f},
-                                      {-0.099f, -0.01f, -10.f},
-                                      {2, 200.f, 201.f},-1);
+    geometryObjectCuboid cuboidInlet({-0.099f, 0.15f, -0.01f},
+                                      {-0.099f, -0.01f, 0.11f},
+                                      {-0.11, 0.15f, -0.01f},-1);
 
 
-    geometryObjectCuboid cuboidOutlet({1495.f, 200.f, -0.1f},
-                                      {1495.f, -0.01f, -0.1f},
-                                      {1501.f, 200.f, 201.f},-2);
+    geometryObjectCuboid cuboidOutlet({0.458f, 0.15f, -0.01f},
+                                      {0.458f, -0.01f, 0.11f},
+                                      {0.46f, 0.15f, -0.01f},-2);
 
-    geometryObjectCuboid cuboidSymmetry({4.f, 2.1f, -0.1f},
-                                      {4.f, -4.f, -0.1f},
-                                      {1496.f, -4.f, 201.f},-3);
+    geometryObjectCuboid cuboidPeriodic1({-0.099f, 0.001f, -0.01f},
+                                      {-0.099f, -0.001f, 0.11f},
+                                      {0.46f, 0.001f, -0.01f},-3);
+
+    geometryObjectCuboid cuboidPeriodic2({-0.099f, 0.15f, -0.01f},
+                                      {-0.099f, 0.149f, 0.11f},
+                                      {0.46f, 0.15f, -0.01f},-3);
 
 
     VectorType NormalInlet(-1.f, 0.f, 0.f);
 
+    VectorType velocityInletUniform(46.78f, 0.f, 0.f);
+
     VectorType NormalOutlet(1.f, 0.f, 0.f);
 
-    VectorType NormalSymmery(0.f, -1.f, 0.f);
+    VectorType NormalPeriodic1(0.f, -1.f, 0.f);
 
+    VectorType NormalPeriodic2(0.f, 1.f, 0.f);
 
     //inlet parabolic data
 
-    d3 inletCenter = {0.0f , 100.f, 150.f};
+    d3 inletCenter = {-0.1f , 0.075, 0.06};
     RealType inletDimX = 0.f;
-    RealType inletDimY = 200.f;
-    RealType inletDimZ = 100.f;
-    RealType meanVelocityInlet = 0.02f;       // 5
-
-    VectorType VelocityInlet(meanVelocityInlet, 0.f, 0.f);
+    RealType inletDimY = 0.15f;
+    RealType inletDimZ = 0.1f;
+    RealType meanVelocityInlet = 46.78f;       // 5
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -141,7 +148,7 @@ int main() {
     Constants->Fx_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
-    Constants->conversion_factor_fyz = 1.0f/1000.f;     // convert to m
+    Constants->conversion_factor_fyz = 1.0f;            // convert to m
 
     //set lattice data
 
@@ -149,36 +156,38 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 1000000.0f;                   //[s]
-    Constants->plot_every = 10.f;               //[s]
-    Constants->err_every = 0.01f;              //[s]
-    //Constants->iterationsMomentAvg = 10000;      //[1]
+    Constants->time = 8.0f;                      //[s]
+    Constants->plot_every = 0.001f;               //[s]
+    Constants->err_every = 0.0001f;              //[s]
+    Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters
-    //Constants->probe_every_it = 100;
-    //VectorType Probe(0.301f, 0.075f, 0.05f);
-    //Constants->ProbeLocation = Probe;
+    Constants->probe_every_it = 100;
+    VectorType Probe(0.301f, 0.075f, 0.05f);
+    Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
 
-    outputerMesh::MeshMatrixIn(Data, Constants, "BackwardStepLaminar", 1);
+    outputerMesh::MeshMatrixIn(Data, Constants, "BackwardStepTurbulent", 1);
 
     //----------------------MESHING GEOMETRY--------------------------//
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
         //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
-        Mesher.meshingBoundaryConditionInletUniform( cuboidInlet,  NormalInlet, VelocityInlet, 1 );
 
-        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,
-                                                1);
-        Mesher.meshingBoundaryConditionSymmetry(cuboidSymmetry, NormalSymmery, 1);
+
+        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic1,NormalPeriodic1, 105, 1);
+        Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic2,NormalPeriodic2, 1, 1);
+
+
+        Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
+        Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,1);
 
         Mesher.compileBoundaryArrayWall(1);
         Mesher.compileBoundaryArrayInlets(1);
+        Mesher.compileBoundaryArrayPeriodic(1);
         Mesher.compileBoundaryArrayOutlets(1);
-        Mesher.compileBoundaryArraySymmetry(1);
-
         Mesher.arrayTransfer(1);
     timerMeshingBoundary.stop();
 

@@ -74,7 +74,7 @@ struct Periodic {
 
                         if (mesh_view(dx, dy, dz) == 0)
                         {
-                            df_view(i,j,k, MD.c_rev[vel]) = df_view(i,j,k, vel);
+                            df_view(i,j,k, MD.c_rev[vel]) = df_post_view(i,j,k, vel);
                         }
                     }
 
@@ -101,7 +101,7 @@ struct Periodic {
 
                         if (mesh_view(dx, dy, dz) == 0)
                         {
-                            df_view(i,j,k, MD.c_rev[vel]) = df_view(i,j,k, vel);
+                            df_view(i,j,k, MD.c_rev[vel]) = df_post_view(i,j,k, vel);
                         }
                     }
                 }
@@ -126,7 +126,7 @@ struct Periodic {
 
                         if (mesh_view(dx, dy, dz) == 0)
                         {
-                            df_view(i,j,k, MD.c_rev[vel]) = df_view(i,j,k, vel);
+                            df_view(i,j,k, MD.c_rev[vel]) = df_post_view(i,j,k, vel);
                         }
                     }
 

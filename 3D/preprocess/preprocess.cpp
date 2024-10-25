@@ -38,11 +38,11 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.25;
+    Constants->resolution_factor = 2000;
     Constants->additional_factor = 1;                      // at least 1 for additional wall around
     Constants->point_outside = {-1, -1, -1};
-    Constants->file_name = "BackwardStepLaminar.off";
-    Constants->mesh_name = "BackwardStepLaminar";
+    Constants->file_name = "BackwardStepTurbulent.off";
+    Constants->mesh_name = "BackwardStepTurbulent";
 
     /*
     Dimensions: 453 63 63
@@ -91,6 +91,8 @@ int main() {
     logger.writeHeader("Writting Geometry");
         timer_VTK.writeLog(logger, 0);
     logger.writeSeparator();
+
+    printf("Number of lattice points - %d. \n", Constants->dimX_int*Constants->dimY_int*Constants->dimZ_int);
 
     return 0;
 }
