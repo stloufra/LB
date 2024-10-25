@@ -46,13 +46,13 @@ public:
 
         Constants->dimX_int = std::ceil(
                 (Constants->BBmaxx - Constants->BBminx) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor); // *-|-*--*--*... inside same nm. of points and spaces
         Constants->dimY_int = std::ceil(
                 (Constants->BBmaxy - Constants->BBminy) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor);
         Constants->dimZ_int = std::ceil(
                 (Constants->BBmaxz - Constants->BBminz) * Constants->resolution_factor +
-                2 * Constants->additional_factor * Constants->resolution_factor);
+                2 * Constants->additional_factor);
 
         Data->meshFluidHost.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
@@ -84,16 +84,17 @@ public:
 
         auto mesh_view = Data->meshFluidHost.getView();
 
+        // res.f. = 10 | BminX-BmaxX=10 | add.f = 10
+        // -0.05    0.05  0.15  9.95   10.05
+        //   * - | - * - - * ... * - | - *
 
         for (int i = 0; i < Constants->dimX_int; i++) {
             for (int j = 0; j < Constants->dimY_int; j++) {
                 for (int k = 0; k < Constants->dimZ_int; k++) {
-                    lookx = static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                            Constants->additional_factor;
-                    looky = static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                            Constants->additional_factor;
-                    lookz = static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                            Constants->additional_factor;
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
 
                     d3 pnt_ask = {lookx, looky, lookz};
 

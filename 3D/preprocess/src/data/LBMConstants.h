@@ -19,6 +19,7 @@ struct LBMConstants {
     RealType additional_factor;     //[1]
     d3 point_outside;               //[m]
     string file_name;               //[word]
+    string mesh_name;               //[word]
     int inlet_num;                  //[1]
     int outlet_num;                    //[1]
     int wall_num;                   //[1]

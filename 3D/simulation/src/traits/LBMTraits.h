@@ -7,6 +7,7 @@
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Algorithms/reduce.h>
 #include <TNL/Containers/StaticVector.h>
+#include <TNL/Containers/Vector.h>
 #include <vector>
 
 #pragma once
@@ -43,6 +44,19 @@ typedef struct {
 
 typedef struct {
     Vertex vertex;
+    Vector normal;
+    bool regular;
+} boundaryConditionSymmetry;
+
+typedef struct {
+    Vertex vertex;
+    Vector normal;
+    int periodicIndex;
+    bool regular;
+} boundaryConditionPeriodic;
+
+typedef struct {
+    Vertex vertex;
     bool regular;
 } boundaryConditionWall;
 
@@ -58,13 +72,16 @@ public:
     using RealType = float;
 
     using DeviceType = TNL::Devices::Cuda;
-
     using DeviceTypeHost = TNL::Devices::Host;
+
     using VectorType = TNL::Containers::StaticVector< 3, RealType >;
+    using VectorTypeInt = TNL::Containers::StaticVector< 3, int >;
+    using VectorTypeProbeCuda = TNL::Containers::Vector< RealType, DeviceType >;
+    using VectorTypeProbeHost = TNL::Containers::Vector< RealType, DeviceTypeHost >;
+
     using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
-
     using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
 
     // ---------------- MESH -----------------------
@@ -110,7 +127,32 @@ public:
                                                                 TNL::Containers::SizesHolder<int, 0>,
                                                                 std::index_sequence<0>,
                                                                 DeviceTypeHost>;
-    // -------------------- VARIABLES --------------------------
+    // -------------------- SYMMETRY -------------------------
+
+    using ArrayTypeBoundarySymmetry = TNL::Containers::NDArray <    boundaryConditionSymmetry ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceType>;
+
+    using ArrayTypeBoundarySymmetryHost = TNL::Containers::NDArray< boundaryConditionSymmetry ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceTypeHost>;
+
+    // -------------------- PERIODIC -------------------------
+
+    using ArrayTypeBoundaryPeriodic = TNL::Containers::NDArray <    boundaryConditionPeriodic ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceType>;
+
+    using ArrayTypeBoundaryPeriodicHost = TNL::Containers::NDArray< boundaryConditionPeriodic ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceTypeHost>;
+
+
+    // -------------------- VARIABLES ------------------------
     using ArrayTypeVariablesScalar = TNL::Containers::NDArray<  RealType,
                                                                 TNL::Containers::SizesHolder<int, 0, 0, 0>,
                                                                 NDArray3DSequenceType,

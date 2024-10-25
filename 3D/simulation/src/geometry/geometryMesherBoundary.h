@@ -9,7 +9,7 @@
 #include <string>
 #include <omp.h>
 
-
+#include <map>
 #include <vector>
 #include "geometryObjectCuboid.h"
 #include "../traits/LBMTraits.h"
@@ -48,6 +48,10 @@ public:
                                               const Vector &normal_out,
                                               const Vector &velocity_in,
                                               bool verbose) {
+
+        if (velocity_in.x() == velocity_in.y() && velocity_in.x() == velocity_in.z()) {
+            throw std::invalid_argument("Expected a 3D vector for velocity_in. If valid comment me.");
+        }
         // Function to fill the inlet velocities with uniform velocity profile.
         // So far supports only inlets which are perpendicular to one of the axis.
 
@@ -67,16 +71,13 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor);
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
-                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) > 0) {
                         if (neighboursFluidSearch(pnt_ask, 0)) {
 
                             boundary_condition_inlet.normal = normal_out;
@@ -89,7 +90,7 @@ public:
                                 boundary_condition_inlet.regular = 1;
                             }
 
-                            Data->meshFluidHost(i, j, k) = - Data->meshFluidHost(i, j, k); // TODo change back to cuboid.id
+                            Data->meshFluidHost(i, j, k) = cuboid.id; // - Data->meshFluidHost(i, j, k);
 
                             boundary_vector_inlet.push_back(boundary_condition_inlet);
                             num += 1;
@@ -133,12 +134,9 @@ public:
 
             Vertex vert = BC.vertex;
 
-            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor);
-            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor);
-            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor);
+            lookx = (static_cast<double>(vert.x)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+            looky = (static_cast<double>(vert.y)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+            lookz = (static_cast<double>(vert.z)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
             if (cuboid.isInside({lookx, looky, lookz})) {
 
@@ -205,12 +203,9 @@ public:
         for (boundaryConditionInlet &BC: boundary_vector_inlet) {
             Vertex vert = BC.vertex;
 
-            lookx = (static_cast<double>(vert.x) / Constants->resolution_factor + Constants->BBminx -
-                     Constants->additional_factor);
-            looky = (static_cast<double>(vert.y) / Constants->resolution_factor + Constants->BBminy -
-                     Constants->additional_factor);
-            lookz = (static_cast<double>(vert.z) / Constants->resolution_factor + Constants->BBminz -
-                     Constants->additional_factor);
+            lookx = (static_cast<double>(vert.x)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+            looky = (static_cast<double>(vert.y)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+            lookz = (static_cast<double>(vert.z)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
 
             if (cuboid.isInside({lookx, looky, lookz})) {
                 // Calculate the distance from the inlet center
@@ -278,25 +273,6 @@ public:
         }
     }
 
-    void compileBoundaryArrayInlets(bool verbose) {
-        Constants->inlet_num = boundary_vector_inlet.size();
-
-        Data->meshBoundaryInletHost.setSizes(Constants->inlet_num);
-
-
-        int i = 0;
-        for (boundaryConditionInlet BC: boundary_vector_inlet) {
-            Data->meshBoundaryInletHost[i] = BC;
-            i += 1;
-        }
-
-        if (verbose) {
-            std::cout << "\nCreated boundary Array Inlets " << ".\n";
-            std::cout << "Boundary vertexes number: " << Constants->inlet_num << std::endl;
-        }
-
-    }
-
     void meshingBoundaryConditionOutlet(geometryObjectCuboid &cuboid, const Vector &normal_out, RealType density,
                                         bool verbose) {
         double lookx, looky, lookz;
@@ -312,12 +288,10 @@ public:
 
                 for (int i = 0; i < Constants->dimX_int; i++) {
 
-                    lookx = (static_cast<double>(i) / Constants->resolution_factor + Constants->BBminx -
-                             Constants->additional_factor);
-                    looky = (static_cast<double>(j) / Constants->resolution_factor + Constants->BBminy -
-                             Constants->additional_factor);
-                    lookz = (static_cast<double>(k) / Constants->resolution_factor + Constants->BBminz -
-                             Constants->additional_factor);
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
@@ -327,13 +301,13 @@ public:
                         boundary_condition_outlet.density = density;
                         boundary_condition_outlet.vertex = {i, j, k};
 
-                        if (Data->meshFluidHost(i, j, k) > 10) { // count begins from +1
-                            boundary_condition_inlet.regular = 0;
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
+                            boundary_condition_outlet.regular = 1;
                         } else {
-                            boundary_condition_inlet.regular = 1;
+                            boundary_condition_outlet.regular = 0;
                         }
 
-                        Data->meshFluidHost(i, j, k) = -Data->meshFluidHost(i, j, k); // TODO: change back to cuboid.id
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // -Data->meshFluidHost(i, j, k)
 
 
                         boundary_vector_outlet.push_back(boundary_condition_outlet);
@@ -343,9 +317,6 @@ public:
             }
         }
 
-        /*for (boundaryConditionOutlet BC: boundary_vector_outlet_individual) {
-            boundary_vector_outlet.push_back(BC);
-        }*/
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as outlet.\n";
@@ -353,19 +324,115 @@ public:
         }
     }
 
-    void compileBoundaryArrayOutlets(bool verbose) {
-        Data->meshBoundaryOutletHost.setSizes(boundary_vector_outlet.size());
-        Constants->outlet_num = boundary_vector_outlet.size();
+    void meshingBoundaryConditionSymmetry(geometryObjectCuboid &cuboid, const Vector &normal_out, bool verbose) {
+        // x = 0, y=1, z =2
 
-        int j = 0;
-        for (boundaryConditionOutlet BC: boundary_vector_outlet) {
-            Data->meshBoundaryOutletHost[j] = BC;
-            j += 1;
+
+        //#define SYMMETRY
+        double lookx, looky, lookz;
+
+        boundaryConditionSymmetry boundary_condition_symmetry;
+
+        int num = 0;
+
+        for (int k = 0; k < Constants->dimZ_int; k++) {
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+
+                for (int i = 0; i < Constants->dimX_int; i++) {
+
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
+
+                    d3 pnt_ask = {lookx, looky, lookz};
+
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+
+                        boundary_condition_symmetry.vertex = {i, j, k};
+                        boundary_condition_symmetry.normal = normal_out;
+
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
+                            boundary_condition_symmetry.regular = 1;
+                        } else {
+                            boundary_condition_symmetry.regular = 0;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
+
+
+                        boundary_vector_symmetry.push_back(boundary_condition_symmetry);
+                        num += 1;
+                    }
+                }
+            }
         }
 
+
         if (verbose) {
-            std::cout << "\nCreated boundary Array Outlet.\n";
-            std::cout << "Boundary vertexes number: " << boundary_vector_outlet.size() << std::endl;
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Symmetry.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
+        }
+    }
+
+    void meshingBoundaryConditionPeriodic(geometryObjectCuboid &cuboid, const Vector &normal_out, int periodicIndex_, bool verbose) {
+        // x = 0, y=1, z =2
+
+        double lookx, looky, lookz;
+
+        boundaryConditionPeriodic boundary_condition_periodic;
+
+        int num = 0;
+
+        int ii,jj,kk;
+
+        for (int k = 0; k < Constants->dimZ_int; k++) {
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+
+                for (int i = 0; i < Constants->dimX_int; i++) {
+
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
+
+                    d3 pnt_ask = {lookx, looky, lookz};
+
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+
+                        boundary_condition_periodic.vertex = {i, j, k};
+                        boundary_condition_periodic.normal = normal_out;
+                        boundary_condition_periodic.periodicIndex = periodicIndex_; ;
+
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
+                            boundary_condition_periodic.regular = 1;
+                            //Data->meshFluidHost(i, j, k) = -3;
+                        } else {
+                            boundary_condition_periodic.regular = 0;
+                            //Data->meshFluidHost(i, j, k) = -100;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
+
+
+                        boundary_vector_periodic.push_back(boundary_condition_periodic);
+                        num += 1;
+
+                        ii =i;
+                        jj=j;
+                        kk=k;
+                    }
+                }
+            }
+        }
+
+        printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+
+        if (verbose) {
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
         }
     }
 
@@ -373,7 +440,6 @@ public:
 
         boundaryConditionWall boundary_condition_wall;
 
-        std::vector <boundaryConditionWall> boundary_vector_wall;
 
         for (int k = 0; k < Constants->dimZ_int; k++) {
 
@@ -395,7 +461,7 @@ public:
                             }
                         }
 
-                        if (Data->meshFluidHost(i, j, k) > 2) {
+                        if (Data->meshFluidHost(i, j, k) >2) { //TODO: before 2
                             boundary_condition_wall.vertex = {i, j, k};
                             boundary_condition_wall.regular = 1;
 
@@ -410,27 +476,134 @@ public:
             }
         }
 
-        Data->meshBoundaryWallHost.setSizes(boundary_vector_wall.size());
+        if (verbose) {
+            std::cout << "\nMeshed Wall.\n";
+            std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
+        }
+
+    }
+
+    void compileBoundaryArrayInlets(bool verbose) {
+
+        Constants->inlet_num = boundary_vector_inlet.size();
+
+        Data->meshBoundaryInletHost.setSizes(Constants->inlet_num);
+
+        int i = 0;
+        for (boundaryConditionInlet BC: boundary_vector_inlet) {
+            Data->meshBoundaryInletHost[i] = BC;
+            i += 1;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Inlets " << ".\n";
+            std::cout << "Boundary vertexes number: " << Constants->inlet_num << std::endl;
+        }
+
+    }
+
+    void compileBoundaryArrayOutlets(bool verbose) {
+        Data->meshBoundaryOutletHost.setSizes(boundary_vector_outlet.size());
+        Constants->outlet_num = boundary_vector_outlet.size();
+
+        int j = 0;
+        for (boundaryConditionOutlet BC: boundary_vector_outlet) {
+            Data->meshBoundaryOutletHost[j] = BC;
+            j += 1;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Outlet.\n";
+            std::cout << "Boundary vertexes number: " << boundary_vector_outlet.size() << std::endl;
+        }
+    }
+
+    void compileBoundaryArrayWall(bool verbose) {
+
+        auto it = boundary_vector_wall.begin();
+
+        int er = 0;
+
+        /*while (it != boundary_vector_wall.end()) {
+
+            const auto& Ver = it->vertex;
+
+            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) { // wbu symmetry
+                it = boundary_vector_wall.erase(it);
+                ++er;
+            }
+            else {
+                ++it;
+            }
+        }*/
+
+        er = std::erase_if(boundary_vector_wall, [&](const boundaryConditionWall& BC) {
+        return Data->meshFluidHost(BC.vertex.x, BC.vertex.y, BC.vertex.z) < 0;
+        });
+
+
         Constants->wall_num = boundary_vector_wall.size();
+
+        Data->meshBoundaryWallHost.setSizes(boundary_vector_wall.size());
 
         int k = 0;
 
         for (boundaryConditionWall BC: boundary_vector_wall) {
             Data->meshBoundaryWallHost[k] = BC;
-            k += 1;
+            ++k;
         }
 
         if (verbose) {
-            std::cout << "\nMeshed and created boundary Array Wall.\n";
+            std::cout << "\nCreated boundary Array Wall.\n";
+            std::cout << "Erased "<< er <<" elements.\n";
             std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
         }
+    };
+
+    void compileBoundaryArraySymmetry(bool verbose) {
 
 
-    }
+        Constants->symmetry_num = boundary_vector_symmetry.size();
+
+        Data->meshBoundarySymmetryHost.setSizes(Constants->symmetry_num);
+
+        int k = 0;
+
+        for (const auto& BC: boundary_vector_symmetry) {
+            Data->meshBoundarySymmetryHost[k] = BC;
+            ++k;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Symmetry.\n";
+            std::cout << "Symmetry vertexes number: " << boundary_vector_wall.size() << std::endl;
+        }
+    };
+
+    void compileBoundaryArrayPeriodic(bool verbose) {
+
+        Constants->periodic_num = boundary_vector_periodic.size();
+
+        Data->meshBoundaryPeriodicHost.setSizes(Constants->periodic_num);
+
+        int k = 0;
+
+        for (const auto& BC: boundary_vector_periodic) {
+            Data->meshBoundaryPeriodicHost[k] = BC;
+            ++k;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Periodic.\n";
+            std::cout << "Periodic vertexes number: " << boundary_vector_periodic.size() << std::endl;
+        }
+    };
 
     void arrayTransfer(bool verbose) {
         Data->meshFluid = Data->meshFluidHost;
         Data->meshBoundaryWall = Data->meshBoundaryWallHost;
+        Data->meshBoundarySymmetry = Data->meshBoundarySymmetryHost;
+        Data->meshBoundaryPeriodic = Data->meshBoundaryPeriodicHost;
         Data->meshBoundaryInlet = Data->meshBoundaryInletHost;
         Data->meshBoundaryOutlet = Data->meshBoundaryOutletHost;
 
@@ -482,10 +655,11 @@ public:
 
     }
 
-    std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
-    std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
     std::vector <boundaryConditionInlet> boundary_vector_inlet;
     std::vector <boundaryConditionOutlet> boundary_vector_outlet;
+    std::vector <boundaryConditionSymmetry > boundary_vector_symmetry;
+    std::vector <boundaryConditionPeriodic > boundary_vector_periodic;
+    std::vector <boundaryConditionWall> boundary_vector_wall;
 
     boundaryConditionInlet boundary_condition_inlet;
 

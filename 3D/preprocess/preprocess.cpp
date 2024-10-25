@@ -38,19 +38,28 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 0.12;
-    Constants->additional_factor = 6;                              // at least 1 for additional wall around
-    Constants->point_outside = {2, 1000, 0};
-    Constants->file_name = "Fany.off";
+    Constants->resolution_factor = 2000;
+    Constants->additional_factor = 1;                      // at least 1 for additional wall around
+    Constants->point_outside = {-1, -1, -1};
+    Constants->file_name = "BackwardStepTurbulent.off";
+    Constants->mesh_name = "BackwardStepTurbulent";
+
+    /*
+    Dimensions: 453 63 63
+    Resolution Factor: 0.3
+    Additional Factor: 1
+    BBmaxx: 1500
+    BBmaxy: 200
+    BBmaxz: 200*/
 
 
     //----------------------HANDLING GEOMETRY--------------------------//
 
 
     timer_handling.start();
-        Handler->polyhedronFromFile(Constants, 0);        //read the file and store the polyhedron in the handler object
-        Handler->polyhedronBbox(1);               //compute the bounding box of the polyhedron
-        Handler->writeToConstants(Constants);             //write the BBOX into the Constats
+        Handler->polyhedronFromFile(Constants, 0);    //read the file and store the polyhedron in the handler object
+        Handler->polyhedronBbox(1);                     //compute the bounding box of the polyhedron
+        Handler->writeToConstants(Constants);               //write the BBOX into the Constats
     timer_handling.stop();
 
 
@@ -67,10 +76,10 @@ int main() {
     //----------------------MESHING OUTPUT--------------------------//
 
     timer_VTK.start();
-        outputerVTK::MeshVTK(Data, Constants, "meshLESsmall");
+        outputerVTK::MeshVTK(Data, Constants, Constants->mesh_name);
     timer_VTK.stop();
 
-    outputerMesh::MeshMatrixOut(Data, Constants, "lesMeshSmall-er");
+    outputerMesh::MeshMatrixOut(Data, Constants, Constants->mesh_name);
 
     //----------------------TIMERS OUTPUT--------------------------//
     logger.writeHeader("Handling Geometry");
@@ -82,6 +91,8 @@ int main() {
     logger.writeHeader("Writting Geometry");
         timer_VTK.writeLog(logger, 0);
     logger.writeSeparator();
+
+    printf("Number of lattice points - %d. \n", Constants->dimX_int*Constants->dimY_int*Constants->dimZ_int);
 
     return 0;
 }

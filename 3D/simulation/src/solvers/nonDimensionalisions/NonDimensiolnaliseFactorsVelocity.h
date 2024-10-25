@@ -26,12 +26,15 @@ struct NonDimensiolnaliseFactorsVelocity
             std::cout << "\n Lattice speed should not be higher than 0.1 due to stability close to speed of sound.\n";
         }
 
-        assert(Constants->U_lb < Constants->cs);
+        assert(Constants->U_lb < Constants->cs && "Speed should not be greater than speed of sound!");
 
         Constants->L_fyz = abs(Constants->BBmaxx - Constants->BBminx) * Constants->conversion_factor_fyz;
-
         RealType L_fyz_y = abs(Constants->BBmaxy - Constants->BBminy) * Constants->conversion_factor_fyz;
         RealType L_fyz_z = abs(Constants->BBmaxz - Constants->BBminz) * Constants->conversion_factor_fyz;
+
+        std::cout << "L in X direction is: " <<  Constants->L_fyz << std::endl;
+        std::cout << "L in Y direction is: " << L_fyz_y << std::endl;
+        std::cout << "L in Z direction is: " << L_fyz_z << std::endl;
 
 
         Constants->Cl = Constants->L_fyz / Constants->dimX_int;
@@ -58,7 +61,9 @@ struct NonDimensiolnaliseFactorsVelocity
 
         Constants->ny = Constants->ny_fyz * Constants->Ct / Constants->Cl / Constants->Cl;
 
-        Constants->tau = Constants->ny / 3 + 0.5f;
+        std::cout << "\n- $Nu$  is " << Constants->ny << "\n";
+
+        Constants->tau = Constants->ny / 3.f + 0.5f;
 
         if (Constants->tau < 0.51) {
             std::cout << "Tau is too small. Consider higher resolution or higher lattice speed. \n";
@@ -73,7 +78,7 @@ struct NonDimensiolnaliseFactorsVelocity
 
         assert(Constants->tau > 0.5 && Constants->tau < 0.99);
 
-        Constants->omega = 1 / Constants->tau;
+        Constants->omega = 1.f / Constants->tau;
 
         std::cout << "\nConversion undergone successfully." << "\n";
 

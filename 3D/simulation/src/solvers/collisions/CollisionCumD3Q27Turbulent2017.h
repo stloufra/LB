@@ -292,7 +292,7 @@ struct CollisionCumD3Q27Turbulent2017 {
 
             //Eq G2015(58)
             const RealType Dxu = -omega1 * 0.5f / rho * (2.f * C_200 - C_020 - C_002) -
-                                 omega2 * 0.5f / rho * (C_200 + C_020 + C_002 - -(-1 - rho));
+                                 omega2 * 0.5f / rho * (C_200 + C_020 + C_002 - (-1 + rho));
 
             //Eq G2015(59)
             const RealType Dyv = Dxu + 3.f * omega1 * 0.5f / rho * (C_200 - C_020);
@@ -324,9 +324,9 @@ struct CollisionCumD3Q27Turbulent2017 {
             const RealType Eq65RHS = k_000 * omega2 + (1.f - omega2) * (C_200 + C_020 + C_002) -
                                      3.f * rho * (1.f - omega2 / 2.f) * (ux * ux * Dxu + uy * uy * Dyv + uz * uz * Dzw);
 
-            const RealType Cs_200 = 1.f / 3.f * (Eq61RHS + Eq64RHS + Eq65RHS);
-            const RealType Cs_020 = 1.f / 3.f * (Eq64RHS - 2.f * Eq61RHS + Eq65RHS);
-            const RealType Cs_002 = 1.f / 3.f * (Eq61RHS - 2.f * Eq64RHS + Eq65RHS);
+            const RealType Cs_200 = 1.f/3.f * (Eq61RHS + Eq64RHS + Eq65RHS);
+            const RealType Cs_020 = 1.f/3.f * (Eq64RHS - 2.f * Eq61RHS + Eq65RHS);
+            const RealType Cs_002 = 1.f/3.f * (Eq61RHS - 2.f * Eq64RHS + Eq65RHS);
 
             const RealType Eq117 = (1.f - omega120p102) * (C_120 + C_102);
             const RealType Eq118 = (1.f - omega210p012) * (C_210 + C_012);

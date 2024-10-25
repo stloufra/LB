@@ -25,12 +25,23 @@
 
 #include "./streamings//StreamingAB.h"
 
-#include "./boundaryConditions/BounceBackWallHalf.h"
-#include "./boundaryConditions/InletVelocityMovingWall.h"
-#include "./boundaryConditions/InletVelocityZouHe.h"
-#include "./boundaryConditions/OutletDensityEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibrium.h"
-#include "./boundaryConditions/OutletNeighbourEquilibriumOmega.h"
+#include "boundaryConditions/Wall/BounceBackWallHalf.h"
+
+#include "boundaryConditions/Periodic/Periodic.h"
+#include "boundaryConditions/Periodic/NoPeriodic.h"
+
+#include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
+#include "boundaryConditions/Symmetry/NoSymmetry.h"
+
+#include "boundaryConditions/Inlet/InletVelocityMovingWall.h"
+#include "boundaryConditions/Inlet/InletVelocityZouHe.h"
+#include "boundaryConditions/Inlet/InletVelocityEquilibrium.h"
+
+
+#include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
+#include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
@@ -52,6 +63,8 @@ template<   typename MODELTYPE,
             typename COLLISIONTYPE,
             typename STREAMINGTYPE,
             typename BOUNCEBACKWALLTYPE,
+            typename SYMMETRYTYPE,
+            typename PERIODICTYPE,
             typename INLETTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
@@ -119,9 +132,9 @@ public:
         while(k<Constants -> iterations)
         {
 
-                timer_dumping.start();
-                OUTLETTYPE::outletOmega(Data, Constants);
-                timer_dumping.stop();
+            timer_dumping.start();
+            OUTLETTYPE::outletOmega(Data, Constants);
+            timer_dumping.stop();
 
 
             timer_collision.start();
@@ -136,6 +149,7 @@ public:
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
+                SYMMETRYTYPE::symmetry(Data, Constants);
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
