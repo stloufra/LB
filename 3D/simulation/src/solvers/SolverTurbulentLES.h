@@ -203,10 +203,10 @@ public:
 
             timer_bounceback.start();
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
-                SYMMETRYTYPE::symmetry(Data, Constants);
-                PERIODICTYPE::periodic(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
+                SYMMETRYTYPE::symmetry(Data, Constants);
+                PERIODICTYPE::periodic(Data, Constants);
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
@@ -314,6 +314,8 @@ public:
             }
 
             assert(xLat >= Constants -> dimX_int && "Probe must be in the domain!");
+            assert(yLat >= Constants -> dimY_int && "Probe must be in the domain!");
+            assert(zLat >= Constants -> dimZ_int && "Probe must be in the domain!");
 
             VectorTypeInt Probe(xLat, yLat, zLat);
             Constants -> ProbeLocationLat = Probe;
