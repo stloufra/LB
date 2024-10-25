@@ -231,7 +231,15 @@ public:
             {
                 timer_err.start();
                     ERRORTYPE::errorEvaluation(Data, Constants);
-                    printf("\n err=%e k=%d\n",Constants->err, k);
+
+                    timer_loop.stop();
+                    auto timeSoFar = timer_loop.getRealTime();
+                    timer_loop.start();
+                    auto throughPut = k/timeSoFar;
+
+                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",Constants->err, k, Constants->iterations - k,  timeSoFar, throughPut, (Constants->iterations-k)/throughPut);
+
+
                     if (std::isnan(Constants->err))
                     {
                         std::cout << "\n Error is NaN, breaking out.\n";

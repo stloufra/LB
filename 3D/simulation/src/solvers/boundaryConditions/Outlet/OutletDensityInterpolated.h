@@ -210,9 +210,9 @@ struct OutletDensityInterpolated {
                 }
 
                 RealType rho = computeRho(i,j,k);
-                RealType ux = computeUx(i,j,k,density);
-                RealType uy = computeUy(i,j,k,density);
-                RealType uz = computeUz(i,j,k,density);
+                RealType ux = computeUx(i,j,k,rho);
+                RealType uy = computeUy(i,j,k,rho);
+                RealType uz = computeUz(i,j,k,rho);
 
                 for (int vel = 0; vel < Nvel; vel++) {
 
