@@ -156,8 +156,8 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 2.0f;                      //[s]
-    Constants->plot_every = 0.01f;               //[s]
+    Constants->time = 0.001f;                      //[s]
+    Constants->plot_every = 0.001f;               //[s]
     Constants->err_every = 0.0001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <omp.h>
 
-
+#include <map>
 #include <vector>
 #include "geometryObjectCuboid.h"
 #include "../traits/LBMTraits.h"
@@ -524,7 +524,7 @@ public:
 
         int er = 0;
 
-        while (it != boundary_vector_wall.end()) {
+        /*while (it != boundary_vector_wall.end()) {
 
             const auto& Ver = it->vertex;
 
@@ -535,7 +535,11 @@ public:
             else {
                 ++it;
             }
-        }
+        }*/
+
+        er = std::erase_if(boundary_vector_wall, [&](const boundaryConditionWall& BC) {
+        return Data->meshFluidHost(BC.vertex.x, BC.vertex.y, BC.vertex.z) < 0;
+        });
 
 
         Constants->wall_num = boundary_vector_wall.size();

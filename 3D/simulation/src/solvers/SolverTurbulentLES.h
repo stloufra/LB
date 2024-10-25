@@ -264,7 +264,7 @@ public:
             timer_output.stop();
         }
 
-
+        timer_loop.stop();
     };
 
     void convertToLattice(bool verbose) {

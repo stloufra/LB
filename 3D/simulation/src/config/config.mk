@@ -17,7 +17,7 @@ CXX := g++
 CUDA_CXX := nvcc
 
 # host compiler flags
-CXXFLAGS := -std=c++17  $(TNL_INCLUDE_DIRS) $(CGAL_INCLUDE_DIRS) -w
+CXXFLAGS := -std=c++20  $(TNL_INCLUDE_DIRS) $(CGAL_INCLUDE_DIRS) -w
 
 ifeq ($(WITH_DEBUG),yes)
     CXXFLAGS += -O0 -g
@@ -26,7 +26,7 @@ else
 endif
 
 # CUDA compiler flags
-CUDA_CXXFLAGS := -std=c++17 --expt-relaxed-constexpr --expt-extended-lambda $(TNL_INCLUDE_DIRS) -diag-suppress 174
+CUDA_CXXFLAGS := -std=c++20 --expt-relaxed-constexpr --expt-extended-lambda $(TNL_INCLUDE_DIRS) -diag-suppress 174
 
 ifeq ($(WITH_DEBUG),yes)
     CUDA_CXXFLAGS += -DHAVE_CUDA

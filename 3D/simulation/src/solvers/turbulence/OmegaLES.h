@@ -46,22 +46,23 @@ struct OmegaLES {
 
         auto f_equilibrium = [=]
         __cuda_callable__(
-        const int &i,
-        const int &j,
-        const int &k,
+        RealType ux,
+        RealType uy,
+        RealType uz,
+        RealType rho,
         const int &velo ) mutable
         {
             RealType uc, u2;
 
-            uc = MD.c[velo][0] * u_view(i, j, k).x()
-                 + MD.c[velo][1] * u_view(i, j, k).y()
-                 + MD.c[velo][2] * u_view(i, j, k).z();
+            uc = MD.c[velo][0] * ux
+                 + MD.c[velo][1] * uy
+                 + MD.c[velo][2] * uz;
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x() + u_view(i, j, k).y() * u_view(i, j, k).y() +
-                 u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux * ux + uy * uy +
+                 uz * uz;
 
 
-            return MD.weight[velo] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return MD.weight[velo] * rho * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
 
@@ -70,37 +71,60 @@ struct OmegaLES {
         const TNL::Containers::StaticArray<3, int> &i ) mutable
         {
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
+
+                auto u_x = u_view(i.x(), i.y(), i.z()).x();
+                auto u_y = u_view(i.x(), i.y(), i.z()).y();
+                auto u_z = u_view(i.x(), i.y(), i.z()).z();
+
+                auto rho = rho_view(i.x(), i.y(), i.z());
+
                 TensorType pi(0.f);
+
 
                 for (int vel = 0; vel < Nvel; vel++) {
 
-                    RealType feq = f_equilibrium(i.x(), i.y(), i.z(),vel);
+                    RealType feq = f_equilibrium(u_x, u_y, u_z, rho, vel);
+                    RealType df = df_view(i.x(), i.y(), i.z(), vel);
 
-                    for (int alpha = 0; alpha < 3; alpha++) {
-                        for (int beta = 0; beta < 3; beta++) {
+                    pi(0)(0) += MD.c[vel][0] * MD.c[vel][0] * (df - feq);
+                    pi(0)(1) += MD.c[vel][0] * MD.c[vel][1] * (df - feq);
+                    pi(0)(2) += MD.c[vel][0] * MD.c[vel][2] * (df - feq);
 
-                            pi(alpha)(beta) += MD.c[vel][alpha] * MD.c[vel][beta] * (df_view(i.x(), i.y(), i.z(), vel) -
-                                                                                     feq);
+                    pi(1)(0) += MD.c[vel][1] * MD.c[vel][0] * (df - feq);
+                    pi(1)(1) += MD.c[vel][1] * MD.c[vel][1] * (df - feq);
+                    pi(1)(2) += MD.c[vel][1] * MD.c[vel][2] * (df - feq);
 
-                        }
+                    pi(2)(0) += MD.c[vel][2] * MD.c[vel][0] * (df - feq);
+                    pi(2)(1) += MD.c[vel][2] * MD.c[vel][1] * (df - feq);
+                    pi(2)(2) += MD.c[vel][2] * MD.c[vel][2] * (df - feq);
 
-                    }
                 }
 
-                RealType PI = 0.f;
+                RealType PI = pi(0)(0) * pi(0)(0);
+                PI += pi(0)(1) * pi(0)(1);
+                PI += pi(0)(2) * pi(0)(2);
 
-                for (int alpha = 0; alpha < 3; alpha++) {
-                    for (int beta = 0; beta < 3; beta++) {
-                        PI += pi(alpha)(beta) * pi(alpha)(beta);
-                    }
-                }
+                PI += pi(1)(0) * pi(1)(0);
+                PI += pi(1)(1) * pi(1)(1);
+                PI += pi(1)(2) * pi(1)(2);
 
-                PI = sqrt(PI);
+                PI += pi(2)(0) * pi(2)(0);
+                PI += pi(2)(1) * pi(2)(1);
+                PI += pi(2)(2) * pi(2)(2);
 
                 RealType tauLES;
 
-                tauLES = tau * 0.5f +
-                         sqrt(tau * tau + 18.f * CLES / (rho_view(i.x(), i.y(), i.z())) * PI) * 0.5f;
+                RealType rho_inv = 1.0f / rho;
+                RealType tau_sq = tau * tau;
+                RealType CLES_term = 18.f * CLES * rho_inv;
+
+                PI = sqrt(PI);
+
+                // Compute tauLES with one square root
+                tauLES = tau * 0.5f + 0.5f * sqrt(tau_sq + CLES_term * PI);
+
+                //tauLES = tau * 0.5f +
+                //         sqrt(tau * tau + 18.f * CLES / (rho) * sqrt(PI)) * 0.5f;
 
                 omega_view(i.x(), i.y(), i.z()) = 1.f / tauLES;
             }
