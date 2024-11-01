@@ -105,6 +105,37 @@ public:
             }
         }
 
+        if(Constants -> additional_factor >0)
+        {
+
+            // Set boundary points to 0
+            for (int i = 0; i < Constants->dimX_int; i++) {
+                for (int j = 0; j < Constants->dimY_int; j++) {
+                    // Set boundaries along Z axis
+                    mesh_view(i, j, 0) = 0;
+                    mesh_view(i, j, Constants->dimZ_int - 1) = 0;
+                }
+            }
+
+            for (int i = 0; i < Constants->dimX_int; i++) {
+                for (int k = 0; k < Constants->dimZ_int; k++) {
+                    // Set boundaries along Y axis
+                    mesh_view(i, 0, k) = 0;
+                    mesh_view(i, Constants->dimY_int - 1, k) = 0;
+                }
+            }
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+                for (int k = 0; k < Constants->dimZ_int; k++) {
+                    // Set boundaries along X axis
+                    mesh_view(0, j, k) = 0;
+                    mesh_view(Constants->dimX_int - 1, j, k) = 0;
+                }
+            }
+        }
+
+
+
         if (verbose) {
             std::cout << "Number of lattice points is "
                       << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
