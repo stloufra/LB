@@ -41,7 +41,7 @@ int main() {
 
     using Initialisation        = InitializationEquilibriumConstVector<Model>;
     using Collision             = CollisionCumD3Q27Turbulent2015<Model>;
-    using Streaming             = StreamingAB<Model>;
+    using Streaming             = StreamingABpush<Model>;
     using BounceBackWall        = BounceBackWallHalf<Model>;
     using Symmetry              = NoSymmetry<Model>;
     using Periodic              = Periodic<Model>;
@@ -144,7 +144,7 @@ int main() {
     //set physical data
     Constants->rho_fyz = 1.293f;                        //[kg/m3]     1000
     Constants->ny_fyz = 2*10e-5f;                       //[m2/s]
-    Constants->u_guess_fyz = 4.f*meanVelocityInlet;     //[m/s]
+    Constants->u_guess_fyz = 5.f*meanVelocityInlet;     //[m/s]
     Constants->Fx_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fy_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
     Constants->Fz_fyz = 0.0f;                           //[kg/m3/s2]  <- force density
@@ -156,9 +156,9 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 1.f;                      //[s]
-    Constants->plot_every = 0.001f;               //[s]
-    Constants->err_every = 0.0001f;              //[s]
+    Constants->time = 0.1f;                      //[s]
+    Constants->plot_every = 0.01f;               //[s]
+    Constants->err_every =  0.0001f;              //[s]
     Constants->iterationsMomentAvg = 10000;      //[1]
 
     // set sampling parameters
@@ -223,6 +223,12 @@ int main() {
     logger.writeHeader("Streaming");
     Solver.timer_streaming.writeLog(logger, 0);
     logger.writeSeparator();
+    if constexpr (std::is_same<Turbulence, OmegaLES<Model>>::value)
+    {
+        logger.writeHeader("OmegaLes");
+        Solver.timer_LES.writeLog(logger, 0);
+        logger.writeSeparator();
+    }
     logger.writeHeader("Bounce back");
     Solver.timer_bounceback.writeLog(logger, 0);
     logger.writeSeparator();
@@ -240,6 +246,8 @@ int main() {
     logger.writeSeparator();
     logger.writeHeader("Time Averaging");
     Solver.timer_timeAvg.writeLog(logger, 0);
+
+
 
 
     return 0;

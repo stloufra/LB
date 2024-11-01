@@ -23,7 +23,7 @@
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
 
-#include "./streamings//StreamingAB.h"
+#include "./streamings//StreamingABpull.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
 

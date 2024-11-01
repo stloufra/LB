@@ -24,7 +24,8 @@
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
 
-#include "./streamings//StreamingAB.h"
+#include "./streamings//StreamingABpull.h"
+#include "./streamings//StreamingABpush.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
 
@@ -184,14 +185,13 @@ public:
         while(k<Constants -> iterations)
         {
 
-            timer_momentsUpdate.start();
+            timer_LES.start();
             TURBULENCETYPE::omega(Data, Constants);
-            timer_momentsUpdate.stop();
+            timer_LES.stop();
 
             timer_dumping.start();
             OUTLETTYPE::outletOmega(Data, Constants);
             timer_dumping.stop();
-
 
             timer_collision.start();
                 COLLISIONTYPE::collision(Data, Constants);
@@ -205,8 +205,15 @@ public:
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
+            if constexpr (!std::is_same<SYMMETRYTYPE, NoSymmetry<MODELTYPE>>::value)
+            {
                 SYMMETRYTYPE::symmetry(Data, Constants);
+            }
+
+            if constexpr (!std::is_same<PERIODICTYPE, NoPeriodic<MODELTYPE>>::value)
+            {
                 PERIODICTYPE::periodic(Data, Constants);
+            }
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
@@ -248,7 +255,9 @@ public:
                 timer_err.stop();
             }
 
-            if(k%Constants -> plot_every_it==0 && k )//> (Constants->iterations - Constants->iterationsMomentAvg))
+            k++;
+
+            if(k%Constants -> plot_every_it==0 )
             {
 
                 timer_output.start();
@@ -256,7 +265,7 @@ public:
                 timer_output.stop();
             }
 
-            k++;
+
 
         }
 
@@ -361,6 +370,7 @@ public:
 
 
     Timer timer_loop;
+    Timer timer_LES;
     Timer timer_collision;
     Timer timer_streaming;
     Timer timer_bounceback;

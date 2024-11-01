@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef STREAMINGAB_H
-#define STREAMINGAB_H
+#ifndef STREAMINGABPUSH_H
+#define STREAMINGABPUSH_H
 
 #include "../../traits/LBMTraits.h"
 
 template <typename MODELDATA>
-struct StreamingAB
+struct StreamingABpush
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -41,28 +41,33 @@ struct StreamingAB
 
             auto mesh_val = mesh_view(i.x(), i.y(), i.z());
 
-            if (mesh_val > 0 || mesh_val == -2 || mesh_val == -3)
+            if (mesh_val != 0 && mesh_val != -1) // push schema
             {
                 for (int vel = 0; vel < Nvel; vel++)
                 {
                     int id;
                     int jd;
                     int kd;
-                    id = i.x() - MD.c[vel][0];
-                    jd = i.y() - MD.c[vel][1];
-                    kd = i.z() - MD.c[vel][2];
+                    id = i.x() + MD.c[vel][0];
+                    jd = i.y() + MD.c[vel][1];
+                    kd = i.z() + MD.c[vel][2];
 
+                    df_view(id, jd, kd, vel) = df_post_view(i.x(), i.y(), i.z(), vel);
 
-                    auto mesh_neigh_val = mesh_view(id, jd, kd);
+                }
+            }
+            else if (mesh_val == -1)
+            {
+                for (int vel = 0; vel < Nvel; vel++)
+                {
+                    int id;
+                    int jd;
+                    int kd;
+                    id = i.x() + MD.c[vel][0];
+                    jd = i.y() + MD.c[vel][1];
+                    kd = i.z() + MD.c[vel][2];
 
-                    if (mesh_neigh_val > 0 || mesh_view(id, jd,  kd) == -2 || mesh_neigh_val == -3)
-                    {
-                        df_view(i.x(), i.y(), i.z(), vel) = df_post_view(id, jd, kd, vel);
-                    }
-                    else if (mesh_neigh_val == -1)
-                    {
-                        df_view(i.x(), i.y(), i.z(), vel) = df_view(id, jd, kd, vel);
-                    }
+                df_view(id, jd, kd, vel) = df_view(i.x(), i.y(), i.z(), vel);
                 }
             }
         };
