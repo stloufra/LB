@@ -524,24 +524,25 @@ public:
 
         int er = 0;
 
-        /*while (it != boundary_vector_wall.end()) {
 
+#if __cplusplus >= 202002L
+        er = std::erase_if(boundary_vector_wall, [&](const boundaryConditionWall& BC) {
+        return Data->meshFluidHost(BC.vertex.x, BC.vertex.y, BC.vertex.z) < 0;
+        });
+#elif __cplusplus <= 202002L
+        while (it != boundary_vector_wall.end())
+        {
             const auto& Ver = it->vertex;
 
-            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) { // wbu symmetry
+            if (Data->meshFluidHost(Ver.x, Ver.y, Ver.z)<0) {
                 it = boundary_vector_wall.erase(it);
                 ++er;
             }
             else {
                 ++it;
             }
-        }*/
-
-        er = std::erase_if(boundary_vector_wall, [&](const boundaryConditionWall& BC) {
-        return Data->meshFluidHost(BC.vertex.x, BC.vertex.y, BC.vertex.z) < 0;
-        });
-
-
+        }
+#endif
         Constants->wall_num = boundary_vector_wall.size();
 
         Data->meshBoundaryWallHost.setSizes(boundary_vector_wall.size());
