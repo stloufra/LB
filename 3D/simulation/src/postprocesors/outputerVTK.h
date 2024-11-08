@@ -65,7 +65,7 @@ public:
 
             Data->rho_out = Data->rho;
             Data->u_out = Data->u;
-            Data->p_out = Data->p;
+            //Data->p_out = Data->p;
 
 
             std::ofstream out_file("results/variables."+std::to_string(step)+".vtk");
@@ -97,7 +97,7 @@ public:
                 }
             }
 
-            out_file << "SCALARS " << "p " << "double 1\n";
+            /*out_file << "SCALARS " << "p " << "double 1\n";
             out_file << "LOOKUP_TABLE default\n";
 
             for (int k = 0; k < Constants->dimZ_int; k++) {
@@ -106,7 +106,7 @@ public:
                         out_file << Data->p_out(i, j, k) * Constants->Cpressure << "\n";
                     }
                 }
-            }
+            }*/
 
 
             out_file << "VECTORS " << "U " << "double\n";
@@ -156,7 +156,7 @@ public:
                 }
             }
 
-            out_file << "SCALARS " << "rho " << "double 1\n";
+            /*out_file << "SCALARS " << "p " << "double 1\n";
             out_file << "LOOKUP_TABLE default\n";
 
             for (int k = 0; k < Constants->dimZ_int; k++) {
@@ -165,7 +165,7 @@ public:
                         out_file << Data->p(i, j, k) * Constants->Cpressure << "\n";
                     }
                 }
-            }
+            }*/
 
 
             out_file << "VECTORS " << "U " << "double\n";
@@ -315,7 +315,7 @@ public:
         }
     }
 
-    static void variablesTimeAvgVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+    static void variablesTimeAvgVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int k, bool verbose) {
 
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
             if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
@@ -329,7 +329,8 @@ public:
             u_out = Data->uTimeAvg;
 
 
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
+            int step = (k - Constants->iterationsMomentAvgStart)/Constants->iterationsMomentAvg;
+            std::ofstream out_file("results/variablesTimeAvg"+std::to_string(step)+".vtk");
 
 
             out_file << "# vtk DataFile Version 2.0\n";
@@ -389,7 +390,8 @@ public:
             if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
             if (verbose) { std::cout << "\nHost -> Host output Lattice units\n" << std::endl; }
 
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
+            int step = (k - Constants->iterationsMomentAvgStart)/Constants->iterationsMomentAvg;
+            std::ofstream out_file("results/variablesTimeAvg"+std::to_string(step)+".vtk");
 
 
             out_file << "# vtk DataFile Version 2.0\n";

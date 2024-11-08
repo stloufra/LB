@@ -57,6 +57,14 @@ typedef struct {
 
 typedef struct {
     Vertex vertex;
+    Vector normal;
+    float DeltaRho;
+    int periodicIndex;
+    bool regular;
+} boundaryConditionPeriodicDP;
+
+typedef struct {
+    Vertex vertex;
     bool regular;
 } boundaryConditionWall;
 
@@ -67,6 +75,14 @@ typedef struct {
 class LBMTraits {
 
 public:
+
+    // Helper to detect if a type exists
+    template <typename, typename = std::void_t<>>
+    struct is_defined : std::false_type {};
+
+    // Specialization if the type exists
+    template <typename T>
+    struct is_defined<T, std::void_t<decltype(std::declval<T>())>> : std::true_type {};
 
 
     using RealType = float;
@@ -147,6 +163,16 @@ public:
                                                                 DeviceType>;
 
     using ArrayTypeBoundaryPeriodicHost = TNL::Containers::NDArray< boundaryConditionPeriodic ,
+                                                                TNL::Containers::SizesHolder<int, 0>,
+                                                                std::index_sequence<0>,
+                                                                DeviceTypeHost>;
+
+    using ArrayTypeBoundaryPeriodicDP = TNL::Containers::NDArray <    boundaryConditionPeriodicDP ,
+                                                               TNL::Containers::SizesHolder<int, 0>,
+                                                               std::index_sequence<0>,
+                                                               DeviceType>;
+
+    using ArrayTypeBoundaryPeriodicDPHost = TNL::Containers::NDArray< boundaryConditionPeriodicDP ,
                                                                 TNL::Containers::SizesHolder<int, 0>,
                                                                 std::index_sequence<0>,
                                                                 DeviceTypeHost>;

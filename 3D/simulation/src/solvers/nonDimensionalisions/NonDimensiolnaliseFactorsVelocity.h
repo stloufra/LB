@@ -130,6 +130,34 @@ struct NonDimensiolnaliseFactorsVelocity
 
     }
 
+    static void nonDimensionalizePeriodicDP(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
+
+        auto periodic_view = Data->meshBoundaryPeriodicDP.getView();
+
+        auto Cu_inverse = Constants->Cu_inverse;
+        auto Cm= Constants->Cm;
+        auto Cl = Constants->Cl;
+
+        auto cs2 = Constants ->cs2;
+
+        auto Cpressure = Constants->Cpressure;
+
+        //printf("Nondimesionalized delta Rho - %f", periodic_view(0).DeltaRho);
+
+        auto nonDimPerDP = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<1, int> &nod  ) mutable
+        {
+            periodic_view(nod.x()).DeltaRho =
+                    periodic_view(nod.x()).DeltaRho / cs2  / Cpressure;
+        };
+
+        parallelFor<DeviceType>(0, Constants->periodicDP_num, nonDimPerDP);
+
+        //printf("Nondimesionalized delta Rho - %f", periodic_view(0).DeltaRho);
+
+    }
+
 };
 
 #endif

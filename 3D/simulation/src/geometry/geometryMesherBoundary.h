@@ -11,6 +11,7 @@
 
 #include <map>
 #include <vector>
+#include <cmath>
 #include "geometryObjectCuboid.h"
 #include "../traits/LBMTraits.h"
 #include "../data/LBMData.h"
@@ -77,7 +78,7 @@ public:
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
-                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) > 0) {
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) > 1) {
                         if (neighboursFluidSearch(pnt_ask, 0)) {
 
                             boundary_condition_inlet.normal = normal_out;
@@ -195,7 +196,8 @@ public:
 
         RealType lookx, looky, lookz;
 
-        VectorType Velocity(0.f, 0.f, 0.f);
+        VectorType Velocity(mean_velocity_in, mean_velocity_in, mean_velocity_in);
+        Velocity = -(Velocity * normal_out); //element wise
 
         meshingBoundaryConditionInletUniform(cuboid, normal_out, Velocity, 0);
 
@@ -273,6 +275,80 @@ public:
         }
     }
 
+    void meshingBoundaryConditionInletVariableExponent(geometryObjectCuboid &cuboid,
+                                                   const d3 &inletCenter,
+                                                   RealType &inletDimX,
+                                                   RealType &inletDimY,
+                                                   RealType &inletDimZ,
+                                                   const Vector &normal_out,
+                                                   const RealType &mean_velocity_in,
+                                                   const RealType &exponent_n,
+                                                   char measurement_axis,
+                                                   bool verbose) {
+    if ((measurement_axis == 'x' && normal_out.x() != 0) ||
+        (measurement_axis == 'y' && normal_out.y() != 0) ||
+        (measurement_axis == 'z' && normal_out.z() != 0)) {
+        printf("Error: Measurement axis cannot be the same as the normal direction.\n");
+        return;
+    }
+
+    int num = 0;
+    RealType lookx, looky, lookz;
+
+    VectorType Velocity(mean_velocity_in, mean_velocity_in, mean_velocity_in);
+    Velocity = -(Velocity * normal_out); //element wise
+
+    meshingBoundaryConditionInletUniform(cuboid, normal_out, Velocity, 0);
+
+    for (boundaryConditionInlet &BC : boundary_vector_inlet) {
+        Vertex vert = BC.vertex;
+
+        lookx = (static_cast<double>(vert.x) + 0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx;
+        looky = (static_cast<double>(vert.y) + 0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+        lookz = (static_cast<double>(vert.z) + 0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
+        if (cuboid.isInside({lookx, looky, lookz})) {
+            RealType r = 0.0f;
+            RealType radius =0.f;
+
+            if (measurement_axis == 'x') {
+                r = std::abs(lookx - inletCenter.x);
+                radius = inletDimX/2.f;
+            } else if (measurement_axis == 'y') {
+                r = std::abs(looky - inletCenter.y);
+                radius = inletDimY/2.f;
+            } else if (measurement_axis == 'z') {
+                r = std::abs(lookz - inletCenter.z);
+                radius = inletDimZ/2.f;
+            }
+
+
+            RealType Umax =  mean_velocity_in *(exponent_n +1.f) / (exponent_n);
+
+            RealType velocity = Umax * std::pow((1.0f - r / radius), 1.0f / exponent_n);
+
+            //printf("My vel %f", velocity);
+
+            if( velocity <0)
+            {
+                velocity = 0;
+            }
+
+
+
+            BC.velocity.x() = -velocity * normal_out.x();
+            BC.velocity.y() = -velocity * normal_out.y();
+            BC.velocity.z() = -velocity * normal_out.z();
+            num++;
+        }
+    }
+
+    if (verbose) {
+        std::cout << "\nMeshed cuboid id " << cuboid.id << " as Inlet with variable exponent.\n";
+        std::cout << "Boundary vertexes number: " << num << std::endl;
+    }
+}
+
     void meshingBoundaryConditionOutlet(geometryObjectCuboid &cuboid, const Vector &normal_out, RealType density,
                                         bool verbose) {
         double lookx, looky, lookz;
@@ -295,7 +371,7 @@ public:
 
                     d3 pnt_ask = {lookx, looky, lookz};
 
-                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) > 1) {
 
                         boundary_condition_outlet.normal = normal_out;
                         boundary_condition_outlet.density = density;
@@ -428,7 +504,66 @@ public:
             }
         }
 
-        printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+        //printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+
+        if (verbose) {
+            std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
+            std::cout << "Boundary vertexes number: " << num << std::endl;
+        }
+    }
+
+    void meshingBoundaryConditionPeriodicDP(geometryObjectCuboid &cuboid, const Vector &normal_out, RealType &DeltaP, int periodicIndex_, bool verbose) {
+        // x = 0, y=1, z =2
+
+        double lookx, looky, lookz;
+
+        boundaryConditionPeriodicDP boundary_condition_periodicDP;
+
+        int num = 0;
+
+        int ii,jj,kk;
+
+        for (int k = 0; k < Constants->dimZ_int; k++) {
+
+            for (int j = 0; j < Constants->dimY_int; j++) {
+
+                for (int i = 0; i < Constants->dimX_int; i++) {
+
+                    lookx = (static_cast<double>(i)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminx; // 0.5 for halfway between wall and first node
+                    looky = (static_cast<double>(j)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminy;
+                    lookz = (static_cast<double>(k)+0.5 - Constants->additional_factor) / Constants->resolution_factor + Constants->BBminz;
+
+
+                    d3 pnt_ask = {lookx, looky, lookz};
+
+                    if (cuboid.isInside(pnt_ask) && Data->meshFluidHost(i, j, k) != 0) {
+
+                        boundary_condition_periodicDP.vertex = {i, j, k};
+                        boundary_condition_periodicDP.normal = normal_out;
+                        boundary_condition_periodicDP.periodicIndex = periodicIndex_;
+                        boundary_condition_periodicDP.DeltaRho = DeltaP;
+
+                        if (Data->meshFluidHost(i, j, k) == 10) { // count begins from +1
+                            boundary_condition_periodicDP.regular = 1;
+                        } else {
+                            boundary_condition_periodicDP.regular = 0;
+                        }
+
+                        Data->meshFluidHost(i, j, k) = cuboid.id; // Data->meshFluidHost(i, j, k)
+
+
+                        boundary_vector_periodicDP.push_back(boundary_condition_periodicDP);
+                        num += 1;
+
+                        ii =i;
+                        jj=j;
+                        kk=k;
+                    }
+                }
+            }
+        }
+
+        //printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
@@ -600,11 +735,31 @@ public:
         }
     };
 
+    void compileBoundaryArrayPeriodicDP(bool verbose) {
+
+        Constants->periodicDP_num = boundary_vector_periodicDP.size();
+
+        Data->meshBoundaryPeriodicDPHost.setSizes(Constants->periodicDP_num);
+
+        int k = 0;
+
+        for (const auto& BC: boundary_vector_periodicDP) {
+            Data->meshBoundaryPeriodicDPHost[k] = BC;
+            ++k;
+        }
+
+        if (verbose) {
+            std::cout << "\nCreated boundary Array Periodic with Delta p.\n";
+            std::cout << "Periodic Dp vertexes number: " << boundary_vector_periodicDP.size() << std::endl;
+        }
+    };
+
     void arrayTransfer(bool verbose) {
         Data->meshFluid = Data->meshFluidHost;
         Data->meshBoundaryWall = Data->meshBoundaryWallHost;
         Data->meshBoundarySymmetry = Data->meshBoundarySymmetryHost;
         Data->meshBoundaryPeriodic = Data->meshBoundaryPeriodicHost;
+        Data->meshBoundaryPeriodicDP = Data->meshBoundaryPeriodicDPHost;
         Data->meshBoundaryInlet = Data->meshBoundaryInletHost;
         Data->meshBoundaryOutlet = Data->meshBoundaryOutletHost;
 
@@ -660,6 +815,7 @@ public:
     std::vector <boundaryConditionOutlet> boundary_vector_outlet;
     std::vector <boundaryConditionSymmetry > boundary_vector_symmetry;
     std::vector <boundaryConditionPeriodic > boundary_vector_periodic;
+    std::vector <boundaryConditionPeriodicDP > boundary_vector_periodicDP;
     std::vector <boundaryConditionWall> boundary_vector_wall;
 
     boundaryConditionInlet boundary_condition_inlet;

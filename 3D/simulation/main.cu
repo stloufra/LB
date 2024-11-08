@@ -47,7 +47,7 @@ int main() {
     using Periodic              = Periodic<Model>;
 
     using Inlet                 = InletVelocityEquilibrium<Model>;
-    using Outlet                = OutletDensityInterpolated<Model>;
+    using Outlet                = OutletDensityInterpolatedOmega<Model>;
     using Moments               = MomentDensityVelocityN27<Model>;  // SAME AS MODEL NUMBER
     using Error                 = ErrorQuadratic<Model>;
     using Turbulence            = OmegaLES<Model>;
@@ -130,11 +130,12 @@ int main() {
 
     //inlet parabolic data
 
-    d3 inletCenter = {-0.1f , 0.075, 0.06};
+    d3 inletCenter = {-0.1f , 0.004, 0.06};
     RealType inletDimX = 0.f;
-    RealType inletDimY = 0.15f;
+    RealType inletDimY = 0.008f;
     RealType inletDimZ = 0.1f;
     RealType meanVelocityInlet = 46.78f;       // 5
+    char axis_nonperiodic = 'z';
 
     //dumping tau outlet data
     Constants -> omegaDumpingLow = 0.f;
@@ -156,15 +157,16 @@ int main() {
 
     // set simulation parameters
 
-    Constants->time = 1.f;                      //[s]
+    Constants->time = 10.f;                     //[s]
     Constants->plot_every = 0.1f;               //[s]
-    Constants->err_every =  0.0001f;              //[s]
-    Constants->iterationsMomentAvg = 200000;      //[1]
+    Constants->err_every =  0.0002f;            //[s]
 
+    Constants->MomentAvgStart = 1.f;            //[1]
+    Constants->MomentAvg_every = 0.2f;          //[1]
     // set sampling parameters
     Constants->probe_every_it = 1;
     VectorType Probe(0.32f, 0.004f, 0.05f);
-    Constants->probe_iterations = 30000;
+    Constants->probe_iterations = 1000000;
     Constants->ProbeLocation = Probe;
 
     //----------------------LOADING MESH------------------------------//
@@ -175,14 +177,23 @@ int main() {
 
     timerMeshingBoundary.start();
         Mesher.meshingBoundaryWall(0);
-        //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter, inletDimX, inletDimY, inletDimZ, NormalInlet, meanVelocityInlet, 1 );
+
 
 
         Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic1,NormalPeriodic1, 16, 1);
         Mesher.meshingBoundaryConditionPeriodic(cuboidPeriodic2,NormalPeriodic2, 1, 1);
 
+        //Mesher.meshingBoundaryConditionInletParaboloidRectangle( cuboidInlet, inletCenter,
+        //                                                          inletDimX, inletDimY, inletDimZ,
+        //                                                          NormalInlet, meanVelocityInlet, 1 );
 
-        Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
+        //Mesher.meshingBoundaryConditionInletUniform(cuboidInlet, NormalInlet, velocityInletUniform,0);
+
+         Mesher.meshingBoundaryConditionInletVariableExponent(cuboidInlet,inletCenter,
+                                                                inletDimX, inletDimY, inletDimZ,
+                                                                NormalInlet, meanVelocityInlet,
+                                                                8.5, axis_nonperiodic,1);
+
         Mesher.meshingBoundaryConditionOutlet(cuboidOutlet, NormalOutlet, Constants->rho_fyz,1);
 
         Mesher.compileBoundaryArrayWall(1);
@@ -199,12 +210,14 @@ int main() {
     outputerVTK::MeshVTK(Data, Constants, "meshIN");
 
 
-
     //----------------------SOLVING PROBLEM------------------------//
 
 
     Solver.convertToLattice(1);
     Solver.initializeSimulation(1);
+
+    outputerVTK::variablesVTK(Data, Constants, 0,1);
+
 
     if(runSim) {
         Solver.runSimulation();

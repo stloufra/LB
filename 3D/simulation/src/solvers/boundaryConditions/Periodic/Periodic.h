@@ -56,32 +56,39 @@ struct Periodic {
             int k = vert.z;
 
 
-            /*if (abs_cast(norm) == norm_x) {
+            if (abs_cast(norm) == norm_x) {
+
+                int perIdxC = perIdx - norm.x();
+
                 for(int vel = 0; vel < Nvel; vel++)
                 {
                     if(norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0)
                     {
 
-                            df_view(i,j,k,vel)=df_view(perIdx,j,k,vel);
+                            df_view(i,j,k,vel)=df_view(perIdxC,j,k,vel);
                     }
 
-                    if(!reg && norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 )
+                    if(!reg)
                     {
-                        int dx, dy, dz;
+                        int dy, dz;
 
-                        dx = vert.x + MD.c[vel][0];
                         dy = vert.y + MD.c[vel][1];
                         dz = vert.z + MD.c[vel][2];
 
-                        if (mesh_view(dx, dy, dz) == 0)
+                        if (mesh_view(vert.x, dy, dz) == 0)
                         {
-                            df_view(i,j,k, MD.c_rev[vel]) = df_post_view(i,j,k, vel);
+                            if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){ //miri dovnitr -> vlastni
+                                df_view(i,j,k, vel) = df_post_view(i,j,k, MD.c_rev[vel]);
+                            }
+                            else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){ //miri ven -> periodicky
+                                df_view(i,j,k, vel) = df_post_view(perIdx,j,k, MD.c_rev[vel]);
+                            }
                         }
                     }
 
                 }
             }
-            else */if (abs_cast(norm) == norm_y) {
+            else if (abs_cast(norm) == norm_y) {
 
                 int perIdxC = perIdx - norm.y();
 
@@ -116,17 +123,20 @@ struct Periodic {
                     }
                 }
             }
-            /*else if (abs_cast(norm) == norm_z) {
+            else if (abs_cast(norm) == norm_z) {
+
+                int perIdxC = perIdx - norm.z();
+
                 for(int vel = 0; vel < Nvel; vel++)
                 {
                     if(norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0)
                     {
 
-                            df_view(i,j,k,vel)=df_view(i,j,perIdx,vel);
+                            df_view(i,j,k,vel)=df_view(i,j,perIdxC,vel);
 
                     }
 
-                    if(!reg && norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 )
+                    if(!reg)
                     {
                         int dx, dy, dz;
 
@@ -134,14 +144,19 @@ struct Periodic {
                         dy = vert.y + MD.c[vel][1];
                         dz = vert.z + MD.c[vel][2];
 
-                        if (mesh_view(dx, dy, dz) == 0)
+                        if (mesh_view(dx, dy, vert.z) == 0)
                         {
-                            df_view(i,j,k, MD.c_rev[vel]) = df_post_view(i,j,k, vel);
+                            if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){ //miri dovnitr -> vlastni
+                                df_view(i,j,k, vel) = df_post_view(i,j,k, MD.c_rev[vel]);
+                            }
+                            else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){ //miri ven -> periodicky
+                                df_view(i,j,k, vel) = df_post_view(i,j,perIdx, MD.c_rev[vel]);
+                            }
                         }
                     }
 
                 }
-            }*/
+            }
             else {
                 printf("Fail periodic. \n");
             }

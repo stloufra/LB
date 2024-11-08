@@ -42,6 +42,8 @@ struct MomentTimeAvg
         TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin, end, timeAverage);
 
+         Constants-> timeAveraged = false;
+
         Constants-> TimeAvgCounter += 1;
 
     }
@@ -51,9 +53,7 @@ struct MomentTimeAvg
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
         auto uTimeAvg_view = Data->uTimeAvg.getView();
 
-        auto timeAveraged = Constants->timeAveraged;
-
-        RealType TAC = static_cast<RealType>(Constants->TimeAvgCounter);
+        RealType TAC = static_cast<RealType>(Constants->iterationsMomentAvg);
 
         printf("Counter %d" , Constants->TimeAvgCounter);
 
@@ -75,9 +75,35 @@ struct MomentTimeAvg
         TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin, end, timeAverage);
 
-
-        timeAveraged = true;
+         Constants-> timeAveraged = true;
     }
+
+    static void momentAvgDelete(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
+
+        auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
+        auto uTimeAvg_view = Data->uTimeAvg.getView();
+        auto timeAveraged = Constants->timeAveraged;
+
+        auto timeAverage = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<3, int> &i)
+        mutable
+        {
+
+            rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0;
+
+            uTimeAvg_view(i.x(), i.y(), i.z()).x() = 0;
+            uTimeAvg_view(i.x(), i.y(), i.z()).y() = 0;
+            uTimeAvg_view(i.x(), i.y(), i.z()).z() = 0;
+
+        };
+
+        TNL::Containers::StaticArray<3, int> begin{0, 0, 0};
+        TNL::Containers::StaticArray<3, int> end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        parallelFor<DeviceType>(begin, end, timeAverage);
+
+        Constants-> TimeAvgCounter == 0; //for another one
+        }
 };
 
 #endif

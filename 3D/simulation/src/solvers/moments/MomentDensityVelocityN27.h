@@ -82,8 +82,8 @@ struct MomentDensityVelocityN27
             }
         };
 
-        TNL::Containers::StaticArray < 3, int > begin{0, 0, 0};
-        TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        TNL::Containers::StaticArray < 3, int > begin{1, 1, 1};
+        TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int-1, Constants->dimY_int-1, Constants->dimZ_int-1 };
         parallelFor<DeviceType>(begin, end, moments);
     }
 };

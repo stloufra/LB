@@ -131,8 +131,8 @@ struct OmegaLES {
         };
 
 
-        TNL::Containers::StaticArray<3, int> begin1{0, 0, 0};
-        TNL::Containers::StaticArray<3, int> end1{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        TNL::Containers::StaticArray<3, int> begin1{1, 1, 1};
+        TNL::Containers::StaticArray<3, int> end1{Constants->dimX_int-1, Constants->dimY_int-1, Constants->dimZ_int-1};
         parallelFor<DeviceType>(begin1, end1, omegaFunc);
     }
 

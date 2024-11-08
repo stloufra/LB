@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef OUTLETDENSITYINTERPOLATED_H
-#define OUTLETDENSITYINTERPOLATED_H
+#ifndef OUTLETDENSITYINTERPOLATEDOMEGA_H
+#define OUTLETDENSITYINTERPOLATEDOMEGA_H
 
 #include "../../../traits/LBMTraits.h"
 
 template <typename MODELDATA>
-struct OutletDensityInterpolated
+struct OutletDensityInterpolatedOmega
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -16,8 +16,67 @@ struct OutletDensityInterpolated
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
-    static void outletOmega(LBMDataPointer& Data, LBMConstantsPointer& Constants)
-    {
+    static void outletOmega(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
+        // Dumping by omega 10% of the length in normal direction in front of the outlet
+        // by addition of linear function from omegaDumpingLow to omegaDumpingHigh
+        // (stored in Constants and needs to be intialized in main).
+        // So far implemented only for outlets at ends of the domain in
+        // any direction tangential to one of the axis.
+
+        auto outletHost_view = Data->meshBoundaryOutletHost.getView();
+
+        Vector norm = outletHost_view[0].normal;
+
+        Vector normPlane;
+
+        normPlane.x() = abs(abs(norm.x()) - 1);
+        normPlane.y() = abs(abs(norm.y()) - 1);
+        normPlane.z() = abs(abs(norm.z()) - 1); // normal plane perpendicular to the normal vector
+
+
+        int dimX_01_int = std::ceil(Constants->dimX_int * 0.05f);
+        int dimY_01_int = std::ceil(Constants->dimY_int * 0.05f);
+        int dimZ_01_int = std::ceil(Constants->dimZ_int * 0.05f); // 5% of lenghts
+
+        int dimX = dimX_01_int * abs(norm.x()) + Constants->dimX_int * abs(normPlane.x());
+        int dimY = dimY_01_int * abs(norm.y()) + Constants->dimY_int * abs(normPlane.y());
+        int dimZ = dimZ_01_int * abs(norm.z()) + Constants->dimZ_int * abs(normPlane.z());
+        // dimensions of domain to be dumped according to normal axis
+
+        int beginX = Constants->dimX_int - dimX;
+        int beginY = Constants->dimY_int - dimY;
+        int beginZ = Constants->dimZ_int - dimZ; // possible beginnings
+
+        int intervalSize = abs(dimX_01_int * norm.x() + dimY_01_int * norm.y() + dimZ_01_int * norm.z());
+
+        RealType omegaDumpingLow =  Constants->omegaDumpingLow;
+        RealType omegaDumpingHigh =  Constants->omegaDumpingHigh;
+
+        RealType derivation = (omegaDumpingHigh - omegaDumpingLow) / intervalSize;
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        auto omega_view = Data->omega.getView();
+
+
+        auto omegaFunc = [=]
+        __cuda_callable__(
+        const TNL::Containers::StaticArray<3, int> &i ) mutable
+        {
+            int possition =     (i.x() - beginX) * norm.x()* norm.x() +
+                                (i.y() - beginY) * norm.y()* norm.y() +
+                                (i.z() - beginZ) * norm.z()* norm.z();
+
+            RealType omegaDumping = derivation * possition;
+
+            omega_view(i.x(), i.y(), i.z()) = omega_view(i.x(), i.y(), i.z()) - omegaDumping;
+
+        };
+        TNL::Containers::StaticArray<3, int> begin1{beginX, beginY, beginZ};
+        TNL::Containers::StaticArray<3, int> end1{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+        parallelFor<DeviceType>(begin1, end1, omegaFunc);
+
     }
 
 
@@ -31,10 +90,6 @@ struct OutletDensityInterpolated
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
-        int dimX_int = Constants->dimX_int;
-        int dimY_int = Constants->dimY_int;
-        int dimZ_int = Constants->dimZ_int;
-
         const auto Nvel = Constants->Nvel;
         const auto cs = Constants->cs;
 
@@ -43,21 +98,15 @@ struct OutletDensityInterpolated
 
         auto f_equilibrium_defined = [=]
 
-
         __cuda_callable__(
-
 
         const RealType &ux,
 
-
         const RealType &uy,
-
 
         const RealType &uz,
 
-
         const RealType &density,
-
 
         const int& vel
         )
@@ -73,7 +122,6 @@ struct OutletDensityInterpolated
         };
 
         auto computeRho = [=]
-
 
         __cuda_callable__(
         const int &i,
@@ -112,12 +160,10 @@ struct OutletDensityInterpolated
 
         auto computeUx = [=]
 
-
         __cuda_callable__(
         const int &i,
         const int &j,
         const int &k,
-
 
         const RealType& density
         )
@@ -145,12 +191,10 @@ struct OutletDensityInterpolated
 
         auto computeUy = [=]
 
-
         __cuda_callable__(
         const int &i,
         const int &j,
         const int &k,
-
 
         const RealType& density
         )
@@ -178,12 +222,10 @@ struct OutletDensityInterpolated
 
         auto computeUz = [=]
 
-
         __cuda_callable__(
         const int &i,
         const int &j,
         const int &k,
-
 
         const RealType& density
         )
@@ -211,9 +253,7 @@ struct OutletDensityInterpolated
 
         auto bb_outlet = [=]
 
-
         __cuda_callable__(
-
 
         const TNL::Containers::StaticArray<1, int>& nod
         )
@@ -245,78 +285,79 @@ struct OutletDensityInterpolated
                         }
                     }
 
-                    if ((mesh_view(i - 1, j, k) == -3))
+                    /*if((mesh_view(i-1, j, k) == -3)) //proti sm2ru normaly je periodicita
                     {
-                        if (j == dimY_int - 2)
+                        for (int vel = 0; vel < Nvel; vel++)
                         {
-                            for (int vel = 0; vel < Nvel; vel++) //periodicita v y TODO: udelat univerzalni
-                            {
-                                if (MD.c[vel][1] < 0) // strana
-                                {
-                                    df_view(i, j, k, vel) = df_view(i, 0, k, vel);
-                                }
+                            int dx = vert.y - MD.c[vel][0];
+                            int dy = vert.y - MD.c[vel][1];
+                            int dz = vert.z - MD.c[vel][2];
 
-                                if (k == dimZ_int - 2 && MD.c[vel][2] < 0) //odraz nahore
+                            if(mesh_view(dx, dy, dz) == 0) // a rychlost zatim nevim od kud predepsat
+                            {
+                                if(j=16)
                                 {
-                                    if (MD.c[vel][1] <= 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
-                                    }
-                                    else if (MD.c[vel][1] > 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, 1, k, MD.c_rev[vel]);
-                                    }
+                                    df_view(i, j, k, vel) = df_post_view(i, 1, k, vel);
+                                }else if(j=1)
+                                {
+                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, vel);
                                 }
-                                else if (k == 1 && MD.c[vel][2] > 0) //odraz dole
-                                {
-                                    if (MD.c[vel][1] <= 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
-                                    }
-                                    else if (MD.c[vel][1] > 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, 1, k, MD.c_rev[vel]);
-                                    }
+                            }
+                        }
+                    }*/
+
+                    for (int vel = 0; vel < Nvel; vel++)
+                    {
+                        if (j == 16)
+                        {
+                            if (MD.c[vel][1] < 0) //periodicita
+                            {
+                                df_view(i, j, k, vel) = df_view(i, 0, k, vel);
+                            }
+
+                            if (k == 220 && MD.c[vel][2] < 0) //odraz nahore
+                            {
+                                if(MD.c[vel][1] <= 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
+                                }else if(MD.c[vel][1] > 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, 1, k, MD.c_rev[vel]);
+                                }
+                            }
+                            else if (k == 1 && MD.c[vel][2] > 0) //odraz dole
+                            {
+                                if(MD.c[vel][1] <= 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
+                                }else if(MD.c[vel][1] > 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, 1, k, MD.c_rev[vel]);
                                 }
                             }
                         }
                         if (j == 1)
                         {
-                            for (int vel = 0; vel < Nvel; vel++) //periodicita v y TODO: udelat univerzalni
+                            if (MD.c[vel][1] > 0) //periodicita
                             {
-                                if (MD.c[vel][1] > 0) // strana
-                                {
-                                    df_view(i, j, k, vel) = df_view(i, dimY_int - 1, k, vel);
-                                }
+                                df_view(i, j, k, vel) = df_view(i, 17, k, vel);
+                            }
 
-                                if (k == dimZ_int - 2 && MD.c[vel][2] < 0) //odraz nahore
-                                {
-                                    if (MD.c[vel][1] >= 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
-                                    }
-                                    else if (MD.c[vel][1] < 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, dimY_int - 2, k, MD.c_rev[vel]);
-                                    }
+                            if (k == 220 && MD.c[vel][2] < 0)//odraz nahore
+                            {
+                                if(MD.c[vel][1] >= 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
+                                }else if(MD.c[vel][1] < 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, MD.c_rev[vel]);
                                 }
-                                else if (k == 1 && MD.c[vel][2] > 0)
-                                {
-                                    if (MD.c[vel][1] >= 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
-                                    }
-                                    else if (MD.c[vel][1] < 0)
-                                    {
-                                        df_view(i, j, k, vel) = df_post_view(i, dimY_int - 2, k, MD.c_rev[vel]);
-                                    }
+                            }
+                            else if (k == 1 && MD.c[vel][2] > 0)
+                            {
+                                if(MD.c[vel][1] >= 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
+                                }else if(MD.c[vel][1] < 0){
+                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, MD.c_rev[vel]);
                                 }
                             }
                         }
                     }
                 }
-
-                auto u = u_view(i,j,k).x();
 
                 for (int vel = 0; vel < Nvel; vel++)
                 {
@@ -328,7 +369,7 @@ struct OutletDensityInterpolated
 
                         dx = i - 1;
 
-                        df_view(i, j, k, vel) = (cs-u) * df_post_view(dx, j, k, vel) + (1 - (cs-u)) *
+                        df_view(i, j, k, vel) = cs * df_post_view(dx, j, k, vel) + (1 - cs) *
                             df_post_view(i, j, k, vel);
                     }
                 }

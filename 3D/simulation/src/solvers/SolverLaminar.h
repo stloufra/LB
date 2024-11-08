@@ -24,10 +24,12 @@
 #include "./initializations/InitializationEquilibriumVariables.h"
 
 #include "./streamings//StreamingABpull.h"
+#include "./streamings//StreamingABpush.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
 
 #include "boundaryConditions/Periodic/Periodic.h"
+#include "boundaryConditions/Periodic/PeriodicDeltaP.h"
 #include "boundaryConditions/Periodic/NoPeriodic.h"
 
 #include "boundaryConditions/Symmetry/BounceSymmetryHalf.h"
@@ -42,6 +44,8 @@
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
 #include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmega.h"
+
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
@@ -115,6 +119,15 @@ public:
             std::cout << "Outlet non-dimensionalized.\n";
         }
 
+        //if constexpr (std::is_same<PERIODICTYPE, PeriodicDeltaP<MODELTYPE>>::value)
+        //{
+            NONDYM::nonDimensionalizePeriodicDP(Data, Constants);
+
+            if (verbose) {
+                std::cout << "Periodic with Delta p non-dimensionalized.\n";
+            }
+        //}
+
         INITIALIZATIONTYPE::initialization(Data, Constants);
 
         if (verbose) {
@@ -150,6 +163,7 @@ public:
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
                 SYMMETRYTYPE::symmetry(Data, Constants);
+                PERIODICTYPE::periodic(Data, Constants);
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
@@ -167,7 +181,15 @@ public:
             {
                 timer_err.start();
                     ERRORTYPE::errorEvaluation(Data, Constants);
-                    printf("\n err=%e k=%d\n",Constants->err, k);
+
+                    timer_loop.stop();
+                    auto timeSoFar = timer_loop.getRealTime();
+                    timer_loop.start();
+                    auto throughPut = k/timeSoFar;
+
+                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",Constants->err, k, Constants->iterations - k,  timeSoFar, throughPut, (Constants->iterations-k)/throughPut);
+
+
                     if (std::isnan(Constants->err))
                     {
                         std::cout << "\n Error is NaN, breaking out.\n";
@@ -176,15 +198,17 @@ public:
                 timer_err.stop();
             }
 
-            if(k%Constants -> plot_every_it==0)
+            k++;
+
+            if(k%Constants -> plot_every_it==0 )
             {
 
                 timer_output.start();
-                outputerVTK::variablesLatticeVTK(Data, Constants, k/Constants -> plot_every_it, 1);
+                outputerVTK::variablesVTK(Data, Constants, k/Constants -> plot_every_it, 1);
                 timer_output.stop();
             }
 
-            k++;
+
 
         }
 
@@ -200,7 +224,7 @@ public:
             timer_output.stop();
         }
 
-
+        timer_loop.stop();
     };
 
     void convertToLattice(bool verbose) {
@@ -210,6 +234,8 @@ public:
     }
 
     void initializeSimulationData( bool verbose ){
+
+
 
         if( Constants -> plot_every_it  == -1 && Constants -> plot_every != -1) {
             Constants->plot_every_it = std::ceil(Constants->plot_every / Constants->Ct);
