@@ -103,7 +103,7 @@ struct PeriodicDeltaP {
                         RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, vel);
                         RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, vel);
 
-                        df_post = feqDP + (feqN - df_post);
+                        df_post = feqDP + (df_post - feqN);
 
                         int id;
                         int jd;
@@ -135,7 +135,7 @@ struct PeriodicDeltaP {
                                 RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
                                 RealType feqDP = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
 
-                                df_post = feqDP + (feqN - df_post);
+                                df_post = feqDP + ( df_post - feqN);
 
                                 df_view(i,j,k, vel) = df_post;
                             }
@@ -160,7 +160,7 @@ struct PeriodicDeltaP {
                         RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, vel);
                         RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, vel);
 
-                        df_post = feqDP + (feqN - df_post);
+                        df_post = feqDP + ( df_post - feqN );
 
                         int id;
                         int jd;
@@ -191,7 +191,7 @@ struct PeriodicDeltaP {
                                 RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
                                 RealType feqDP = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
 
-                                df_post = feqDP + (feqN - df_post);
+                                df_post = feqDP + ( df_post - feqN );
 
                                 df_view(i,j,k, vel) = df_post;
                             }
@@ -215,7 +215,7 @@ struct PeriodicDeltaP {
                         RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, vel);
                         RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, vel);
 
-                        df_post = feqDP + (feqN - df_post);
+                        df_post = feqDP + ( df_post - feqN );
 
                         int id;
                         int jd;
@@ -247,7 +247,7 @@ struct PeriodicDeltaP {
                                 RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
                                 RealType feqDP = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
 
-                                df_post = feqDP + (feqN - df_post);
+                                df_post = feqDP + ( df_post - feqN );
 
                                 df_view(i,j,k, vel) = df_post;
 

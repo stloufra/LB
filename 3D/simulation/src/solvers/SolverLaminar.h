@@ -208,11 +208,9 @@ public:
                 timer_output.stop();
             }
 
-
-
+            //Time averaging
         }
 
-        //Time averaging
         if(Constants->timeAveraged == false)
         {
             timer_timeAvg.start();
@@ -220,9 +218,11 @@ public:
             timer_timeAvg.stop();
 
             timer_output.start();
-                outputerVTK::variablesTimeAvgVTK(Data, Constants, 1);
+            outputerVTK::variablesTimeAvgVTK(Data, Constants, k, 1);
             timer_output.stop();
         }
+
+
 
         timer_loop.stop();
     };
@@ -252,11 +252,33 @@ public:
             std::cout << "\n !!! CANT GIVE BOTH err_every AND err_every_it !!!\n";
             assert(false);
         }
+
+        //MOMENTAVERAGE
+        if( Constants -> iterationsMomentAvg  == -1 && Constants -> MomentAvg_every != -1) {
+            Constants->iterationsMomentAvg = std::ceil(Constants->MomentAvg_every / Constants->Ct);
+        }
+        else if( Constants -> iterationsMomentAvg  == -1 && Constants -> MomentAvg_every == -1) {
+            std::cout << "\n !!! CANT GIVE BOTH iterationsMomentAvg AND MomentAvg_every !!!\n";
+            assert(false);
+        }
+
+        //MOMENTAVERAGESTART
+        if( Constants -> iterationsMomentAvgStart  == -1 && Constants -> MomentAvgStart != -1) {
+            Constants->iterationsMomentAvgStart = std::ceil(Constants->MomentAvgStart / Constants->Ct);
+        }
+        else if( Constants -> iterationsMomentAvgStart  == -1 && Constants -> MomentAvgStart == -1) {
+            std::cout << "\n !!! CANT GIVE BOTH iterationsMomentAvgStart AND MomentAvgStart !!!\n";
+            assert(false);
+        }
+
+
         Constants->iterations = std::ceil(Constants->time / Constants->Ct);
 
         if (verbose) {
             std::cout << "\nPlotting every " << Constants->plot_every_it << " iterations.\n";
             std::cout << "\nCalculation will run for " << Constants->iterations << " iterations.\n";
+
+            std::cout <<  "\nMoment average every " << Constants->iterationsMomentAvg << " iterations, starting at "<< Constants -> iterationsMomentAvgStart <<" iterations.\n";
         }
 
     }
