@@ -21,7 +21,9 @@ struct OutletDensityEquilibrium {
 
 
         auto outlet_view = Data->meshBoundaryOutlet.getView();
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
 
         auto rho_view = Data->rho.getView();
         auto df_view = Data->df.getView();
@@ -41,13 +43,17 @@ struct OutletDensityEquilibrium {
         {
             RealType uc, u2;
 
-            uc = MD.c[vel][0] * u_view(i, j, k).x()
-                 + MD.c[vel][1] * u_view(i, j, k).y()
-                 + MD.c[vel][2] * u_view(i, j, k).z();
+            auto ux = ux_view(i, j, k);
+            auto uy = uy_view(i, j, k);
+            auto uz = uz_view(i, j, k);
+            
+            uc = MD.c[vel][0] * ux
+                 + MD.c[vel][1] * uy
+                 + MD.c[vel][2] * uz;
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
-                 + u_view(i, j, k).y() * u_view(i, j, k).y()
-                 + u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux * ux
+                 + uy * uy
+                 + uz * uz;
 
 
             return MD.weight[vel] * density * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);

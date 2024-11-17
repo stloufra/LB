@@ -19,7 +19,6 @@
 #include "./collisions/CollisionSRTTurbulent.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2015.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2017.h"
-#include "./collisions/CollisionCumD3Q27TurbulentCombined.h"
 
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
@@ -163,8 +162,11 @@ public:
         VectorTypeProbeCuda HolderCUDA(4);
         VectorTypeProbeHost HolderHOST(4);
 
-        auto u_view = Data->u.getView();
-        auto rho_view = Data->rho.getView();
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
+        auto rho_view = Data ->rho.getView();
 
         int x = Constants -> ProbeLocationLat.x();
         int y = Constants -> ProbeLocationLat.y();
@@ -173,9 +175,9 @@ public:
         auto HoCuView = HolderCUDA.getView();
         auto init = [ = ] __cuda_callable__( int i ) mutable
         {
-            HoCuView[0] = u_view(x,y,z).x();
-            HoCuView[1] = u_view(x,y,z).y();
-            HoCuView[2] = u_view(x,y,z).z();
+            HoCuView[0] = ux_view(x,y,z);
+            HoCuView[1] = uy_view(x,y,z);
+            HoCuView[2] = uz_view(x,y,z);
             HoCuView[3] = rho_view(x,y,z);
         };
         parallelFor< TNL::Devices::Cuda >( 0, 1, init );
@@ -273,7 +275,12 @@ public:
                     timer_loop.start();
                     auto throughPut = k/timeSoFar;
 
-                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",Constants->err, k, Constants->iterations - k,  timeSoFar, throughPut, (Constants->iterations-k)/throughPut);
+                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",
+                           Constants->err, k,
+                           Constants->iterations - k,
+                           timeSoFar,
+                           throughPut,
+                           (Constants->iterations-k)/throughPut);
 
 
                     if (std::isnan(Constants->err))
@@ -359,6 +366,7 @@ public:
 
 
         Constants->iterations = std::ceil(Constants->time / Constants->Ct);
+
         if (verbose) {
             std::cout << "\nPlotting every " << Constants->plot_every_it << " iterations.\n";
             std::cout << "\nCalculation will run for " << Constants->iterations << " iterations.\n";
@@ -394,22 +402,32 @@ public:
 
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->ux.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uy.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uz.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
 
         Data->rhoTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->uTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
-        Data->omega.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uxTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uyTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uzTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->rho_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->u_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
-        Data->u_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_x_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_y_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_z_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->ux_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uy_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uz_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
         Data->df_post.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
-
+        Data->omega.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
     }
 
 

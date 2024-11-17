@@ -19,7 +19,11 @@ struct CollisionCumD3Q27Turbulent2015
     static void collision(LBMDataPointer& Data, LBMConstantsPointer& Constants)
     {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
         auto mesh_view = Data->meshFluid.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
@@ -31,15 +35,10 @@ struct CollisionCumD3Q27Turbulent2015
         MODELDATA MD;
 
         auto cum = [=]
-
         __cuda_callable__(
-
         const int i,
-
         const int j,
-
-        const int k
-        )
+        const int k)
         mutable
         {
             // M.Geiger 2015
@@ -74,9 +73,9 @@ struct CollisionCumD3Q27Turbulent2015
             RealType f_25 = df_view(i, j, k, 25);
             RealType f_26 = df_view(i, j, k, 26);
 
-            const RealType ux = u_view(i, j, k).x();
-            const RealType uy = u_view(i, j, k).y();
-            const RealType uz = u_view(i, j, k).z();
+            const RealType ux = ux_view(i, j, k);
+            const RealType uy = uy_view(i, j, k);
+            const RealType uz = uz_view(i, j, k);
 
             const RealType rho = rho_view(i, j, k);
             const RealType omg = omega_view(i, j, k);
@@ -384,6 +383,7 @@ struct CollisionCumD3Q27Turbulent2015
                     2.f * ks_200 * ks_020 * ks_002) / rho / rho;
 
 
+
             //------------------------------------------------------------------------------------
             //----------------------- TRANSFORM TO DISTRIBUTION FUNCTION -------------------------
             //------------------------------------------------------------------------------------
@@ -521,24 +521,26 @@ struct CollisionCumD3Q27Turbulent2015
 
 
         auto coll = [=]
-
         __cuda_callable__(
-
-        const TNL::Containers::StaticArray<3, int>& i
-        )
-        mutable
+        const TNL::Containers::StaticArray<3, int> &i )mutable
         {
-            if (mesh_view(i.x(), i.y(), i.z()) != 0)
-            {
+
+            if (mesh_view(i.x(), i.y(), i.z()) != 0) {
+
                 cum(i.x(), i.y(), i.z());
             }
+
         };
 
+        //DeviceType::LaunchConfiguration A;
+        //A.blockSize = (128, 128, 128);
 
         TNL::Containers::StaticArray < 3, int > begin{1, 1, 1};
         TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int-1, Constants->dimY_int-1, Constants->dimZ_int-1};
         parallelFor<DeviceType>(begin, end, coll);
     }
+
+
 };
 
 

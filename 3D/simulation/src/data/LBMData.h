@@ -58,20 +58,35 @@ public:
     // variables
     ArrayTypeVariablesScalar rho;
     ArrayTypeVariablesScalar p;
-    ArrayTypeVariablesVector u;
+    //ArrayTypeVariablesVector u;
 
     ArrayTypeVariablesScalar rhoTimeAvg;
-    ArrayTypeVariablesScalar pTimeAvg;
-    ArrayTypeVariablesVector uTimeAvg;
 
-    ArrayTypeVariablesVector u_error;
+    ArrayTypeVariablesScalar ux;
+    ArrayTypeVariablesScalar uy;
+    ArrayTypeVariablesScalar uz;
+
+    ArrayTypeVariablesScalar pTimeAvg;
+    //ArrayTypeVariablesVector uTimeAvg;
+
+    ArrayTypeVariablesScalar uxTimeAvg;
+    ArrayTypeVariablesScalar uyTimeAvg;
+    ArrayTypeVariablesScalar uzTimeAvg;
+
+    ArrayTypeVariablesScalar ux_error;
+    ArrayTypeVariablesScalar uy_error;
+    ArrayTypeVariablesScalar uz_error;
+
     ArrayTypeVariablesScalar omega;
 
     ArrayTypeVariablesScalarHost rho_out;
     ArrayTypeVariablesScalarHost omega_out;
     ArrayTypeVariablesScalarHost p_out;
-    ArrayTypeVariablesVectorHost u_out;
+    //ArrayTypeVariablesVectorHost u_out;
 
+    ArrayTypeVariablesScalarHost u_x_out;
+    ArrayTypeVariablesScalarHost u_y_out;
+    ArrayTypeVariablesScalarHost u_z_out;
 
 
     // distribution function

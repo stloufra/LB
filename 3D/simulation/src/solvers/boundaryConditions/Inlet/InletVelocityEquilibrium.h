@@ -21,7 +21,7 @@ struct InletVelocityEquilibrium {
         auto inlet_view = Data->meshBoundaryInlet.getView();
 
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
 
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
@@ -69,8 +69,8 @@ struct InletVelocityEquilibrium {
             Vector xp( 1.0f, 0.0f, 0.0f ), xm( -1.0f, 0.0f, 0.0f );
 
              if ( norm == xp){
-                 RealType ux1 = u_view(i - 1 , j, k).x();
-                 RealType ux2 = u_view(i - 2 , j, k).x();
+                 RealType ux1 = ux_view(i - 1 , j, k);
+                 RealType ux2 = ux_view(i - 2 , j, k);
 
                  RealType duxb = (uxb-ux1); //dx = 1
                  RealType dux1 = (ux1-ux2);
@@ -82,8 +82,8 @@ struct InletVelocityEquilibrium {
                  }
              }
              if ( norm == xm){
-                 RealType ux1 = u_view(i + 1 , j, k).x();
-                 RealType ux2 = u_view(i + 2 , j, k).x();
+                 RealType ux1 = ux_view(i + 1 , j, k);
+                 RealType ux2 = ux_view(i + 2 , j, k);
 
                  RealType duxb = (ux1-uxb); //dx = 1
                  RealType dux1 = (ux2-ux1);

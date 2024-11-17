@@ -25,7 +25,7 @@ struct OutletDensityInterpolated
     {
         auto outlet_view = Data->meshBoundaryOutlet.getView();
         auto mesh_view = Data->meshFluid.getView();
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
 
         auto rho_view = Data->rho.getView();
         auto df_view = Data->df.getView();
@@ -316,7 +316,7 @@ struct OutletDensityInterpolated
                     }
                 }
 
-                auto u = u_view(i,j,k).x();
+                auto u = ux_view(i,j,k);
 
                 for (int vel = 0; vel < Nvel; vel++)
                 {

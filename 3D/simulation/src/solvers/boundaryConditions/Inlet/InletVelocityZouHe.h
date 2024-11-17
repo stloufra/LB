@@ -22,7 +22,11 @@ struct InletVelocityZouHeOLB {
         auto inlet_view = Data->meshBoundaryInlet.getView();
 
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
+
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
@@ -61,13 +65,13 @@ struct InletVelocityZouHeOLB {
         {
             RealType uc, u2;
 
-            uc = MD.c[vel][0] * u_view(i, j, k).x()
-                 + MD.c[vel][1] * u_view(i, j, k).y()
-                 + MD.c[vel][2] * u_view(i, j, k).z();
+            uc = MD.c[vel][0] * ux_view(i, j, k)
+                 + MD.c[vel][1] * uy_view(i, j, k)
+                 + MD.c[vel][2] * uz_view(i, j, k);
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
-                 + u_view(i, j, k).y() * u_view(i, j, k).y()
-                 + u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux_view(i, j, k) * ux_view(i, j, k)
+                 + uy_view(i, j, k) * uy_view(i, j, k)
+                 + uz_view(i, j, k) * uz_view(i, j, k);
 
 
             return MD.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);

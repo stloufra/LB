@@ -142,6 +142,7 @@ public:
         timer_loop.start();
 
         int k = 0;
+        int averaged =0;
         while(k<Constants -> iterations)
         {
 
@@ -162,19 +163,51 @@ public:
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
+            if constexpr (!std::is_same<SYMMETRYTYPE, NoSymmetry<MODELTYPE>>::value)
+            {
                 SYMMETRYTYPE::symmetry(Data, Constants);
+            }
+
+            if constexpr (!std::is_same<PERIODICTYPE, NoPeriodic<MODELTYPE>>::value)
+            {
                 PERIODICTYPE::periodic(Data, Constants);
+            }
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
                 MOMENTTYPE::momentUpdate(Data, Constants);
             timer_momentsUpdate.stop();
 
-            if(k > (Constants->iterations - Constants->iterationsMomentAvg))
+            if(k > Constants->iterationsMomentAvgStart) //adding to mmnt avg every it
             {
                 timer_timeAvg.start();
                     MOMENTTIMEAVGTYPE::momentAdd(Data, Constants);
+                    averaged++;
                 timer_timeAvg.stop();
+
+                if(averaged == Constants->iterationsMomentAvg)
+                {
+                    timer_timeAvg.start();
+                    MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+                    timer_timeAvg.stop();
+
+                    timer_output.start();
+                    outputerVTK::variablesTimeAvgVTK(Data, Constants,k, 1);
+                    timer_output.stop();
+
+                    timer_timeAvg.start();
+                    MOMENTTIMEAVGTYPE::momentAvgDelete(Data, Constants);
+                    timer_timeAvg.stop();
+
+                    averaged =0;
+                }
+            }
+
+            if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k>=(Constants->iterations - Constants->probe_iterations))
+            {
+                timer_output.start();
+                probeWrite();
+                timer_output.stop();
             }
 
             if(k%Constants -> err_every_it==0 && k!=0)
@@ -187,7 +220,12 @@ public:
                     timer_loop.start();
                     auto throughPut = k/timeSoFar;
 
-                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",Constants->err, k, Constants->iterations - k,  timeSoFar, throughPut, (Constants->iterations-k)/throughPut);
+                    printf("\n err=%e | k=%d | kRem=%d | tElaps=%fs | throuhput=%f it/s | tMore=%fs \n",
+                           Constants->err, k,
+                           Constants->iterations - k,
+                           timeSoFar,
+                           throughPut,
+                           (Constants->iterations-k)/throughPut);
 
 
                     if (std::isnan(Constants->err))
@@ -235,16 +273,16 @@ public:
 
     void initializeSimulationData( bool verbose ){
 
-
-
+        // PLOT EVERY
         if( Constants -> plot_every_it  == -1 && Constants -> plot_every != -1) {
             Constants->plot_every_it = std::ceil(Constants->plot_every / Constants->Ct);
         }
         else if( Constants -> plot_every_it  == -1 && Constants -> plot_every == -1) {
-            std::cout << "\n !!! CANT GIVE BOTH err_every AND plot_every_it !!!\n";
+            std::cout << "\n !!! CANT GIVE BOTH plot_every AND plot_every_it !!!\n";
             assert(false);
         }
 
+        // ERR EVERY
         if( Constants -> err_every_it  == -1 && Constants -> err_every != -1) {
             Constants->err_every_it = std::ceil(Constants->err_every / Constants->Ct);
         }
@@ -287,17 +325,28 @@ public:
 
         Data->rho.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->u.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->ux.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uy.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uz.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
 
         Data->rhoTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->uTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
+        Data->uxTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uyTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uzTimeAvg.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->rho_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
         Data->p_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
-        Data->u_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
-        Data->u_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_x_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_y_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->u_z_out.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+
+        Data->ux_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uy_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
+        Data->uz_error.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int);
 
         Data->df.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);
         Data->df_post.setSizes(Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int, Constants->Nvel);

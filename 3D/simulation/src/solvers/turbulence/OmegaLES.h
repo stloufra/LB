@@ -24,7 +24,11 @@ struct OmegaLES {
 
     static void omega(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
         auto omega_view = Data->omega.getView();
 
         auto df_view = Data->df.getView();
@@ -72,9 +76,9 @@ struct OmegaLES {
         {
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
 
-                auto u_x = u_view(i.x(), i.y(), i.z()).x();
-                auto u_y = u_view(i.x(), i.y(), i.z()).y();
-                auto u_z = u_view(i.x(), i.y(), i.z()).z();
+                auto u_x = ux_view(i.x(), i.y(), i.z());
+                auto u_y = uy_view(i.x(), i.y(), i.z());
+                auto u_z = uz_view(i.x(), i.y(), i.z());
 
                 auto rho = rho_view(i.x(), i.y(), i.z());
 

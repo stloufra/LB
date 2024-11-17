@@ -64,7 +64,11 @@ public:
 
 
             Data->rho_out = Data->rho;
-            Data->u_out = Data->u;
+            Data->u_x_out = Data->ux;
+            Data->u_y_out = Data->uy;
+            Data->u_z_out = Data->uz;
+
+
             //Data->p_out = Data->p;
 
 
@@ -114,9 +118,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->u_out(i, j, k).x() * Constants->Cu << " "
-                                 << Data->u_out(i, j, k).y() * Constants->Cu << " "
-                                 << Data->u_out(i, j, k).z() * Constants->Cu << "\n";
+                        out_file << Data->u_x_out(i, j, k) * Constants->Cu << " "
+                                 << Data->u_y_out(i, j, k) * Constants->Cu << " "
+                                 << Data->u_z_out(i, j, k) * Constants->Cu << "\n";
                     }
                 }
             }
@@ -173,9 +177,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->u(i, j, k).x() * Constants->Cu << " "
-                                 << Data->u(i, j, k).y() * Constants->Cu << " "
-                                 << Data->u(i, j, k).z() * Constants->Cu << "\n";
+                        out_file << Data->ux(i, j, k) * Constants->Cu << " "
+                                 << Data->uy(i, j, k) * Constants->Cu << " "
+                                 << Data->uz(i, j, k) * Constants->Cu << "\n";
                     }
                 }
             }
@@ -191,14 +195,11 @@ public:
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
             if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
 
-            ArrayTypeVariablesScalarHost rho_out;
-            ArrayTypeVariablesScalarHost p_out;
-            ArrayTypeVariablesVectorHost u_out;
-
-
-            rho_out = Data->rho;
-            u_out = Data->u;
-            p_out = Data->p;
+            Data->rho_out = Data->rho;
+            Data->u_x_out = Data->ux;
+            Data->u_y_out = Data->uy;
+            Data->u_z_out = Data->uz;
+            Data->p_out = Data->p;
 
 
             std::ofstream out_file("results/variablesLattice"+std::to_string(step)+".vtk");
@@ -225,7 +226,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) << "\n";
+                        out_file << Data->rho_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -236,7 +237,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << p_out(i, j, k) << "\n";
+                        out_file << Data->p_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -247,8 +248,8 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << u_out(i, j, k).x() << " " << u_out(i, j, k).y() << " "
-                                 << u_out(i, j, k).z() << "\n";
+                        out_file << Data->u_x_out(i, j, k) << " " << Data->u_y_out(i, j, k) << " "
+                                 << Data->u_z_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -304,7 +305,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->u(i, j, k).x() << " " << Data->u(i, j, k).y() << " " << Data->u(i, j, k).z()
+                        out_file << Data->ux(i, j, k) << " " << Data->uy(i, j, k) << " " << Data->uz(i, j, k)
                                  << "\n";
                     }
                 }
@@ -321,13 +322,11 @@ public:
             if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
             if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
 
-            ArrayTypeVariablesScalarHost rho_out;
-            ArrayTypeVariablesVectorHost u_out;
 
-
-            rho_out = Data->rhoTimeAvg;
-            u_out = Data->uTimeAvg;
-
+            Data->rho_out = Data->rhoTimeAvg;
+            Data->u_x_out = Data->uxTimeAvg;
+            Data->u_y_out = Data->uyTimeAvg;
+            Data->u_z_out = Data->uzTimeAvg;
 
             int step = (k - Constants->iterationsMomentAvgStart)/Constants->iterationsMomentAvg;
             std::ofstream out_file("results/variablesTimeAvg"+std::to_string(step)+".vtk");
@@ -354,7 +353,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k)* Constants->Crho << "\n";
+                        out_file << Data->rho_out(i, j, k)* Constants->Crho << "\n";
                     }
                 }
             }
@@ -365,7 +364,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) * Constants -> cs2 * Constants->Cpressure << "\n";
+                        out_file << Data->rho_out(i, j, k) * Constants -> cs2 * Constants->Cpressure << "\n";
                     }
                 }
             }
@@ -376,9 +375,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << u_out(i, j, k).x()* Constants->Cu << " "
-                                 << u_out(i, j, k).y()* Constants->Cu << " "
-                                 << u_out(i, j, k).z()* Constants->Cu << "\n";
+                        out_file << Data->u_x_out(i, j, k)* Constants->Cu << " "
+                                 << Data->u_y_out(i, j, k)* Constants->Cu << " "
+                                 << Data->u_z_out(i, j, k)* Constants->Cu << "\n";
                     }
                 }
             }
@@ -436,9 +435,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->uTimeAvg(i, j, k).x()* Constants->Cu << " "
-                                 << Data->uTimeAvg(i, j, k).y()* Constants->Cu << " "
-                                 << Data->uTimeAvg(i, j, k).z()* Constants->Cu << "\n";
+                        out_file << Data->uxTimeAvg(i, j, k)* Constants->Cu << " "
+                                 << Data->uyTimeAvg(i, j, k)* Constants->Cu << " "
+                                 << Data->uzTimeAvg(i, j, k)* Constants->Cu << "\n";
                     }
                 }
             }
@@ -448,21 +447,20 @@ public:
         }
     }
 
-    static void variablesTimeAvgLatticeVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, bool verbose) {
+    static void variablesTimeAvgLatticeVTK(LBMDataPointer &Data, LBMConstantsPointer &Constants, int k, bool verbose) {
 
         if (std::is_same_v<DeviceType, TNL::Devices::Cuda>) {
             if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
             if (verbose) { std::cout << "\nCuda -> Host output Lattice units\n" << std::endl; }
 
-            ArrayTypeVariablesScalarHost rho_out;
-            ArrayTypeVariablesVectorHost u_out;
 
+            Data->rho_out = Data->rhoTimeAvg;
+            Data->u_x_out = Data->uxTimeAvg;
+            Data->u_y_out = Data->uyTimeAvg;
+            Data->u_z_out = Data->uzTimeAvg;
 
-            rho_out = Data->rhoTimeAvg;
-            u_out = Data->uTimeAvg;
-
-
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
+            int step = (k - Constants->iterationsMomentAvgStart)/Constants->iterationsMomentAvg;
+            std::ofstream out_file("results/variablesTimeAvg"+std::to_string(step)+".vtk");
 
 
             out_file << "# vtk DataFile Version 2.0\n";
@@ -486,7 +484,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) << "\n";
+                        out_file << Data->rho_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -497,7 +495,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << rho_out(i, j, k) * Constants -> cs2 << "\n";
+                        out_file << Data->rho_out(i, j, k) << "\n";
                     }
                 }
             }
@@ -508,8 +506,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << u_out(i, j, k).x() << " " << u_out(i, j, k).y() << " "
-                                 << u_out(i, j, k).z() << "\n";
+                        out_file << Data->u_x_out(i, j, k)<< " "
+                                 << Data->u_y_out(i, j, k)<< " "
+                                 << Data->u_z_out(i, j, k)<< "\n";
                     }
                 }
             }
@@ -521,7 +520,8 @@ public:
             if (verbose) { std::cout << "\nWriting time averaged moments\n" << std::endl; }
             if (verbose) { std::cout << "\nHost -> Host output Lattice units\n" << std::endl; }
 
-            std::ofstream out_file("results/variablesTimeAvg.vtk");
+            int step = (k - Constants->iterationsMomentAvgStart)/Constants->iterationsMomentAvg;
+            std::ofstream out_file("results/variablesTimeAvg"+std::to_string(step)+".vtk");
 
 
             out_file << "# vtk DataFile Version 2.0\n";
@@ -545,7 +545,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rhoTimeAvg(i, j, k) << "\n";
+                        out_file << Data->rhoTimeAvg(i, j, k)<< "\n";
                     }
                 }
             }
@@ -556,7 +556,7 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->rhoTimeAvg(i, j, k)*Constants ->cs2 << "\n";
+                        out_file << Data->rhoTimeAvg(i, j, k)<< "\n";
                     }
                 }
             }
@@ -566,8 +566,9 @@ public:
             for (int k = 0; k < Constants->dimZ_int; k++) {
                 for (int j = 0; j < Constants->dimY_int; j++) {
                     for (int i = 0; i < Constants->dimX_int; i++) {
-                        out_file << Data->uTimeAvg(i, j, k).x() << " " << Data->uTimeAvg(i, j, k).y() << " " << Data->uTimeAvg(i, j, k).z()
-                                 << "\n";
+                        out_file << Data->uxTimeAvg(i, j, k) << " "
+                                 << Data->uyTimeAvg(i, j, k)<< " "
+                                 << Data->uzTimeAvg(i, j, k)<< "\n";
                     }
                 }
             }

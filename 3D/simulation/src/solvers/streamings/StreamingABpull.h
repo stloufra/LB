@@ -83,6 +83,9 @@ struct StreamingABpull
 
         TNL::Containers::StaticArray < 3, int > begin{0, 0, 0};
         TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
+
+        //DeviceType::LaunchConfiguration A;
+        //A.blockSize = (4, 4, 4);
         parallelFor<DeviceType>(begin, end, stream);
     }
 };

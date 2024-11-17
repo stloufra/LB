@@ -9,8 +9,10 @@
 #include <string>
 #include <omp.h>
 
-#include <map>
 #include <vector>
+#include <tuple>
+#include <map>
+#include <unordered_map>
 #include <cmath>
 #include "geometryObjectCuboid.h"
 #include "../traits/LBMTraits.h"
@@ -34,6 +36,7 @@ public:
     using ArrayTypeMeshHost = typename LBMTraits::ArrayTypeMeshHost;
     using ArrayTypeBoundaryInletHost = typename LBMTraits::ArrayTypeBoundaryInletHost;
     using ArrayTypeBoundaryOutletHost = typename LBMTraits::ArrayTypeBoundaryOutletHost;
+    //using PeriodicMap = std::unordered_map<int, int, std::hash<VectorType>>;
 
 
     geometryMesherBoundary() = delete;
@@ -504,7 +507,7 @@ public:
             }
         }
 
-        //printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+        printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
@@ -563,7 +566,7 @@ public:
             }
         }
 
-        //printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
+        printf("\n My index is %d", abs(ii*(int)normal_out.x()) + abs(jj*(int)normal_out.y()) + abs(kk*(int)normal_out.z()));
 
         if (verbose) {
             std::cout << "\nMeshed cuboid id " << cuboid.id << " as Periodic.\n";
@@ -614,6 +617,60 @@ public:
         if (verbose) {
             std::cout << "\nMeshed Wall.\n";
             std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
+        }
+
+    }
+
+    using PeriodicMap = std::unordered_map<int, std::pair<int, VectorType>>;
+
+    template<typename T>
+    void fillSinglePeriodicMap(const T periodicVector, PeriodicMap& periodic_map) {
+
+        for (const auto& boundary : periodicVector) {
+            for (const auto& candidate : periodicVector) {
+                if (boundary.vertex.x != candidate.vertex.x &&
+                    boundary.vertex.y != candidate.vertex.y &&
+                    boundary.vertex.z != candidate.vertex.z &&
+                    boundary.normal == -candidate.normal) {
+
+                    periodic_map[boundary.periodicIndex] = {candidate.periodicIndex, boundary.normal};
+                    periodic_map[candidate.periodicIndex] = {boundary.periodicIndex, candidate.normal};
+                    break;
+                    }
+            }
+        }
+    }
+
+
+    void tryin()
+    {
+        PeriodicMap periodic_map;
+        PeriodicMap periodic_mapDp;
+        if(boundary_vector_periodic.size() > 0)
+        {
+            fillSinglePeriodicMap(boundary_vector_periodic, periodic_map);
+        }
+
+        if(boundary_vector_periodicDP.size() > 0){
+            fillSinglePeriodicMap(boundary_vector_periodicDP, periodic_mapDp);
+        }
+
+        periodic_map.insert(periodic_mapDp.begin(), periodic_mapDp.end());
+
+        for (const auto& [key, value] : periodic_map)
+        {
+            auto [partner_index, normal] = value;
+            std::cout << "Periodic Index " << key
+                      << " -> Partner Index " << partner_index
+                      << " with Normal (" << normal.x() << ", " << normal.y() << ", " << normal.z() << ")\n";
+        }
+
+        for (const auto& [key, value] : periodic_mapDp)
+        {
+            auto [partner_index, normal] = value;
+            std::cout << "PeriodicDP Index " << key
+                      << " -> PartnerDP Index " << partner_index
+                      << " with Normal (" << normal.x() << ", " << normal.y() << ", " << normal.z() << ")\n";
         }
 
     }

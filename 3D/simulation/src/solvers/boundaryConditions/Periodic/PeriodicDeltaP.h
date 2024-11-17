@@ -23,7 +23,9 @@ struct PeriodicDeltaP {
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
         auto rho_view = Data->rho.getView();
 
         const auto Nvel = Constants->Nvel;
@@ -91,9 +93,9 @@ struct PeriodicDeltaP {
 
                 auto rho = rho_view(perIdx,j,k);
                 auto Drho = rho + DeltaRho;
-                auto ux = u_view(perIdx,j,k).x();
-                auto uy = u_view(perIdx,j,k).y();
-                auto uz = u_view(perIdx,j,k).z();
+                auto ux = ux_view(perIdx,j,k);
+                auto uy = uy_view(perIdx,j,k);
+                auto uz = uz_view(perIdx,j,k);
 
                 for(int vel = 0; vel < Nvel; vel++)
                 {
@@ -148,9 +150,9 @@ struct PeriodicDeltaP {
 
                 auto rho = rho_view(i,perIdx,k);
                 auto Drho = rho + DeltaRho;
-                auto ux = u_view(i,perIdx,k).x();
-                auto uy = u_view(i,perIdx,k).y();
-                auto uz = u_view(i,perIdx,k).z();
+                auto ux = ux_view(i,perIdx,k);
+                auto uy = uy_view(i,perIdx,k);
+                auto uz = uz_view(i,perIdx,k);
 
                 for(int vel = 0; vel < Nvel; vel++)
                 {
@@ -203,9 +205,9 @@ struct PeriodicDeltaP {
 
                 auto rho = rho_view(i,j,perIdx);
                 auto Drho = rho + DeltaRho;
-                auto ux = u_view(i,j,perIdx).x();
-                auto uy = u_view(i,j,perIdx).y();
-                auto uz = u_view(i,j,perIdx).z();
+                auto ux = ux_view(i,j,perIdx);
+                auto uy = uy_view(i,j,perIdx);
+                auto uz = uz_view(i,j,perIdx);
 
                 for(int vel = 0; vel < Nvel; vel++)
                 {

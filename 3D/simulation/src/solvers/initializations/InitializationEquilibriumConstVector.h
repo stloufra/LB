@@ -19,11 +19,16 @@ struct InitializationEquilibriumConstVector {
 
     static void initialization(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
         auto p_view = Data->p.getView();
 
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
-        auto uTimeAvg_view = Data->uTimeAvg.getView();
+
+        auto uxTimeAvg_view = Data->uxTimeAvg.getView();
+        auto uyTimeAvg_view = Data->uyTimeAvg.getView();
+        auto uzTimeAvg_view = Data->uzTimeAvg.getView();
 
         auto mesh_view = Data->meshFluid.getView();
 
@@ -52,22 +57,24 @@ struct InitializationEquilibriumConstVector {
 
         auto f_equilibrium = [=]
         __cuda_callable__(
-        const int &i,
-        const int &j,
-        const int &k,
-        const int &velo ) mutable
+        RealType ux,
+        RealType uy,
+        RealType uz,
+        RealType rho,
+        const int &vel ) mutable
         {
             RealType uc, u2;
 
-            uc = MD.c[velo][0] * u_view(i, j, k).x()
-                 + MD.c[velo][1] * u_view(i, j, k).y()
-                 + MD.c[velo][2] * u_view(i, j, k).z();
+            uc = MD.c[vel][0] * ux
+                 + MD.c[vel][1] * uy
+                 + MD.c[vel][2] * uz;
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x() + u_view(i, j, k).y() * u_view(i, j, k).y() +
-                 u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux * ux
+                 + uy * uy
+                 + uz * uz;
 
 
-            return MD.weight[velo] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return MD.weight[vel] * rho * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
 
@@ -77,21 +84,21 @@ struct InitializationEquilibriumConstVector {
         {
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
                 rho_view(i.x(), i.y(), i.z()) = rho_0 / Cm * Cl * Cl * Cl;
-                u_view(i.x(), i.y(), i.z()).x() = u_0.x() * Cu_inverse;
-                u_view(i.x(), i.y(), i.z()).y() = u_0.y() * Cu_inverse;
-                u_view(i.x(), i.y(), i.z()).z() = u_0.z() * Cu_inverse;
+                ux_view(i.x(), i.y(), i.z()) = u_0.x() * Cu_inverse;
+                uy_view(i.x(), i.y(), i.z()) = u_0.y() * Cu_inverse;
+                uz_view(i.x(), i.y(), i.z()) = u_0.z() * Cu_inverse;
 
             } else {
                 rho_view(i.x(), i.y(), i.z()) = 0.f;
-                u_view(i.x(), i.y(), i.z()).x() = 0.f;
-                u_view(i.x(), i.y(), i.z()).y() = 0.f;
-                u_view(i.x(), i.y(), i.z()).z() = 0.f;
+                ux_view(i.x(), i.y(), i.z()) = 0.f;
+                uy_view(i.x(), i.y(), i.z()) = 0.f;
+                uz_view(i.x(), i.y(), i.z()) = 0.f;
             }
 
             rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
-            uTimeAvg_view(i.x(), i.y(), i.z()).x() = 0.f;
-            uTimeAvg_view(i.x(), i.y(), i.z()).y() = 0.f;
-            uTimeAvg_view(i.x(), i.y(), i.z()).z() = 0.f;
+            uxTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
+            uyTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
+            uzTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
         };
 
         auto inletVelocities = [=]
@@ -102,9 +109,9 @@ struct InitializationEquilibriumConstVector {
             Vector velc = inlet_view[i.x()].velocity;
             Vertex vert = inlet_view[i.x()].vertex;
 
-            u_view(vert.x, vert.y, vert.z).x() = velc.x();
-            u_view(vert.x, vert.y, vert.z).y() = velc.y();
-            u_view(vert.x, vert.y, vert.z).z() = velc.z();
+            ux_view(vert.x, vert.y, vert.z) = velc.x();
+            uy_view(vert.x, vert.y, vert.z) = velc.y();
+            uz_view(vert.x, vert.y, vert.z) = velc.z();
 
         };
 
@@ -112,11 +119,15 @@ struct InitializationEquilibriumConstVector {
         __cuda_callable__(
         const TNL::Containers::StaticArray<3, int> &i ) mutable
         {
+            auto ux = ux_view(i.x(), i.y(), i.z());
+            auto uy = uy_view(i.x(), i.y(), i.z());
+            auto uz = uz_view(i.x(), i.y(), i.z());
+            auto rho= rho_view(i.x(), i.y(), i.z());
 
             for (int vel = 0; vel < Nvel; vel++) {
                 if (mesh_view(i.x(), i.y(), i.z()) != 0) {
-                    df_view(i.x(), i.y(), i.z(), vel) = f_equilibrium(i.x(), i.y(), i.z(), vel);
-                    df_post_view(i.x(), i.y(), i.z(), vel) = f_equilibrium(i.x(), i.y(), i.z(), vel);
+                    df_view(i.x(), i.y(), i.z(), vel) = f_equilibrium(ux,uy,uz,rho, vel);
+                    df_post_view(i.x(), i.y(), i.z(), vel) = f_equilibrium(ux,uy,uz,rho, vel);
 
                 } else {
                     df_view(i.x(), i.y(), i.z(), vel) = 0.f;

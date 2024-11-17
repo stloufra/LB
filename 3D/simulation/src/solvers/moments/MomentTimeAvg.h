@@ -18,10 +18,16 @@ struct MomentTimeAvg
 
     static void momentAdd(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
 
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
-        auto uTimeAvg_view = Data->uTimeAvg.getView();
+
+        auto uxTimeAvg_view = Data->uxTimeAvg.getView();
+        auto uyTimeAvg_view = Data->uyTimeAvg.getView();
+        auto uzTimeAvg_view = Data->uzTimeAvg.getView();
 
 
         auto timeAverage = [=]
@@ -32,9 +38,9 @@ struct MomentTimeAvg
 
             rhoTimeAvg_view(i.x(), i.y(), i.z()) += rho_view(i.x(), i.y(), i.z());
 
-            uTimeAvg_view(i.x(), i.y(), i.z()).x() += u_view(i.x(), i.y(), i.z()).x();
-            uTimeAvg_view(i.x(), i.y(), i.z()).y() += u_view(i.x(), i.y(), i.z()).y();
-            uTimeAvg_view(i.x(), i.y(), i.z()).z() += u_view(i.x(), i.y(), i.z()).z();
+            uxTimeAvg_view(i.x(), i.y(), i.z()) += ux_view(i.x(), i.y(), i.z());
+            uyTimeAvg_view(i.x(), i.y(), i.z()) += uy_view(i.x(), i.y(), i.z());
+            uzTimeAvg_view(i.x(), i.y(), i.z()) += uz_view(i.x(), i.y(), i.z());
 
         };
 
@@ -51,7 +57,10 @@ struct MomentTimeAvg
     static void momentAvg(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
-        auto uTimeAvg_view = Data->uTimeAvg.getView();
+
+        auto uxTimeAvg_view = Data->uxTimeAvg.getView();
+        auto uyTimeAvg_view = Data->uyTimeAvg.getView();
+        auto uzTimeAvg_view = Data->uzTimeAvg.getView();
 
         RealType TAC = static_cast<RealType>(Constants->iterationsMomentAvg);
 
@@ -65,9 +74,9 @@ struct MomentTimeAvg
 
             rhoTimeAvg_view(i.x(), i.y(), i.z()) /= TAC;
 
-            uTimeAvg_view(i.x(), i.y(), i.z()).x() /= TAC;
-            uTimeAvg_view(i.x(), i.y(), i.z()).y() /= TAC;
-            uTimeAvg_view(i.x(), i.y(), i.z()).z() /= TAC;
+            uxTimeAvg_view(i.x(), i.y(), i.z())/= TAC;
+            uyTimeAvg_view(i.x(), i.y(), i.z())/= TAC;
+            uzTimeAvg_view(i.x(), i.y(), i.z())/= TAC;
 
         };
 
@@ -81,7 +90,11 @@ struct MomentTimeAvg
     static void momentAvgDelete(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
-        auto uTimeAvg_view = Data->uTimeAvg.getView();
+
+        auto uxTimeAvg_view = Data->uxTimeAvg.getView();
+        auto uyTimeAvg_view = Data->uyTimeAvg.getView();
+        auto uzTimeAvg_view = Data->uzTimeAvg.getView();
+
         auto timeAveraged = Constants->timeAveraged;
 
         auto timeAverage = [=]
@@ -92,9 +105,9 @@ struct MomentTimeAvg
 
             rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0;
 
-            uTimeAvg_view(i.x(), i.y(), i.z()).x() = 0;
-            uTimeAvg_view(i.x(), i.y(), i.z()).y() = 0;
-            uTimeAvg_view(i.x(), i.y(), i.z()).z() = 0;
+            uxTimeAvg_view(i.x(), i.y(), i.z()) = 0;
+            uyTimeAvg_view(i.x(), i.y(), i.z()) = 0;
+            uzTimeAvg_view(i.x(), i.y(), i.z()) = 0;
 
         };
 

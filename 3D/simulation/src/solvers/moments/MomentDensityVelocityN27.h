@@ -19,7 +19,11 @@ struct MomentDensityVelocityN27
     static void momentUpdate(LBMDataPointer& Data, LBMConstantsPointer& Constants)
     {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
         auto df_view = Data->df.getView();
         auto mesh_view = Data->meshFluid.getView();
 
@@ -68,15 +72,15 @@ struct MomentDensityVelocityN27
 
                 rho_view(i.x(), i.y(), i.z()) = rho;
 
-                u_view(i.x(), i.y(), i.z())(0) = (df1 - df2 + df7 - df8 + df9 - df10 - df11 + df12 -
+                ux_view(i.x(), i.y(), i.z()) = (df1 - df2 + df7 - df8 + df9 - df10 - df11 + df12 -
                     df15 + df16 - df19 + df20 - df21 + df22 + df23 -
                     df24 - df25 + df26) / rho;
 
-                u_view(i.x(), i.y(), i.z())(1) = (-df5 + df6 - df11 + df12 + df13 - df14 + df15 -
+                uy_view(i.x(), i.y(), i.z()) = (-df5 + df6 - df11 + df12 + df13 - df14 + df15 -
                     df16 + df17 - df18 + df19 - df20 - df21 + df22 -
                     df23 + df24 - df25 + df26) / rho;
 
-                u_view(i.x(), i.y(), i.z())(2) = (-df3 + df4 - df7 + df8 + df9 - df10 - df13 + df14 +
+                uz_view(i.x(), i.y(), i.z()) = (-df3 + df4 - df7 + df8 + df9 - df10 - df13 + df14 +
                     df17 - df18 - df19 + df20 + df21 - df22 - df23 +
                     df24 - df25 + df26) / rho;
             }

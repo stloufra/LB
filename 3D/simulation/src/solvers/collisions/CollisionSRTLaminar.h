@@ -19,7 +19,11 @@ struct CollisionSRTLaminar
 
     static void collision(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
         auto rho_view = Data->rho.getView();
-        auto u_view = Data->u.getView();
+
+        auto ux_view = Data->ux.getView();
+        auto uy_view = Data->uy.getView();
+        auto uz_view = Data->uz.getView();
+
         auto mesh_view = Data->meshFluid.getView();
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
@@ -34,23 +38,24 @@ struct CollisionSRTLaminar
 
         auto f_equilibrium = [=]
         __cuda_callable__(
-        const int &i,
-        const int &j,
-        const int &k,
+        RealType ux,
+        RealType uy,
+        RealType uz,
+        RealType rho,
         const int &vel ) mutable
         {
             RealType uc, u2;
 
-            uc = MD.c[vel][0] * u_view(i, j, k).x()
-                 + MD.c[vel][1] * u_view(i, j, k).y()
-                 + MD.c[vel][2] * u_view(i, j, k).z();
+            uc = MD.c[vel][0] * ux
+                 + MD.c[vel][1] * uy
+                 + MD.c[vel][2] * uz;
 
-            u2 = u_view(i, j, k).x() * u_view(i, j, k).x()
-                 + u_view(i, j, k).y() * u_view(i, j, k).y()
-                 + u_view(i, j, k).z() * u_view(i, j, k).z();
+            u2 = ux * ux
+                 + uy * uy
+                 + uz * uz;
 
 
-            return MD.weight[vel] * rho_view(i, j, k) * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
+            return MD.weight[vel] * rho * (1.f + 3.f * uc + 4.5f * uc * uc - 1.5f * u2);
         };
 
         auto coll = [=]
@@ -59,19 +64,18 @@ struct CollisionSRTLaminar
         {
 
             if (mesh_view(i.x(), i.y(), i.z()) != 0) {
+                auto ux = ux_view(i.x(), i.y(), i.z());
+                auto uy = uy_view(i.x(), i.y(), i.z());
+                auto uz = uz_view(i.x(), i.y(), i.z());
+                auto rho= rho_view(i.x(), i.y(), i.z());
 
                 for (int vel = 0; vel < Nvel; vel++) {
 
                     df_post_view(i.x(), i.y(), i.z(), vel) =
-                            df_view(i.x(), i.y(), i.z(), vel) -
-                            (df_view(i.x(), i.y(), i.z(), vel) - f_equilibrium(i.x(), i.y(), i.z(), vel)) * omega;
+                            (1-omega)*df_view(i.x(), i.y(), i.z(), vel)
+                            +f_equilibrium(ux,uy,uz,rho, vel) * omega;
                 }
             }
-            /*else {
-                for (int vel = 0; vel < Nvel; vel++) {
-                    df_post_view(i.x(), i.y(), i.z(), vel) = 0;
-                }
-            }*/
         };
 
 
