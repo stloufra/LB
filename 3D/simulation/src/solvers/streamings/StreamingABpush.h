@@ -72,12 +72,9 @@ struct StreamingABpush
             }
         };
 
-        TNL::Containers::StaticArray < 3, int > begin{1, 1, 1};
-        TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int-1, Constants->dimY_int-1, Constants->dimZ_int-1};
-        //DeviceType::LaunchConfiguration A;
-        //A.blockSize = (128, 128, 128);
+        TNL::Containers::StaticArray < 3, int > begin{0, 0, 0};
+        TNL::Containers::StaticArray < 3, int > end{Constants->dimX_int, Constants->dimY_int, Constants->dimZ_int};
         parallelFor<DeviceType>(begin, end, stream);
-        //std::cout <<A.blockSize.x <<", "<<A.blockSize.y <<", "<<A.blockSize.z <<", " << std::endl ;
     }
 };
 

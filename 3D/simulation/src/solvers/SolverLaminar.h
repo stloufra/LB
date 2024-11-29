@@ -43,9 +43,10 @@
 #include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"
-#include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
-#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmega.h"
-
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedD3Q19.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedD3Q27.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmegaD3Q19.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmegaD3Q27.h"
 
 #include "./moments/MomentDensityVelocityN27.h"
 #include "./moments/MomentDensityVelocityN19.h"
@@ -201,13 +202,6 @@ public:
 
                     averaged =0;
                 }
-            }
-
-            if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k>=(Constants->iterations - Constants->probe_iterations))
-            {
-                timer_output.start();
-                probeWrite();
-                timer_output.stop();
             }
 
             if(k%Constants -> err_every_it==0 && k!=0)

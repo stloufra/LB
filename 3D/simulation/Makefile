@@ -24,8 +24,8 @@ run:
 	make clean
 	make
 	##./preprocess
+	##nohup ./main  > log.txt 2>&1 &
 	./main
-	
 
 $(TARGETS): % : %.o
 	$(CXX) $(LDFLAGS) -o $@ $< $(LDLIBS)

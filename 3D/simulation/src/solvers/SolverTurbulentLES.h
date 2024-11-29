@@ -18,7 +18,6 @@
 
 #include "./collisions/CollisionSRTTurbulent.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2015.h"
-#include "./collisions/CollisionCumD3Q27Turbulent2017.h"
 
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
@@ -39,8 +38,10 @@
 #include "boundaryConditions/Inlet/InletVelocityZouHe.h"
 #include "boundaryConditions/Inlet/InletVelocityEquilibrium.h"
 
-#include "./boundaryConditions/Outlet/OutletDensityInterpolated.h"
-#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmega.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedD3Q19.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmegaD3Q19.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedD3Q27.h"
+#include "./boundaryConditions/Outlet/OutletDensityInterpolatedOmegaD3Q27.h"
 #include "boundaryConditions/Outlet/OutletDensityEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibrium.h"
 #include "boundaryConditions/Outlet/OutletNeighbourEquilibriumOmega.h"

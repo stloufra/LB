@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef OUTLETDENSITYINTERPOLATED_H
-#define OUTLETDENSITYINTERPOLATED_H
+#ifndef OUTLETDENSITYINTERPOLATEDD3Q27_H
+#define OUTLETDENSITYINTERPOLATEDD3Q27_H
 
 #include "../../../traits/LBMTraits.h"
 
 template <typename MODELDATA>
-struct OutletDensityInterpolated
+struct OutletDensityInterpolatedD3Q27
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;

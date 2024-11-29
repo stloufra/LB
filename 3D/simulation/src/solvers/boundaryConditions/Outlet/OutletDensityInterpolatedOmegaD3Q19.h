@@ -2,13 +2,13 @@
 // Created by stloufra on 10/30/23.
 //
 
-#ifndef OUTLETDENSITYINTERPOLATEDOMEGA_H
-#define OUTLETDENSITYINTERPOLATEDOMEGA_H
+#ifndef OUTLETDENSITYINTERPOLATEDOMEGAD3Q19_H
+#define OUTLETDENSITYINTERPOLATEDOMEGAD3Q19_H
 
 #include "../../../traits/LBMTraits.h"
 
 template <typename MODELDATA>
-struct OutletDensityInterpolatedOmega
+struct OutletDensityInterpolatedOmegaD3Q19
 {
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
@@ -147,15 +147,7 @@ struct OutletDensityInterpolatedOmega
                 df_view(i, j, k, 15) +
                 df_view(i, j, k, 16) +
                 df_view(i, j, k, 17) +
-                df_view(i, j, k, 18) +
-                df_view(i, j, k, 19) +
-                df_view(i, j, k, 20) +
-                df_view(i, j, k, 21) +
-                df_view(i, j, k, 22) +
-                df_view(i, j, k, 23) +
-                df_view(i, j, k, 24) +
-                df_view(i, j, k, 25) +
-                df_view(i, j, k, 26);
+                df_view(i, j, k, 18);
         };
 
         auto computeUx = [=]
@@ -178,15 +170,7 @@ struct OutletDensityInterpolatedOmega
                 - df_view(i, j, k, 11)
                 + df_view(i, j, k, 12)
                 - df_view(i, j, k, 15)
-                + df_view(i, j, k, 16)
-                - df_view(i, j, k, 19)
-                + df_view(i, j, k, 20)
-                - df_view(i, j, k, 21)
-                + df_view(i, j, k, 22)
-                + df_view(i, j, k, 23)
-                - df_view(i, j, k, 24)
-                - df_view(i, j, k, 25)
-                + df_view(i, j, k, 26)) / density;
+                + df_view(i, j, k, 16)) / density;
         };
 
         auto computeUy = [=]
@@ -209,15 +193,7 @@ struct OutletDensityInterpolatedOmega
                 + df_view(i, j, k, 15)
                 - df_view(i, j, k, 16)
                 + df_view(i, j, k, 17)
-                - df_view(i, j, k, 18)
-                + df_view(i, j, k, 19)
-                - df_view(i, j, k, 20)
-                - df_view(i, j, k, 21)
-                + df_view(i, j, k, 22)
-                - df_view(i, j, k, 23)
-                + df_view(i, j, k, 24)
-                - df_view(i, j, k, 25)
-                + df_view(i, j, k, 26)) / density;
+                - df_view(i, j, k, 18)) / density;
         };
 
         auto computeUz = [=]
@@ -240,15 +216,7 @@ struct OutletDensityInterpolatedOmega
                 - df_view(i, j, k, 13)
                 + df_view(i, j, k, 14)
                 + df_view(i, j, k, 17)
-                - df_view(i, j, k, 18)
-                - df_view(i, j, k, 19)
-                + df_view(i, j, k, 20)
-                + df_view(i, j, k, 21)
-                - df_view(i, j, k, 22)
-                - df_view(i, j, k, 23)
-                + df_view(i, j, k, 24)
-                - df_view(i, j, k, 25)
-                + df_view(i, j, k, 26)) / density;
+                - df_view(i, j, k, 18)) / density;
         };
 
         auto bb_outlet = [=]

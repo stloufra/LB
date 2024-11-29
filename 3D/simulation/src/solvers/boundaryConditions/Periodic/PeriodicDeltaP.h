@@ -36,21 +36,12 @@ struct PeriodicDeltaP {
         VectorType norm_y(0,1,0);
         VectorType norm_z(0,0,1);
 
-        auto f_equilibrium_defined = [=]
-
-        __cuda_callable__(
-
-        const RealType &ux,
-
-        const RealType &uy,
-
-        const RealType &uz,
-
-        const RealType &density,
-
-        const int& vel
-        )
-        mutable
+        auto f_equilibrium_defined = [=]__cuda_callable__(
+                                        const RealType &ux,
+                                        const RealType &uy,
+                                        const RealType &uz,
+                                        const RealType &density,
+                                        const int& vel)mutable
         {
             RealType uc, u2;
 
@@ -92,14 +83,14 @@ struct PeriodicDeltaP {
             if (abs_cast(norm) == norm_x) {
 
                 auto rho = rho_view(perIdx,j,k);
-                auto Drho = rho + DeltaRho;
+                auto Drho = 1 + DeltaRho;
                 auto ux = ux_view(perIdx,j,k);
                 auto uy = uy_view(perIdx,j,k);
                 auto uz = uz_view(perIdx,j,k);
 
                 for(int vel = 0; vel < Nvel; vel++)
                 {
-                    if(norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0)
+                    if(norm.x() * MD.c[vel][0] < 0)
                     {
                         auto df_post =df_post_view(perIdx,j,k,vel); // copy post collision
                         RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, vel);
@@ -110,7 +101,7 @@ struct PeriodicDeltaP {
                         int id;
                         int jd;
                         int kd;
-                        id = i + MD.c[vel][0];
+                        id = i;
                         jd = j + MD.c[vel][1];
                         kd = k + MD.c[vel][2];
 
@@ -123,30 +114,46 @@ struct PeriodicDeltaP {
                     {
                         int dy, dz;
 
-                        dy = vert.y + MD.c[vel][1];
-                        dz = vert.z + MD.c[vel][2];
+                        dy = j + MD.c[vel][1];
+                        dz = k + MD.c[vel][2];
 
                         if (mesh_view(vert.x, dy, dz) == 0)
                         {
-                            if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){ //miri dovnitr -> vlastni
+                            /*if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){ //miri dovnitr -> vlastni
                                 df_view(i,j,k, vel) = df_post_view(i,j,k, MD.c_rev[vel]);
                             }
                             else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){//miri ven -> periodicky
 
                                 auto df_post =df_post_view(perIdx,j,k,MD.c_rev[vel]); // copy post collision
                                 RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
-                                RealType feqDP = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
+                                RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, MD.c_rev[vel]);
 
                                 df_post = feqDP + ( df_post - feqN);
 
                                 df_view(i,j,k, vel) = df_post;
-                            }
+                            }*/
+
+                            auto rhoNR = rho_view(i,j,k);
+                            auto DrhoNR = 1 + DeltaRho;
+                            auto uxNR = ux_view(i,j,k);
+                            auto uyNR = uy_view(i,j,k);
+                            auto uzNR = uz_view(i,j,k);
+
+                            auto df_post =df_post_view(i,j,k,vel);
+                            RealType feqN = f_equilibrium_defined( uxNR,uyNR,uzNR, rhoNR, vel);
+                            RealType feqDP = f_equilibrium_defined( uxNR,uyNR,uzNR, DrhoNR, vel);
+
+                            df_post = feqDP + (df_post - feqN);
+
+
+                            df_view(i,j,k, MD.c_rev[vel]) = df_post;
+
                         }
                     }
 
                 }
             }
-            else if (abs_cast(norm) == norm_y) {
+            /*else if (abs_cast(norm) == norm_y) {
 
                 auto rho = rho_view(i,perIdx,k);
                 auto Drho = rho + DeltaRho;
@@ -237,7 +244,6 @@ struct PeriodicDeltaP {
 
                         dx = vert.x + MD.c[vel][0];
                         dy = vert.y + MD.c[vel][1];
-                        dz = vert.z + MD.c[vel][2];
 
                         if (mesh_view(dx, dy, vert.z) == 0)
                         {
@@ -258,7 +264,7 @@ struct PeriodicDeltaP {
                     }
 
                 }
-            }
+            }*/
             else {
                 printf("Fail periodic DeltaP. \n");
             }

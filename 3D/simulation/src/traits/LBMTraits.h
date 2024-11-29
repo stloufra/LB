@@ -69,6 +69,12 @@ typedef struct {
 } boundaryConditionWall;
 
 typedef struct {
+    int key;
+    int partner_index;
+    Vector partner_normal;
+} periodicHash;
+
+typedef struct {
     double x, y, z;
 } d3;
 
@@ -90,12 +96,16 @@ public:
     using DeviceType = TNL::Devices::Cuda;
     using DeviceTypeHost = TNL::Devices::Host;
 
-    using VectorType = TNL::Containers::StaticVector< 3, RealType >;
+    using VectorType = Vector;
     using VectorTypeInt = TNL::Containers::StaticVector< 3, int >;
     using VectorTypeProbeCuda = TNL::Containers::Vector< RealType, DeviceType >;
     using VectorTypeProbeHost = TNL::Containers::Vector< RealType, DeviceTypeHost >;
 
     using TensorType = TNL::Containers::StaticVector<3, TNL::Containers::StaticVector< 3, RealType >>;
+
+    using PeriodicMap= std::unordered_map<int, std::pair<int, VectorType>>;
+    using PeriodicMapHost= TNL::Containers::Array<periodicHash, DeviceTypeHost>;
+    using PeriodicMapDevice = TNL::Containers::Array<periodicHash, DeviceType>;
 
     using NDArray3DSequenceType = std::index_sequence<2, 1, 0>;
     using NDArray4DSequenceType = std::index_sequence<3, 2, 1, 0>;
