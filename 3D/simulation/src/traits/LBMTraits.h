@@ -14,6 +14,10 @@
 using namespace TNL;
 using namespace TNL::Algorithms;
 
+using Real = float;
+using Vector = TNL::Containers::StaticVector< 3, Real >;
+using Device = TNL::Devices::Cuda;
+
 typedef struct {
     int x, y, z;
 } Vertex;
@@ -21,12 +25,6 @@ typedef struct {
 typedef struct {
     int x, y, z;
 } Normal;
-
-//typedef struct {
-//    double ux, uy, uz;
-//} Velocity;
-
-using Vector = TNL::Containers::StaticVector< 3, float >;
 
 typedef struct {
     Vertex vertex;
@@ -38,7 +36,7 @@ typedef struct {
 typedef struct {
     Vertex vertex;
     Vector normal;
-    float density;
+    Real density;
     bool regular;
 } boundaryConditionOutlet;
 
@@ -58,7 +56,7 @@ typedef struct {
 typedef struct {
     Vertex vertex;
     Vector normal;
-    float DeltaRho;
+    Real DeltaRho;
     int periodicIndex;
     bool regular;
 } boundaryConditionPeriodicDP;
@@ -93,9 +91,9 @@ public:
     struct is_defined<T, std::void_t<decltype(std::declval<T>())>> : std::true_type {};
 
 
-    using RealType = float;
+    using RealType = Real;
 
-    using DeviceType = TNL::Devices::Cuda;
+    using DeviceType = Device;
     using DeviceTypeHost = TNL::Devices::Host;
 
     using VectorType = Vector;

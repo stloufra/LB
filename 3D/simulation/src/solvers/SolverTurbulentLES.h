@@ -211,9 +211,9 @@ public:
 
             if constexpr (!std::is_same<BOUNCEBACKWALLTYPE, BounceBackWallHalfWallFunc<MODELTYPE>>::value)
             {
-                timer_bounceback.start();
+                timer_WallFunc.start();
                 BOUNCEBACKWALLTYPE::slipVelocity(Data, Constants);
-                timer_bounceback.stop();
+                timer_WallFunc.stop();
             }
 
 
@@ -229,6 +229,7 @@ public:
                 BOUNCEBACKWALLTYPE::bounceBackWall(Data, Constants);
                 INLETTYPE::inlet(Data, Constants);
                 OUTLETTYPE::outlet(Data, Constants);
+
             if constexpr (!std::is_same<SYMMETRYTYPE, NoSymmetry<MODELTYPE>>::value)
             {
                 SYMMETRYTYPE::symmetry(Data, Constants);
@@ -449,6 +450,7 @@ public:
 
 
     Timer timer_loop;
+    Timer timer_WallFunc;
     Timer timer_LES;
     Timer timer_collision;
     Timer timer_streaming;

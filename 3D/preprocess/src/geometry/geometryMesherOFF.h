@@ -131,11 +131,123 @@ public:
 
 
         if (verbose) {
-            printBoundaryPositions();
+            //printBoundaryPositions();
+
             printCuboidsForBC();
 
             std::cout << "Number of lattice points is "
                       << Constants->dimX_int * Constants->dimY_int * Constants->dimZ_int << "\n";
+        }
+    }
+
+    void meshingBoundaryWall(bool verbose)
+    {
+        boundaryConditionWall boundary_condition_wall;
+
+
+        for (int k = 0; k < Constants->dimZ_int; k++)
+        {
+            for (int j = 0; j < Constants->dimY_int; j++)
+            {
+                for (int i = 0; i < Constants->dimX_int; i++)
+                {
+                    if (Data->meshFluidHost(i, j, k) > 0)
+                    {
+                        for (int l : {-1, 0, 1})
+                        {
+                            for (int m : {-1, 0, 1})
+                            {
+                                for (int n : {-1, 0, 1})
+                                {
+                                    if (i + l >= 0 && j + m >= 0 && k + n >= 0 && i + l < Constants->dimX_int &&
+                                        j + m < Constants->dimY_int && k + n < Constants->dimZ_int)
+                                    {
+                                        if (Data->meshFluidHost(i + l, j + m, k + n) == 0)
+                                        {
+                                            Data->meshFluidHost(i, j, k) += 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (Data->meshFluidHost(i, j, k) > 2)
+                        {
+                            //TODO: before 2
+                            boundary_condition_wall.vertex = {i, j, k};
+                            boundary_condition_wall.regular = 1;
+
+                            if (Data->meshFluidHost(i, j, k) == 10){
+                                boundary_condition_wall.regular = 1;
+                            }
+                            else{
+                                boundary_condition_wall.regular = 0;
+                            }
+                            boundary_vector_wall.push_back(boundary_condition_wall);
+                        }
+                    }
+                }
+            }
+        }
+
+#pragma omp parallel for
+        for( boundaryConditionWall BC : boundary_vector_wall)
+        {
+            if( BC.regular == 1)
+            {
+                BC.normal = {0,0,0};
+
+                auto x = BC.vertex.x;
+                auto y = BC.vertex.y;
+                auto z = BC.vertex.z;
+
+                int check =0 ;
+                for (int l : {-1, 1})
+                {
+                    if (Data->meshFluidHost(x + l, y,z) == 0)
+                    {
+                        BC.normal = {l,0,0};
+                        check++;
+                    }
+
+                    if (Data->meshFluidHost(x,y+l,z) == 0)
+                    {
+                        BC.normal = {0,l,0};
+                        check++;
+
+                    }
+
+                    if (Data->meshFluidHost(x, y,z+l) == 0)
+                    {
+                        BC.normal = {0,0,l};
+                        check++;
+//#define DEBUG
+#ifdef DEBUG
+                        Vector testNorm(0,0,-1);
+
+                        if(BC.normal == testNorm)
+                        {
+                            Data->meshFluidHost(x,y,z) = 400;
+                        }
+#endif
+                    }
+
+                    BC.slipVelocity = {0.f,0.f,0.f};
+
+                    if(check >1)
+                    {
+                        printf("FAIL more than one possible normal for wall node.\n");
+                    }
+
+                }
+
+            }
+        }
+
+        if (verbose)
+        {
+            std::cout << "\nMeshed Wall.\n";
+            std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
         }
     }
 
@@ -295,12 +407,12 @@ public:
 
 
 
-    std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
-    std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
-    std::vector <boundaryConditionInlet> boundary_vector_inlet;
-    std::vector <boundaryConditionOutlet> boundary_vector_outlet;
+   // std::vector <boundaryConditionOutlet> boundary_vector_outlet_individual;
+    //std::vector <boundaryConditionInlet> boundary_vector_inlet_individual;
+    //std::vector <boundaryConditionInlet> boundary_vector_inlet;
+    //std::vector <boundaryConditionOutlet> boundary_vector_outlet;
 
-    boundaryConditionInlet boundary_condition_inlet;
+    //boundaryConditionInlet boundary_condition_inlet;
 
     LBMConstantsPointer Constants;
     LBMDataPointer Data;

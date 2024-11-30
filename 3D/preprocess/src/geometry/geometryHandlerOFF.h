@@ -132,6 +132,20 @@ public:
 
     }
 
+    double nearestDistanceToWall(const d3& queryPoint) {
+
+        if (!ppt || !ppt->tree) {
+            std::cerr << "Error: Polytree or its Tree is not initialized." << std::endl;
+            return -1.0;
+        }
+
+        Point query(queryPoint.x, queryPoint.y, queryPoint.z);
+
+        FT squaredDistance = ppt->tree->squared_distance(query);
+
+        return std::sqrt(CGAL::to_double(squaredDistance));
+    }
+
     bool polyhedronInside(d3 pnt_ask, const d3 pnt_ref) {
         const d3 *query = &pnt_ask;
         const d3 *outside_ref = &pnt_ref;

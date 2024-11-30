@@ -37,12 +37,16 @@ public:
         logger.writeHeader("Streaming");
         Solver.timer_streaming.writeLog(logger, 0);
         logger.writeSeparator();
-        if (withTur)
-        {
+
+        if (withTur){
             logger.writeHeader("OmegaLes");
+            Solver.timer_LES.writeLog(logger, 0);
+            logger.writeSeparator();
+            logger.writeHeader("WallFunction");
+            Solver.timer_WallFunc.writeLog(logger, 0);
+            logger.writeSeparator();
         }
-        Solver.timer_LES.writeLog(logger, 0);
-        logger.writeSeparator();
+
         logger.writeHeader("Bounce back");
         Solver.timer_bounceback.writeLog(logger, 0);
         logger.writeSeparator();

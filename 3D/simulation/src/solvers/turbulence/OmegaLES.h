@@ -43,6 +43,7 @@ struct OmegaLES {
         const auto Cl = Constants->Cl;
         const auto Ct = Constants->Ct;
         const auto CLES = Constants->CLES;
+        const auto nu = Constants -> ny;
 
 
         MODELDATA MD;
@@ -103,6 +104,38 @@ struct OmegaLES {
                     pi(2)(2) += MD.c[vel][2] * MD.c[vel][2] * (df - feq);
 
                 }
+//#define DEBUG
+#ifdef DEBUG
+
+                if( i.x() == 100 && i.y() == 1 && i.z() == 40 )
+                {
+                    printf("Ux, Uy, Uz: %f, %f, %f \n", u_x, u_y, u_z);
+                    printf("rho: %f \n", rho);
+
+                    printf("PI:\n");
+
+                    for( int i : {0,1,2})
+                    {
+                        for( int j : {0,1,2})
+                        {
+                            printf( "%f, ",pi(i)(j));
+                        }
+                        printf("\n");
+                    }
+
+                    printf("\n");
+
+                    for (int vel = 0; vel < Nvel; vel++)
+                    {
+                        printf("F%d = %f \n", vel, df_view(i.x(), i.y(), i.z(), vel));
+                    }
+
+                    printf("\n");
+                    printf("Ct - %f \n", Ct);
+                    printf("Nu - %f \n", nu);
+
+                }
+#endif
 
                 RealType PI = pi(0)(0) * pi(0)(0);
                 PI += pi(0)(1) * pi(0)(1);
@@ -131,6 +164,12 @@ struct OmegaLES {
                 //         sqrt(tau * tau + 18.f * CLES / (rho) * sqrt(PI)) * 0.5f;
 
                 omega_view(i.x(), i.y(), i.z()) = 1.f / tauLES;
+#ifdef DEBUG
+                if( i.x() == 100 && i.y() == 1 && i.z() == 40 )
+                {
+                    printf("Omega_tur = %f\n", omega_view(i.x(), i.y(), i.z()));
+                }
+#endif
             }
         };
 
