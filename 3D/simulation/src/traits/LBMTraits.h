@@ -66,6 +66,8 @@ typedef struct {
 typedef struct {
     Vertex vertex;
     bool regular;
+    Vector normal;
+    Vector slipVelocity;
 } boundaryConditionWall;
 
 typedef struct {

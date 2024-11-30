@@ -660,7 +660,7 @@ public:
             }
         }
 
-        printf("\n My index is %d",
+        printf("\n My index is %d ",
                abs(ii * (int)normal_out.x()) + abs(jj * (int)normal_out.y()) + abs(kk * (int)normal_out.z()));
         printf("and my periodicNeighbour is %d", periodicIndex_);
 
@@ -718,6 +718,60 @@ public:
                         }
                     }
                 }
+            }
+        }
+
+#pragma omp parallel for
+        for( boundaryConditionWall BC : boundary_vector_wall)
+        {
+            if( BC.regular == 1)
+            {
+                BC.normal = {0,0,0};
+
+                auto x = BC.vertex.x;
+                auto y = BC.vertex.y;
+                auto z = BC.vertex.z;
+
+                int check =0 ;
+                for (int l : {-1, 1})
+                {
+                    if (Data->meshFluidHost(x + l, y,z) == 0)
+                    {
+                        BC.normal = {l,0,0};
+                        check++;
+                    }
+
+                    if (Data->meshFluidHost(x,y+l,z) == 0)
+                    {
+                        BC.normal = {0,l,0};
+                        check++;
+
+                    }
+
+                    if (Data->meshFluidHost(x, y,z+l) == 0)
+                    {
+                        BC.normal = {0,0,l};
+                        check++;
+//#define DEBUG
+#ifdef DEBUG
+                        Vector testNorm(0,0,-1);
+
+                        if(BC.normal == testNorm)
+                        {
+                            Data->meshFluidHost(x,y,z) = 400;
+                        }
+#endif
+                    }
+
+                    BC.slipVelocity = {0.f,0.f,0.f};
+
+                    if(check >1)
+                    {
+                        printf("FAIL more than one possible normal for wall node.\n");
+                    }
+
+                }
+
             }
         }
 

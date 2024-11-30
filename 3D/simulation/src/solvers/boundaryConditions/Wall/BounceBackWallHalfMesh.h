@@ -16,6 +16,10 @@ struct BounceBackWallHalfMesh
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
+    static void slipVelocity(LBMDataPointer& Data, LBMConstantsPointer& Constants)
+    {
+     }
+
     static void bounceBackWall(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
 
         auto df_view = Data->df.getView();

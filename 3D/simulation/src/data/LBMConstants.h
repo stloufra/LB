@@ -55,6 +55,7 @@ struct LBMConstants {
     RealType g;
 
     RealType U_lb;                  //[1]
+    RealType U_inf = 0;                  //[1]
     RealType u_max;
     RealType Cl;
     RealType Ct;

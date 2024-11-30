@@ -38,11 +38,11 @@ int main() {
                           Data);
 
     //set meshing data
-    Constants->resolution_factor = 500;
+    Constants->resolution_factor = 1200;
     Constants->additional_factor = 1;                      // at least 1 for additional wall around
     Constants->point_outside = {-1, -1, -1};
-    Constants->file_name = "TurbulentProfilePipe.off";
-    Constants->mesh_name = "PipeProfile";
+    Constants->file_name = "./CAD/TurbulentProfilePipe.off";
+    Constants->mesh_name = "PipeProfileFine";
 
 
 

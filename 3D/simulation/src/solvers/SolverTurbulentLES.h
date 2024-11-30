@@ -26,6 +26,7 @@
 #include "./streamings//StreamingABpush.h"
 
 #include "boundaryConditions/Wall/BounceBackWallHalf.h"
+#include "boundaryConditions/Wall/BounceBackWallHalfWallFunction.h"
 
 #include "boundaryConditions/Periodic/Periodic.h"
 #include "boundaryConditions/Periodic/PeriodicDeltaP.h"
@@ -206,6 +207,15 @@ public:
             timer_dumping.start();
             OUTLETTYPE::outletOmega(Data, Constants);
             timer_dumping.stop();
+
+
+            if constexpr (!std::is_same<BOUNCEBACKWALLTYPE, BounceBackWallHalfWallFunc<MODELTYPE>>::value)
+            {
+                timer_bounceback.start();
+                BOUNCEBACKWALLTYPE::slipVelocity(Data, Constants);
+                timer_bounceback.stop();
+            }
+
 
             timer_collision.start();
                 COLLISIONTYPE::collision(Data, Constants);

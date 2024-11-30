@@ -50,10 +50,13 @@ struct NonDimensiolnaliseFactorsVelocity
         Constants->Cm = Constants->Crho * Constants->Cl * Constants->Cl * Constants->Cl;
         Constants->Cpressure = Constants->Cm/Constants->Cl/Constants->Ct/Constants->Ct;
 
-        Constants->Re = U_fyz * Constants->L_fyz / Constants->ny_fyz;
+        Constants->Re = Constants->U_inf * Constants->L_fyz / Constants->ny_fyz;
+        RealType Re_y = Constants->U_inf * L_fyz_y / Constants->ny_fyz;
+        RealType Re_z = Constants->U_inf * L_fyz_z / Constants->ny_fyz;
 
-        RealType Re_y = U_fyz * L_fyz_y / Constants->ny_fyz;
-        RealType Re_z = U_fyz * L_fyz_z / Constants->ny_fyz;
+        Constants->U_inf = Constants->U_inf * Constants->Cu_inverse;
+
+        std::cout << "\n- U_inf  is " << Constants->U_inf << "\n";
 
         std::cout << "\n- Re (for L in X direction) is " << Constants->Re << "\n";
         std::cout << "\n- Re (for L in Y direction) is " << Re_y << "\n";
@@ -61,7 +64,7 @@ struct NonDimensiolnaliseFactorsVelocity
 
         Constants->ny = Constants->ny_fyz * Constants->Ct / Constants->Cl / Constants->Cl;
 
-        std::cout << "\n- $Nu$  is " << Constants->ny << "\n";
+        std::cout << "\n- Nu  is " << Constants->ny << "\n";
 
         Constants->tau = Constants->ny / 3.f + 0.5f;
 
