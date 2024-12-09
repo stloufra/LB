@@ -140,7 +140,7 @@ public:
         }
     }
 
-    void meshingBoundaryWall(bool verbose)
+    /*void meshingBoundaryWall(bool verbose)
     {
         boundaryConditionWall boundary_condition_wall;
 
@@ -249,7 +249,7 @@ public:
             std::cout << "\nMeshed Wall.\n";
             std::cout << "Wall vertexes number: " << boundary_vector_wall.size() << std::endl;
         }
-    }
+    }*/
 
     void printProgressBar(int current, int total, int barWidth = 50){
         float progress = static_cast<float>(current) / total;
@@ -385,8 +385,8 @@ public:
     double y_out1 = (y3 + y4) / 2.0;
     double y_out2 = (y4 + y5) / 2.0;
 
-    printCuboid("cuboidY_in", x0, x2, y_in1, y_in2, z_min, z_max);
-    printCuboid("cuboidY_out", x0, x2, y_out1, y_out2, z_min, z_max);
+    printCuboid("cuboidY_in", x0, x5, y_in1, y_in2, z_min, z_max);
+    printCuboid("cuboidY_out", x0, x5, y_out1, y_out2, z_min, z_max);
 
     // Z-Direction Inlet and Outlet
     double z0 = calculatePosition(0, Constants->BBminz, Constants->additional_factor, Constants->resolution_factor);
@@ -401,8 +401,8 @@ public:
     double z_out1 = (z3 + z4) / 2.0;
     double z_out2 = (z4 + z5) / 2.0;
 
-    printCuboid("cuboidZ_in", x0, x2, y_min, y_max, z_in1, z_in2);
-    printCuboid("cuboidZ_out", x0, x2, y_min, y_max, z_out1, z_out2);
+    printCuboid("cuboidZ_in", x0, x5, y_min, y_max, z_in1, z_in2);
+    printCuboid("cuboidZ_out", x0, x5, y_min, y_max, z_out1, z_out2);
 }
 
 

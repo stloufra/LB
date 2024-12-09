@@ -306,11 +306,11 @@ struct CollisionCumD3Q27Laminar {
             const RealType Cs_202 = 1.f / 3.f * (-Eq71RHS + Eq73RHS);
             const RealType Cs_022 = 1.f / 3.f * (-Eq72RHS + Eq73RHS);
 
-            // Eq 46-48 //2017 diff
+            // Eq 74-76 //2017 diff
             const RealType Cs_211 = (1.f - omega8) * C_211;
             const RealType Cs_121 = (1.f - omega8) * C_121;
             const RealType Cs_112 = (1.f - omega8) * C_112;
-            // Eqs 49-52
+            // Eqs 77-80
             const RealType Cs_221 = (1.f - omega9) * C_221;
             const RealType Cs_212 = (1.f - omega9) * C_212;
             const RealType Cs_122 = (1.f - omega9) * C_122;

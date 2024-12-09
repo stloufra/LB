@@ -7,16 +7,17 @@
 
 #include "../../../traits/LBMTraits.h"
 
-template<typename MODELDATA>
-struct PeriodicDeltaP {
+template <typename MODELDATA>
+struct PeriodicDeltaP
+{
     using RealType = LBMTraits::RealType;
     using DeviceType = LBMTraits::DeviceType;
     using VectorType = LBMTraits::VectorType;
     using LBMDataPointer = TNL::Pointers::SharedPointer<LBMData, DeviceType>;
     using LBMConstantsPointer = TNL::Pointers::SharedPointer<LBMConstants, DeviceType>;
 
-    static void periodic(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
-
+    static void periodic(LBMDataPointer& Data, LBMConstantsPointer& Constants)
+    {
         auto periodic_view = Data->meshBoundaryPeriodicDP.getView();
         auto mesh_view = Data->meshFluid.getView();
 
@@ -28,20 +29,23 @@ struct PeriodicDeltaP {
         auto uz_view = Data->uz.getView();
         auto rho_view = Data->rho.getView();
 
+        auto pmDview = Data->periodicMapDevice.getView();
+
         const auto Nvel = Constants->Nvel;
 
         MODELDATA MD;
 
-        VectorType norm_x(1,0,0);
-        VectorType norm_y(0,1,0);
-        VectorType norm_z(0,0,1);
+        VectorType norm_x(1, 0, 0);
+        VectorType norm_y(0, 1, 0);
+        VectorType norm_z(0, 0, 1);
 
         auto f_equilibrium_defined = [=]__cuda_callable__(
-                                        const RealType &ux,
-                                        const RealType &uy,
-                                        const RealType &uz,
-                                        const RealType &density,
-                                        const int& vel)mutable
+                 const RealType& ux,
+                 const RealType& uy,
+                 const RealType& uz,
+                 const RealType& density,
+                 const int& vel)
+        mutable
         {
             RealType uc, u2;
 
@@ -54,105 +58,226 @@ struct PeriodicDeltaP {
 
 
         auto abs_cast = []
-        __cuda_callable__ (const VectorType& v) {
-            return TNL::Containers::StaticVector<3, unsigned int>(
+
+
+
+        __cuda_callable__(const VectorType & v)
+        {
+            return TNL::Containers::StaticVector < 3, unsigned int > (
                 std::abs(v[0]), std::abs(v[1]), std::abs(v[2])
             );
         };
 
 
         auto bb_per = [=]
+
+
+
         __cuda_callable__(
-        const TNL::Containers::StaticArray<1, int> &nod  ) mutable
+
+
+
+        const TNL::Containers::StaticArray<1, int>& nod
+        )
+        mutable
         {
-
-
             Vertex vert = periodic_view[nod.x()].vertex;
             auto norm = periodic_view[nod.x()].normal;
             auto reg = periodic_view[nod.x()].regular;
             auto perIdx = periodic_view[nod.x()].periodicIndex;
             auto DeltaRho = periodic_view[nod.x()].DeltaRho;
 
-            int i = vert.x;
-            int j = vert.y;
-            int k = vert.z;
+            int x = vert.x;
+            int y = vert.y;
+            int z = vert.z;
 
+            //#define DEBUG
+#ifdef DEBUG
+            if(nod.x() == 4575)
+            {
+                printf("(x,y,z)=(%d,%d,%d) "
+       "| norm - %f, %f, %f \n", vert.x, vert.y, vert.z, norm(0), norm(1), norm(2));
+            }
+#endif
+#undef DEBUG
 
+            if (abs_cast(norm) == norm_x)
+            {
+                norm = periodic_view[nod.x()].normal;
 
+                auto rho = rho_view(perIdx, y, z);
+                auto Drho = 1.f + DeltaRho;
+                auto ux = ux_view(perIdx, y, z);
+                auto uy = uy_view(perIdx, y, z);
+                auto uz = uz_view(perIdx, y, z);
 
-            if (abs_cast(norm) == norm_x) {
-
-                auto rho = rho_view(perIdx,j,k);
-                auto Drho = 1 + DeltaRho;
-                auto ux = ux_view(perIdx,j,k);
-                auto uy = uy_view(perIdx,j,k);
-                auto uz = uz_view(perIdx,j,k);
-
-                for(int vel = 0; vel < Nvel; vel++)
+                for (int vel = 0; vel < Nvel; vel++)
                 {
-                    if(norm.x() * MD.c[vel][0] < 0)
+                    if (norm.x() * MD.c[vel][0] < 0)
                     {
-                        auto df_post =df_post_view(perIdx,j,k,vel); // copy post collision
-                        RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, vel);
-                        RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, vel);
+                        auto df_post = df_post_view(perIdx, y, z, vel); // copy post collision
+                        RealType feqN = f_equilibrium_defined(ux, uy, uz, rho, vel);
+                        RealType feqDP = f_equilibrium_defined(ux, uy, uz, Drho, vel);
 
                         df_post = feqDP + (df_post - feqN);
 
-                        int id;
-                        int jd;
-                        int kd;
-                        id = i;
-                        jd = j + MD.c[vel][1];
-                        kd = k + MD.c[vel][2];
+                        int xd;
+                        int yd;
+                        int zd;
+                        xd = x;
+                        yd = y + MD.c[vel][1];
+                        zd = z + MD.c[vel][2];
 
-                        df_view(id, jd, kd, vel) = df_post;
-
-
+                        df_view(xd, yd, zd, vel) = df_post;
                     }
 
-                    if(!reg)
+                    if (!reg) //BB Wall
                     {
                         int dy, dz;
 
-                        dy = j + MD.c[vel][1];
-                        dz = k + MD.c[vel][2];
+                        dy = y + MD.c[vel][1];
+                        dz = z + MD.c[vel][2];
 
-                        if (mesh_view(vert.x, dy, dz) == 0)
+                        auto xp = x - norm.x();
+
+                        if (mesh_view(vert.x, dy, dz) == 0 && mesh_view(xp, y, z) != -3)
                         {
-                            /*if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){ //miri dovnitr -> vlastni
-                                df_view(i,j,k, vel) = df_post_view(i,j,k, MD.c_rev[vel]);
-                            }
-                            else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){//miri ven -> periodicky
+                            auto rhoNR = rho_view(x, y, z);
+                            auto DrhoNR = 1.f + DeltaRho;
+                            auto uxNR = ux_view(x, y, z);
+                            auto uyNR = uy_view(x, y, z);
+                            auto uzNR = uz_view(x, y, z);
 
-                                auto df_post =df_post_view(perIdx,j,k,MD.c_rev[vel]); // copy post collision
-                                RealType feqN = f_equilibrium_defined( ux,uy,uz, rho, MD.c_rev[vel]);
-                                RealType feqDP = f_equilibrium_defined( ux,uy,uz, Drho, MD.c_rev[vel]);
-
-                                df_post = feqDP + ( df_post - feqN);
-
-                                df_view(i,j,k, vel) = df_post;
-                            }*/
-
-                            auto rhoNR = rho_view(i,j,k);
-                            auto DrhoNR = 1 + DeltaRho;
-                            auto uxNR = ux_view(i,j,k);
-                            auto uyNR = uy_view(i,j,k);
-                            auto uzNR = uz_view(i,j,k);
-
-                            auto df_post =df_post_view(i,j,k,vel);
-                            RealType feqN = f_equilibrium_defined( uxNR,uyNR,uzNR, rhoNR, vel);
-                            RealType feqDP = f_equilibrium_defined( uxNR,uyNR,uzNR, DrhoNR, vel);
+                            auto df_post = df_post_view(x, y, z, vel);
+                            RealType feqN = f_equilibrium_defined(uxNR, uyNR, uzNR, rhoNR, vel);
+                            RealType feqDP = f_equilibrium_defined(uxNR, uyNR, uzNR, DrhoNR, vel);
 
                             df_post = feqDP + (df_post - feqN);
 
 
-                            df_view(i,j,k, MD.c_rev[vel]) = df_post;
-
+                            df_view(x, y, z, MD.c_rev[vel]) = df_post;
                         }
                     }
+                }
 
+                auto xp = x - norm.x();
+
+                if(!reg){
+
+                    if (mesh_view(xp, y, z) == -3)
+                    {
+                        //first y
+                        VectorType yp(0, 1, 0);
+                        VectorType ym(0, -1, 0);
+
+                        if (y == 1)
+                        {
+                            for (int i = 0; i < pmDview.getSize(); i++)
+                            {
+                                VectorType normP = -pmDview[i].partner_normal;
+                                int indexP = pmDview[i].partner_index;
+                                int key = pmDview[i].key;
+
+                                if (normP == ym && key == y)
+                                {
+                                    VectorType in = -(normP + norm);
+
+                                    //#define DEBUG
+#ifdef DEBUG
+                                    if (nod.x() == 4575)
+                                    {
+                                        printf("(x,y,z)=(%d,%d,%d) "
+                                               "| IN - %f, %f, %f "
+                                               "| normP-(%f,%f,%f) "
+                                               "| norm-(%f,%f,%f) "
+                                               "| indexP - %d "
+                                               "| key - %d \n", x, y, z, in(0), in(1), in(2), normP(0), normP(1),
+                                               normP(2), norm(0), norm(1), norm(2), indexP, key);
+                                    }
+#endif
+#undef DEBUG
+
+                                    for (int vel = 0; vel < Nvel; vel++)
+                                    {
+                                        VectorType c(MD.c[vel][0], MD.c[vel][1], MD.c[vel][2]);
+
+                                        if (in(0) == c(0) && in(1) == c(1))
+                                        {
+
+
+                                            auto rhoNR = rho_view(perIdx, indexP, z);
+                                            auto DrhoNR = 1.f + DeltaRho;
+                                            auto uxNR = ux_view(perIdx, indexP, z);
+                                            auto uyNR = uy_view(perIdx, indexP, z);
+                                            auto uzNR = uz_view(perIdx, indexP, z);
+
+                                            auto df_post = df_post_view(perIdx, indexP, z, vel);
+
+                                            RealType feqN = f_equilibrium_defined(uxNR, uyNR, uzNR, rhoNR, vel);
+                                            RealType feqDP = f_equilibrium_defined(uxNR, uyNR, uzNR, DrhoNR, vel);
+
+                                            df_post = feqDP + (df_post - feqN);
+
+//#define DEBUG
+#ifdef DEBUG
+                                            if (nod.x() == 4575){
+                                                printf(" IN - %f, %f, %f "
+                                               "| c-(%f,%f,%f) "
+                                               "|from - (%d,%d,%d)"
+                                               "|to - (%d,%d,%d) \n", in(0), in(1), in(2), c(0), c(1), c(2),perIdx, indexP, z, x, y, z);
+                                            }
+#endif
+#undef DEBUG
+
+
+                                            df_view(x, y, z, vel) = df_post;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (y == (Constants->dimY_int - 2))
+                        {
+                            for (int i = 0; i < pmDview.getSize(); i++)
+                            {
+                                auto normP = -pmDview[x].partner_normal;
+                                auto indexP = pmDview[x].partner_index;
+                                auto key = pmDview[x].key;
+
+                                if (normP == yp && key == y)
+                                {
+                                    VectorType in = -1 * (normP + norm);
+
+                                    for (int vel = 0; vel < Nvel; vel++)
+                                    {
+                                        VectorType c(MD.c[vel][0], MD.c[vel][1], MD.c[vel][2]);
+
+                                        if (in(0) == c(0) && in(1) == c(1))
+                                        {
+                                            auto rhoNR = rho_view(perIdx, indexP, z);
+                                            auto DrhoNR = 1.f + DeltaRho;
+                                            auto uxNR = ux_view(perIdx, indexP, z);
+                                            auto uyNR = uy_view(perIdx, indexP, z);
+                                            auto uzNR = uz_view(perIdx, indexP, z);
+
+                                            auto df_post = df_post_view(perIdx, indexP, z, vel);
+
+                                            RealType feqN = f_equilibrium_defined(uxNR, uyNR, uzNR, rhoNR, vel);
+                                            RealType feqDP = f_equilibrium_defined(uxNR, uyNR, uzNR, DrhoNR, vel);
+
+                                            df_post = feqDP + (df_post - feqN);
+
+
+                                            df_view(x, y, z, vel) = df_post;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
             /*else if (abs_cast(norm) == norm_y) {
 
                 auto rho = rho_view(i,perIdx,k);
@@ -265,7 +390,8 @@ struct PeriodicDeltaP {
 
                 }
             }*/
-            else {
+            else
+            {
                 printf("Fail periodic DeltaP. \n");
             }
         };
@@ -273,7 +399,6 @@ struct PeriodicDeltaP {
 
         parallelFor<DeviceType>(0, Constants->periodicDP_num, bb_per);
     }
-
 };
 
 #endif

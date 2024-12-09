@@ -56,7 +56,7 @@ struct Periodic {
             int k = vert.z;
 
 
-            if (abs_cast(norm) == norm_x) {
+            /*if (abs_cast(norm) == norm_x) {
 
                 int perIdxC = perIdx - norm.x();
 
@@ -88,7 +88,7 @@ struct Periodic {
 
                 }
             }
-            else if (abs_cast(norm) == norm_y) {
+            else*/ if (abs_cast(norm) == norm_y) {
 
                 int perIdxC = perIdx - norm.y();
 
@@ -97,33 +97,42 @@ struct Periodic {
                     if(norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0)
                     {
 
+                            auto df_post =df_post_view(i,perIdx,k,vel);
 
-                            df_view(i,j,k,vel)=df_view(i,perIdxC,k,vel);
+                            int id;
+                            int jd;
+                            int kd;
+                            id = i + MD.c[vel][0];
+                            jd = j;
+                            kd = k + MD.c[vel][2];
 
+                            df_view(id, jd, kd, vel) = df_post;
 
                     }
 
                     if(!reg)
                     {
-                        int dx, dy, dz;
+                        int dx, dy, dz, yp;
 
                         dx = vert.x - MD.c[vel][0];
                         dy = vert.y - MD.c[vel][1];
                         dz = vert.z - MD.c[vel][2];
 
-                        if (mesh_view(dx, vert.y, dz) == 0)
+                        yp = vert.y - norm.y();
+
+                        if (mesh_view(dx, vert.y, dz) == 0 && mesh_view(vert.x, yp, vert.z) !=-3)
                         {
-                            if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){
+                            //if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] <= 0 ){
                                 df_view(i,j,k, vel) = df_post_view(i,j,k, MD.c_rev[vel]);
-                            }
-                            else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){
+                            //}
+                            /*else if ( norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] > 0 ){
                                 df_view(i,j,k, vel) = df_post_view(i,perIdx,k, MD.c_rev[vel]);
-                            }
+                            }*/
                         }
                     }
                 }
             }
-            else if (abs_cast(norm) == norm_z) {
+            /*else if (abs_cast(norm) == norm_z) {
 
                 int perIdxC = perIdx - norm.z();
 
@@ -156,7 +165,7 @@ struct Periodic {
                     }
 
                 }
-            }
+            }*/
             else {
                 printf("Fail periodic. \n");
             }

@@ -22,7 +22,7 @@ struct NonDimensiolnaliseFactorsVelocity
         // prenasobim lattice jednotky a dostanu fyzikalni
         // vydelim fyz a dostanu lattice
 
-        if (Constants->U_lb > 0.1) {
+        if (Constants->U_lb > 0.1f) {
             std::cout << "\n Lattice speed should not be higher than 0.1 due to stability close to speed of sound.\n";
         }
 
@@ -44,11 +44,11 @@ struct NonDimensiolnaliseFactorsVelocity
         U_fyz = Constants -> u_guess_fyz; //TODO: think of better way to do this
 
         Constants->Cu = U_fyz / Constants->U_lb;
-        Constants->Cu_inverse = 1 / Constants->Cu;
+        Constants->Cu_inverse = 1.f / Constants->Cu;
         Constants->Ct = Constants->Cl / Constants->Cu;
         Constants->Crho = Constants->rho_fyz;
         Constants->Cm = Constants->Crho * Constants->Cl * Constants->Cl * Constants->Cl;
-        Constants->Cpressure = Constants->Cm/Constants->Cl/Constants->Ct/Constants->Ct;
+        Constants->Cpressure = Constants->Cm /Constants->Cl /Constants->Ct /Constants->Ct;
 
         Constants->Re = Constants->U_inf * Constants->L_fyz / Constants->ny_fyz;
         RealType Re_y = Constants->U_inf * L_fyz_y / Constants->ny_fyz;
@@ -68,10 +68,10 @@ struct NonDimensiolnaliseFactorsVelocity
 
         Constants->tau = Constants->ny / 3.f + 0.5f;
 
-        if (Constants->tau < 0.51) {
+        if (Constants->tau < 0.51f) {
             std::cout << "Tau is too small. Consider higher resolution or higher lattice speed. \n";
             std::cout << "Tau is " << Constants->tau << "\n";
-        } else if (Constants->tau > 0.99) {
+        } else if (Constants->tau > 0.99f) {
             std::cout << "Tau is too high. Consider lower resolution or lower lattice speed. \n";
             std::cout << "Tau is " << Constants->tau << "\n";
         } else {
@@ -152,7 +152,7 @@ struct NonDimensiolnaliseFactorsVelocity
         const TNL::Containers::StaticArray<1, int> &nod  ) mutable
         {
             periodic_view(nod.x()).DeltaRho =
-                    periodic_view(nod.x()).DeltaRho / cs2  / Cpressure;
+                    periodic_view(nod.x()).DeltaRho / Cpressure *3;
         };
 
         parallelFor<DeviceType>(0, Constants->periodicDP_num, nonDimPerDP);

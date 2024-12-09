@@ -70,6 +70,7 @@ template<   typename MODELTYPE,
             typename BOUNCEBACKWALLTYPE,
             typename SYMMETRYTYPE,
             typename PERIODICTYPE,
+            typename PERIODIC2TYPE,
             typename INLETTYPE,
             typename OUTLETTYPE,
             typename MOMENTTYPE,
@@ -169,10 +170,18 @@ public:
                 SYMMETRYTYPE::symmetry(Data, Constants);
             }
 
+            if constexpr (!std::is_same<PERIODIC2TYPE, NoPeriodic<MODELTYPE>>::value)
+            {
+                PERIODIC2TYPE::periodic(Data, Constants);
+            }
+
             if constexpr (!std::is_same<PERIODICTYPE, NoPeriodic<MODELTYPE>>::value)
             {
                 PERIODICTYPE::periodic(Data, Constants);
             }
+
+
+
             timer_bounceback.stop();
 
             timer_momentsUpdate.start();
@@ -355,6 +364,8 @@ public:
 
 
     Timer timer_loop;
+    Timer timer_LES;
+    Timer timer_WallFunc;
     Timer timer_collision;
     Timer timer_streaming;
     Timer timer_bounceback;

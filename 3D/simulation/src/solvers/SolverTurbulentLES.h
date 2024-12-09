@@ -16,8 +16,10 @@
 #include <TNL/Containers/Vector.h>
 #include <TNL/Algorithms/reduce.h>
 
+#include "./collisions/CollisionSRTLaminar.h"
 #include "./collisions/CollisionSRTTurbulent.h"
 #include "./collisions/CollisionCumD3Q27Turbulent2015.h"
+#include "./collisions/CollisionCumD3Q27Laminar.h"
 
 #include "./initializations/InitializationEquilibriumConstVector.h"
 #include "./initializations/InitializationEquilibriumVariables.h"
@@ -364,7 +366,7 @@ public:
         }
         else if( Constants -> iterationsMomentAvg  == -1 && Constants -> MomentAvg_every == -1) {
             std::cout << "\n !!! CANT GIVE BOTH iterationsMomentAvg AND MomentAvg_every !!!\n";
-            assert(false);
+           // assert(false);
         }
 
         //MOMENTAVERAGESTART
@@ -373,7 +375,7 @@ public:
         }
         else if( Constants -> iterationsMomentAvgStart  == -1 && Constants -> MomentAvgStart == -1) {
             std::cout << "\n !!! CANT GIVE BOTH iterationsMomentAvgStart AND MomentAvgStart !!!\n";
-            assert(false);
+            //assert(false);
         }
 
 

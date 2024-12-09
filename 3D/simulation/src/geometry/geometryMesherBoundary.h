@@ -804,7 +804,7 @@ public:
     }
 
 
-    void tryin(bool verbose)
+    void fillPeriodicMaps(bool verbose)
     {
         if (boundary_vector_periodic.size() > 0)
         {
@@ -842,32 +842,22 @@ public:
 
         }
 
-        PeriodicMapHost pmD(periodic_map.size());
-        PeriodicMapDevice pmDD(periodic_map.size());
+        Data -> periodicMapHost.setSize(periodic_map.size());
+        Data -> periodicMapDevice.setSize(periodic_map.size());
 
         int i=0;
         for (const auto& [key, value] : periodic_map)
         {
             auto [partner_index, normal] = value;
-            pmD[i].key = key;
-            pmD[i].partner_index = partner_index;
-            pmD[i].partner_normal = normal;
+            Data -> periodicMapHost[i].key = key;
+            Data -> periodicMapHost[i].partner_index = partner_index;
+            Data -> periodicMapHost[i].partner_normal = normal;
             i++;
         }
 
-        pmDD = pmD;
-        auto pmDview = pmDD.getView();
+        Data ->periodicMapDevice = Data -> periodicMapHost;
 
-        //printf("HEREEE %d",pmDview[0].key);
-
-        auto init = [ = ] __cuda_callable__( int i ) mutable
-        {
-            //printf("HEREEE %d",i);
-            //printf("Trying hash periodic boundary vector key - %d, value - %d \n", pmDview[i].key, pmDview[i].partner_index );
-            printf("HEREEE %d",pmDview[0].key);
-            printf("HEREEE %d",pmDview[1].key);
-        };
-        parallelFor< DeviceType >( 0, periodic_map.size(), init );
+        //auto pmDview = Data -> periodicMapDevice.getView();
 
 
     }
@@ -1061,6 +1051,8 @@ public:
             compileBoundaryArrayPeriodicDP(verbose);
             Data->meshBoundaryPeriodicDP = Data->meshBoundaryPeriodicDPHost;
         }
+
+        //fillPeriodicMaps(verbose);
 
         if (verbose)
         {

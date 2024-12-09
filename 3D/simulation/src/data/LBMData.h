@@ -37,6 +37,9 @@ public:
     using ArrayTypeDFunction = typename LBMTraits::ArrayTypeDFunction;
     using ArrayTypeDFunctionHost = typename LBMTraits::ArrayTypeDFunctionHost;
 
+    using PeriodicMapHost = typename LBMTraits::PeriodicMapHost;
+    using PeriodicMapDevice = typename LBMTraits::PeriodicMapDevice;
+
     //mesh - host
     ArrayTypeMeshHost meshFluidHost;
     ArrayTypeBoundaryInletHost meshBoundaryInletHost;
@@ -87,6 +90,10 @@ public:
     ArrayTypeVariablesScalarHost u_x_out;
     ArrayTypeVariablesScalarHost u_y_out;
     ArrayTypeVariablesScalarHost u_z_out;
+
+    //periodic maps
+    PeriodicMapHost periodicMapHost;
+    PeriodicMapDevice periodicMapDevice;
 
 
     // distribution function
