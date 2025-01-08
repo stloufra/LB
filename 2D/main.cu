@@ -12,11 +12,16 @@
 using DeviceType = TNL::Devices::Cuda;
 using DeviceTypeHost = TNL::Devices::Host;
 
+
+
+
+
 using RealType = float;
 
 int main()
 {
-    const RealType L = 0.1f;                //[m] - x dimension
+
+    const RealType L = 0.3f;                //[m] - x dimension
     const int Nx = 1000;                    //[1]
     const int Ny = 150;                     //[1]
 
@@ -28,13 +33,9 @@ int main()
     const RealType uy=0.f;                  //[m/s]
     const RealType u_max_lattice =0.09f;    //[0]
 
-    const RealType Fx = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
-    const RealType Fy = 0.0f;               //[kg/m2/s2]  <- force density (3rd dimension in 2D is equal to 1)
+    const RealType time =100.f;             //[s]
 
-    const RealType time =5.f;              //[s]
-
-    const int plot_every = 10.f;            //[s]
-    const int err_every_it = 1000;          //[it]
+    const int plot_every = 1.f;             //[s]
 
     int iterations;
     
@@ -79,7 +80,7 @@ int main()
     iterations = std::ceil(time/solver.Ct_pub);
     std::cout<<"\nCalculation will run for "<<iterations<<" iterations.\n";
 
-    solver.initialization_eq(rho, ux, 0.0001f, Fx, Fy,0);
+    solver.initialization_eq(rho, ux, uy, 0.f, 0.f, 0.f);
 
     solver.output_VTK_lattice();
     solver.output_VTK(0,plot_every_it);
@@ -100,7 +101,7 @@ int main()
 
 
     int k = 0;
-    while(k<iterations) //err>=10e-4)
+    while(k<=iterations)
     {
         k++;
 
@@ -148,6 +149,8 @@ int main()
             timer_output.stop();
         }
     }
+
+    solver.output_VTK(k,plot_every_it);
 
     timer_loop.stop();
     
