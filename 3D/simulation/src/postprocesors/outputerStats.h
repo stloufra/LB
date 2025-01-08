@@ -42,9 +42,9 @@ public:
             logger.writeHeader("OmegaLes");
             Solver.timer_LES.writeLog(logger, 0);
             logger.writeSeparator();
-            logger.writeHeader("WallFunction");
+            /*logger.writeHeader("WallFunction");
             Solver.timer_WallFunc.writeLog(logger, 0);
-            logger.writeSeparator();
+            logger.writeSeparator();*/
         }
 
         logger.writeHeader("Bounce back");
@@ -81,7 +81,7 @@ public:
 
         auto MLups = iter / PerformTime * MCells;
 
-        printf("Performance - %f MLups \n", MLups);
+        //printf("Performance - %f MLups \n", MLups);
     }
 };
 

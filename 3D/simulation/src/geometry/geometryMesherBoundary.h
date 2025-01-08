@@ -21,6 +21,8 @@
 
 #include <TNL/Algorithms/parallelFor.h>
 
+#include "geometryObjectCuboid.h"
+
 using namespace TNL;
 using namespace TNL::Algorithms;
 
@@ -720,7 +722,7 @@ public:
                 }
             }
         }
-
+/*
 #pragma omp parallel for
         for( boundaryConditionWall BC : boundary_vector_wall)
         {
@@ -773,7 +775,7 @@ public:
                 }
 
             }
-        }
+        }*/
 
         if (verbose)
         {

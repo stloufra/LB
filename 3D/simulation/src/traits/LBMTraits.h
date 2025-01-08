@@ -93,7 +93,7 @@ public:
 
     using RealType = Real;
 
-    using DeviceType = Device;
+    using DeviceType =  Device;
     using DeviceTypeHost = TNL::Devices::Host;
 
     using VectorType = Vector;

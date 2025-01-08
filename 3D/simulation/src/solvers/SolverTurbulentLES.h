@@ -177,6 +177,7 @@ public:
         int z = Constants -> ProbeLocationLat.z();
 
         auto HoCuView = HolderCUDA.getView();
+
         auto init = [ = ] __cuda_callable__( int i ) mutable
         {
             HoCuView[0] = ux_view(x,y,z);
@@ -184,7 +185,7 @@ public:
             HoCuView[2] = uz_view(x,y,z);
             HoCuView[3] = rho_view(x,y,z);
         };
-        parallelFor< TNL::Devices::Cuda >( 0, 1, init );
+        parallelFor< DeviceType >( 0, 1, init );
 
         HolderHOST = HolderCUDA;
 
@@ -195,16 +196,24 @@ public:
 
     void runSimulation() {
 
+
+
         timer_loop.start();
+
+
 
         int k = 0;
         int averaged =0;
         while(k<Constants -> iterations)
         {
 
+
             timer_LES.start();
             TURBULENCETYPE::omega(Data, Constants);
             timer_LES.stop();
+
+
+
 
             timer_dumping.start();
             OUTLETTYPE::outletOmega(Data, Constants);
@@ -247,6 +256,7 @@ public:
                 MOMENTTYPE::momentUpdate(Data, Constants);
             timer_momentsUpdate.stop();
 
+
             if(k > Constants->iterationsMomentAvgStart) //adding to mmnt avg every it
             {
                 timer_timeAvg.start();
@@ -257,7 +267,7 @@ public:
                 if(averaged == Constants->iterationsMomentAvg)
                 {
                     timer_timeAvg.start();
-                    MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+                    MOMENTTIMEAVGTYPE::momentAvg(Data, Constants, averaged);
                     timer_timeAvg.stop();
 
                     timer_output.start();
@@ -272,12 +282,15 @@ public:
                 }
             }
 
+
             if(k%Constants->probe_every_it==0 && Constants->probe_every_it > 0 && k>=(Constants->iterations - Constants->probe_iterations))
             {
                 timer_output.start();
                 probeWrite();
-                timer_output.stop();
+                timer_output.stop(); // fuckUpHERE
             }
+
+
 
             if(k%Constants -> err_every_it==0 && k!=0)
             {
@@ -315,13 +328,17 @@ public:
                 timer_output.stop();
             }
 
+
+
+
             //Time averaging
         }
 
         if(Constants->timeAveraged == false)
         {
             timer_timeAvg.start();
-            MOMENTTIMEAVGTYPE::momentAvg(Data, Constants);
+            int POV = k ? k < Constants -> iterationsMomentAvg : Constants -> iterationsMomentAvg;
+            MOMENTTIMEAVGTYPE::momentAvg(Data, Constants, k);
             timer_timeAvg.stop();
 
             timer_output.start();
@@ -348,7 +365,7 @@ public:
         }
         else if( Constants -> plot_every_it  == -1 && Constants -> plot_every == -1) {
             std::cout << "\n !!! CANT GIVE BOTH plot_every AND plot_every_it !!!\n";
-            assert(false);
+            //assert(false);
         }
 
         // ERR EVERY
@@ -357,7 +374,7 @@ public:
         }
         else if( Constants -> err_every_it  == -1 && Constants -> err_every == -1) {
             std::cout << "\n !!! CANT GIVE BOTH err_every AND err_every_it !!!\n";
-            assert(false);
+            //assert(false);
         }
 
         //MOMENTAVERAGE
@@ -402,9 +419,9 @@ public:
                 std::cout << "Probe location in lattice " << xLat << ", " << yLat << ", " << zLat << std::endl;
             }
 
-            assert(xLat >= Constants -> dimX_int && "Probe must be in the domain!");
-            assert(yLat >= Constants -> dimY_int && "Probe must be in the domain!");
-            assert(zLat >= Constants -> dimZ_int && "Probe must be in the domain!");
+            assert(xLat <= Constants -> dimX_int && "Probe must be in the domain!");
+            assert(yLat <= Constants -> dimY_int && "Probe must be in the domain!");
+            assert(zLat <= Constants -> dimZ_int && "Probe must be in the domain!");
 
             VectorTypeInt Probe(xLat, yLat, zLat);
             Constants -> ProbeLocationLat = Probe;

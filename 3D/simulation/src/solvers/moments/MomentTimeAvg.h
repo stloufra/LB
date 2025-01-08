@@ -54,7 +54,7 @@ struct MomentTimeAvg
 
     }
 
-    static void momentAvg(LBMDataPointer &Data, LBMConstantsPointer &Constants) {
+    static void momentAvg(LBMDataPointer &Data, LBMConstantsPointer &Constants, int TAC_) {
 
         auto rhoTimeAvg_view = Data->rhoTimeAvg.getView();
 
@@ -62,7 +62,7 @@ struct MomentTimeAvg
         auto uyTimeAvg_view = Data->uyTimeAvg.getView();
         auto uzTimeAvg_view = Data->uzTimeAvg.getView();
 
-        RealType TAC = static_cast<RealType>(Constants->iterationsMomentAvg);
+        RealType TAC = static_cast<RealType>(TAC_);
 
         printf("Counter %d" , Constants->TimeAvgCounter);
 
@@ -103,11 +103,11 @@ struct MomentTimeAvg
         mutable
         {
 
-            rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0;
+            rhoTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
 
-            uxTimeAvg_view(i.x(), i.y(), i.z()) = 0;
-            uyTimeAvg_view(i.x(), i.y(), i.z()) = 0;
-            uzTimeAvg_view(i.x(), i.y(), i.z()) = 0;
+            uxTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
+            uyTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
+            uzTimeAvg_view(i.x(), i.y(), i.z()) = 0.f;
 
         };
 

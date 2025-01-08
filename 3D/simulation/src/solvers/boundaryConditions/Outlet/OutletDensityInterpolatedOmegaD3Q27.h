@@ -90,6 +90,10 @@ struct OutletDensityInterpolatedOmegaD3Q27
         auto df_view = Data->df.getView();
         auto df_post_view = Data->df_post.getView();
 
+        int dimX_int = Constants->dimX_int;
+        int dimY_int = Constants->dimY_int;
+        int dimZ_int = Constants->dimZ_int;
+
         const auto Nvel = Constants->Nvel;
         const auto cs = Constants->cs;
 
@@ -285,37 +289,18 @@ struct OutletDensityInterpolatedOmegaD3Q27
                         }
                     }
 
-                    /*if((mesh_view(i-1, j, k) == -3)) //proti sm2ru normaly je periodicita
-                    {
-                        for (int vel = 0; vel < Nvel; vel++)
-                        {
-                            int dx = vert.y - MD.c[vel][0];
-                            int dy = vert.y - MD.c[vel][1];
-                            int dz = vert.z - MD.c[vel][2];
 
-                            if(mesh_view(dx, dy, dz) == 0) // a rychlost zatim nevim od kud predepsat
-                            {
-                                if(j=16)
-                                {
-                                    df_view(i, j, k, vel) = df_post_view(i, 1, k, vel);
-                                }else if(j=1)
-                                {
-                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, vel);
-                                }
-                            }
-                        }
-                    }*/
 
                     for (int vel = 0; vel < Nvel; vel++)
                     {
-                        if (j == 16)
+                        if (j == dimY_int - 2 && (mesh_view(i - 1, j, k) == -3))
                         {
                             if (MD.c[vel][1] < 0) //periodicita
                             {
                                 df_view(i, j, k, vel) = df_view(i, 0, k, vel);
                             }
 
-                            if (k == 220 && MD.c[vel][2] < 0) //odraz nahore
+                            if (k == dimZ_int - 2 && MD.c[vel][2] < 0) //odraz nahore
                             {
                                 if(MD.c[vel][1] <= 0){
                                     df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
@@ -332,19 +317,19 @@ struct OutletDensityInterpolatedOmegaD3Q27
                                 }
                             }
                         }
-                        if (j == 1)
+                        if (j == 1 && (mesh_view(i - 1, j, k) == -3))
                         {
                             if (MD.c[vel][1] > 0) //periodicita
                             {
                                 df_view(i, j, k, vel) = df_view(i, 17, k, vel);
                             }
 
-                            if (k == 220 && MD.c[vel][2] < 0)//odraz nahore
+                            if (k == dimZ_int - 2 && MD.c[vel][2] < 0)//odraz nahore
                             {
                                 if(MD.c[vel][1] >= 0){
                                     df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
                                 }else if(MD.c[vel][1] < 0){
-                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, MD.c_rev[vel]);
+                                    df_view(i, j, k, vel) = df_post_view(i, dimY_int - 2, k, MD.c_rev[vel]);
                                 }
                             }
                             else if (k == 1 && MD.c[vel][2] > 0)
@@ -352,7 +337,7 @@ struct OutletDensityInterpolatedOmegaD3Q27
                                 if(MD.c[vel][1] >= 0){
                                     df_view(i, j, k, vel) = df_post_view(i, j, k, MD.c_rev[vel]);
                                 }else if(MD.c[vel][1] < 0){
-                                    df_view(i, j, k, vel) = df_post_view(i, 16, k, MD.c_rev[vel]);
+                                    df_view(i, j, k, vel) = df_post_view(i, dimY_int - 2, k, MD.c_rev[vel]);
                                 }
                             }
                         }
@@ -378,9 +363,9 @@ struct OutletDensityInterpolatedOmegaD3Q27
 
                 RealType rho2 = rho_view(i, j, k);
 
-                RealType ux = computeUx(i, j, k, rho2);
-                RealType uy = computeUy(i, j, k, rho2);
-                RealType uz = computeUz(i, j, k, rho2);
+                RealType ux = computeUx(i, j, k, rho);
+                RealType uy = computeUy(i, j, k, rho);
+                RealType uz = computeUz(i, j, k, rho);
 
                 for (int vel = 0; vel < Nvel; vel++)
                 {
@@ -388,34 +373,7 @@ struct OutletDensityInterpolatedOmegaD3Q27
                         f_equilibrium_defined(ux, uy, uz, 1.f, vel);
                 }
             }
-            /*else if (norm == xm)
-            {
-                for (int vel = 0; vel < Nvel; vel++)
-                {
-                    if (norm.x() * MD.c[vel][0] + norm.y() * MD.c[vel][1] + norm.z() * MD.c[vel][2] < 0)
-                    {
-                        //pokud miri dovnitr
 
-                        int dx;
-
-                        dx = i + 1;
-
-                        df_view(i, j, k, vel) = cs * df_post_view(dx, j, k, vel) + (1 - cs) *
-                            df_post_view(i, j, k, vel);
-                    }
-                }
-
-                RealType rho = computeRho(i, j, k);
-                RealType ux = computeUx(i, j, k, density);
-                RealType uy = computeUy(i, j, k, density);
-                RealType uz = computeUz(i, j, k, density);
-
-                for (int vel = 0; vel < Nvel; vel++)
-                {
-                    df_view(i, j, k, vel) = df_view(i, j, k, vel) - f_equilibrium_defined(ux, uy, uz, rho, vel) +
-                        f_equilibrium_defined(ux, uy, uz, 1.f, vel);
-                }
-            }*/
             else
             {
                 printf("Not yet supported outlet.\n");

@@ -23,6 +23,7 @@ clean:
 run:
 	make clean
 	make
+	mkdir -p results
 	./main
 	
 

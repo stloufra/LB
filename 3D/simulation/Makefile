@@ -23,8 +23,7 @@ clean:
 run:
 	make clean
 	make
-	##./preprocess
-	##nohup ./main  > log.txt 2>&1 &
+	mkdir -p results
 	./main
 
 $(TARGETS): % : %.o
